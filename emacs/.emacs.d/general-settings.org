@@ -1,0 +1,947 @@
+#+TITLE: EMACS General Configuration File
+#+AUTHOR: Felippe Alves
+
+* Basic User Interface
+** Set UTF-8 as default encodins
+#+BEGIN_SRC emacs-lisp
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+#+END_SRC
+
+** Package Manager
+#+BEGIN_SRC emacs-lisp
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+(when (< emacs-major-version 24)
+  ;; For important compatibility libraries like cl-lib
+  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+(package-initialize)
+
+(unless (package-installed-p 'use-package)
+  (progn
+    (package-refresh-contents)
+    (package-install 'use-package)))
+(eval-when-compile
+  (require 'use-package))
+(require 'diminish)
+(require 'bind-key)
+#+END_SRC
+
+*** Paradox
+ modern package manager for emacs
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package paradox
+    :ensure t
+    :commands paradox-list-packages
+    :config
+    (setq paradox-github-token t
+          paradox-automatically-star nil
+          paradox-execute-asynchronously nil))
+#+END_SRC
+
+** Emacs Gui Behavior
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-screen t       ;; don't show startup screen
+        visible-bell nil               ;; no visual bell
+        apropos-do-all t               ;; more options on aproppos search (C-h a)
+        shift-select-mode nil)         ;; no region selecting with shift arrows
+
+  (fset 'yes-or-no-p 'y-or-n-p)        ;; use y/n instead of yes/no
+  (defalias 'list-buffers 'ibuffer)    ;; use ibuffer as default buffer list (C-x C-b)
+
+  (menu-bar-mode -1)                   ;; no menu bar
+  (tool-bar-mode -1)                   ;; no tool bar
+  (scroll-bar-mode -1)                 ;; no scroll bar
+  (blink-cursor-mode -1)               ;; no cursor blinking
+  (fringe-mode '(10 . 1))              ;; 10 pixel window fringes
+  (toggle-indicate-empty-lines t)      ;; display dashes on left border end of buffer
+  (highlight-indentation-mode -1)     ;; do not highlight indentation
+
+  (setq-default indent-tabs-mode nil)  ;; never use hard tabs
+
+  (setq show-paren-delay 0)            ;; immediatly show matching delimiter
+  (show-paren-mode t)                  ;; turn of highlighting of matching delimiters
+
+  (column-number-mode 1)               ;; show column number in mode line
+  (setq-default fill-column 80)        ;; number of characters before line wrap
+  (global-visual-line-mode 1)          ;; turn on line wrap on window border
+  (diminish 'visual-line-mode "w↩")   ;; diminish the bulky "Wrap"
+
+  (require 'cl)
+  ;; function to test fonts installed before setting some as default
+  (defun font-candidate (&rest fonts)
+    "Return existing font which first match."
+    (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+
+  ;; try to set some fonts as default
+  (set-face-attribute 'default nil :font (font-candidate "Hack-14:weight=normal"
+                                                         "Droid Sans Mono-14:weight=normal"
+                                                         "DejaVu Sans Mono-14:weight=normal"))
+  (setq linum-format " %3d ")           ;; linum format to keep line numbers 2 spaces from border and text
+  (global-linum-mode 0)                  ;; don't display lateral line numbers
+  (global-set-key (kbd "M-n") 'global-linum-mode) ;; toggle lateral line numbers
+#+END_SRC
+
+** Bakcup directory
+#+BEGIN_SRC emacs-lisp
+(setq backup-directory-alist `(("." . "~/.emacs.d/backups")))
+(setq backup-by-copying t      ;; backup files are copies of the original
+      delete-old-versions t    ;; no point in keeping all backaups
+      kept-new-versions 6      ;; but keep some of them
+      kept-old-versions 2
+      version-control t)       ;; and use version control
+#+END_SRC
+
+** Color Theme
+
+I've been using
+#+BEGIN_SRC emacs-lisp
+(use-package flatui-theme
+  :ensure t)
+
+(use-package darktooth-theme
+  :ensure t)
+
+(load-theme 'flatui t)
+;; (setq my-light-theme 'flatui
+;;       my-dark-theme 'darktooth
+;;       active-theme my-light-theme)
+
+;; (defun toogle-theme-mood ()
+;;   (interactive)
+;;   (if (eq active-theme my-dark-theme)
+;;       (progn
+;;         (disable-theme active-theme)
+;;         (setq active-theme my-dark-theme))
+;;     (setq active-theme my-light-theme))
+;;   (load-theme active-theme t))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package tango-plus-theme
+  :ensure t
+  :config
+  (load-theme 'tango-plus t))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package flatui-theme
+  :ensure t
+  :config
+  (load-theme 'flatui t))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package dakrone-theme
+  :ensure t
+  :config
+  (load-theme 'dakrone t))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package atom-one-dark-theme
+    :ensure t
+    :config
+    (progn
+      (load-theme 'atom-one-dark t)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package solarized-theme
+  :ensure t
+  :config
+  (progn
+    (load-theme 'solarized-dark t)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(setq color-tone "light")
+(use-package sublime-themes
+  :ensure t
+  :config
+  (progn
+    (if (string-equal color-tone "dark")
+        ;; (load-theme 'brin t)
+        (load-theme 'odersky t)
+      (progn
+        (load-theme 'mccarthy t)
+        (set-face-background 'fringe "#e0e0e0")))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package mbo70-theme
+  :ensure t
+  :config
+  (progn (load-theme 'mbo70 t)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package subatomic-theme
+  :ensure t
+  :config
+  (progn (load-theme subatomic t)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package underwater-theme
+  :ensure t
+  :config
+  (progn (load-theme underwater t)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package darktooth-theme
+  :ensure t
+  :config
+  (progn (load-theme 'darktooth t)))
+#+END_SRC
+Also, there goes a list of themes I sympathize with (from [[https://emacsthemes.com]])
+1. [[https://emacsthemes.com/themes/atom-one-dark-theme.html][Atom One Dark]] currenly using
+2. [[https://emacsthemes.com/themes/brin-theme.html][Brin]] used and liked
+3. [[https://emacsthemes.com/themes/solarized-themes.html][Solarized]] used and liked
+4. [[https://emacsthemes.com/themes/deep-thought-theme.html][Deep Thought]] didn't use yet, but want to test it someday
+5. [[https://emacsthemes.com/themes/flatland-theme.html][Flatland]] used and liked
+6. [[https://emacsthemes.com/themes/peacock-theme.html][Peacock]] didn't use yet, but want to test it someday
+7. [[https://emacsthemes.com/themes/planet-theme.html][Planet]]
+8. [[https://github.com/nashamri/spacemacs-theme][Spacemacs]]
+9. [[https://emacsthemes.com/themes/monokai-theme.html][Monokai]] used and liked
+10. [[https://emacsthemes.com/themes/mccarthy-theme.html][Mccarthy]] used and liked
+11. [[https://emacsthemes.com/themes/leuven-theme.html][Leuven]] used and liked
+12. [[https://emacsthemes.com/themes/gotham-theme.html][Gotham]] didn't use yet, but want to test it someday
+13. [[https://emacsthemes.com/themes/dakrone-theme.html][Dakrone]] cool
+14. [[https://emacsthemes.com/themes/inkpot-theme.html][Inkpot]]
+15. [[https://emacsthemes.com/themes/paper-theme.html][Paper]] cool
+16. [[https://emacsthemes.com/themes/mustang-theme.html][Mustang]]
+17. [[https://emacsthemes.com/themes/odersky-theme.html][Odersky]]
+18. [[https://emacsthemes.com/themes/mustard-theme.htmlhttps://emacsthemes.com/themes/mustard-theme.html][Mustard]] didn't use yet, but want to test it someday
+19. [[https://emacsthemes.com/themes/molokai-theme.html][Molokai]]
+20. [[https://emacsthemes.com/themes/graham-theme.html][Graham]]
+21. [[https://emacsthemes.com/themes/katester-theme.html][Katester]]
+22. [[https://emacsthemes.com/themes/junio-theme.html][Junio]]
+23. [[https://emacsthemes.com/themes/lush-theme.html][Lush]]
+24. [[https://emacsthemes.com/themes/mbo-70's-theme.html][mbo-70's]]
+25. [[https://emacsthemes.com/themes/github-theme.html][Github]]
+26. [[https://emacsthemes.com/themes/firecode-theme.html][Firecode]]
+27. [[https://emacsthemes.com/themes/darktooth-theme.html][Darktooth]]
+28. [[https://emacsthemes.com/themes/aurora-theme.html][Aurora]] didn't use yet, but want to test it someday
+29. [[https://emacsthemes.com/themes/base16-railcasts-theme.html][Base16 Railcasts]] didn't use yet, but want to test it someday
+30. [[https://emacsthemes.com/themes/rippedcasts-theme.html][Rippedcasts]]
+31. [[https://emacsthemes.com/themes/ritchie-theme.html][Ritchie]]
+32. [[https://emacsthemes.com/themes/rotor-theme.html][Rotor]]
+33. [[https://emacsthemes.com/themes/slime-theme.html][Slime]] used and liked
+34. [[https://emacsthemes.com/themes/soft-stone-theme.html][Soft Stone]]
+35. [[https://emacsthemes.com/themes/standard-theme.html][Standard]]
+36. [[https://emacsthemes.com/themes/subatomic-theme.html][Subatomic]]
+37. [[https://emacsthemes.com/themes/tommyh-theme.html][Tommyh]]
+38. [[https://emacsthemes.com/themes/tronesque-theme.html][Tronesque]]
+39. [[https://emacsthemes.com/themes/vim-colors-theme.html][Vim Colors]]
+40. [[https://emacsthemes.com/themes/whateveryouwant-theme.html][Whateveryouwant]]
+** Mode Line
+For now I use smart-mode-line
+
+*** Smart-mode-line
+a smarter mode line
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package smart-mode-line
+  :ensure t
+  :defer 0.2
+  :init
+  (progn
+    (setq sml/no-confirm-load-theme t
+          sml/theme 'respectful
+          sml/mode-widht 'full)
+    (sml/setup))
+  :config
+  (setq sml/shorten-directory t
+        sml/shorten-modes t))
+#+END_SRC
+
+*** Powerline
+The simplest thing to do.
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package powerline
+   :ensure t
+   :init (powerline-default-theme))
+   ;; :config
+   ;; (progn
+   ;;   (custom-set-faces
+   ;;    '(mode-line-buffer-id ((t (:foreground "#000000" :bold t))))
+   ;;    '(which-func ((t (:foreground "#77aaff"))))
+   ;;    '(mode-line ((t (:foreground "#000000" :background "#dddddd" :box nil))))
+   ;;    '(mode-line-inactive ((t (:foreground "#000000" :background "#bbbbbb" :box nil)))))))
+#+END_SRC
+
+*** Amit's mode line
+#+BEGIN_SRC emacs-lisp :tangle no
+;; Mode line setup
+(setq-default
+ mode-line-format
+ '(; Position, including warning for 80 columns
+   (:propertize "%4l:" face mode-line-position-face)
+   (:eval (propertize "%3c" 'face
+                      (if (>= (current-column) 80)
+                          'mode-line-80col-face
+                        'mode-line-position-face)))
+   ; emacsclient [default -- keep?]
+   mode-line-client
+   "  "
+   ; read-only or modified status
+   (:eval
+    (cond (buffer-read-only
+           (propertize " RO " 'face 'mode-line-read-only-face))
+          ((buffer-modified-p)
+           (propertize " * " 'face 'mode-line-modified-face))
+          (t "      ")))
+   "    "
+   ; directory and buffer/file name
+   (:propertize (:eval (shorten-directory default-directory 30))
+                face mode-line-folder-face)
+   (:propertize "%b"
+                face mode-line-filename-face)
+   ; narrow [default -- keep?]
+   " %n "
+   ; mode indicators: vc, recursive edit, major mode, minor modes, process, global
+   (vc-mode vc-mode)
+   "  %["
+   (:propertize mode-name
+                face mode-line-mode-face)
+   "%] "
+   (:eval (propertize (format-mode-line minor-mode-alist)
+                      'face 'mode-line-minor-mode-face))
+   (:propertize mode-line-process
+                face mode-line-process-face)
+   (global-mode-string global-mode-string)
+   "    "
+   ; nyan-mode uses nyan cat as an alternative to %p
+   (:eval (when nyan-mode (list (nyan-create))))
+   ))
+
+;; Helper function
+(defun shorten-directory (dir max-length)
+  "Show up to `max-length' characters of a directory name `dir'."
+  (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
+        (output ""))
+    (when (and path (equal "" (car path)))
+      (setq path (cdr path)))
+    (while (and path (< (length output) (- max-length 4)))
+      (setq output (concat (car path) "/" output))
+      (setq path (cdr path)))
+    (when path
+      (setq output (concat ".../" output)))
+    output))
+
+;; Extra mode line faces
+(make-face 'mode-line-read-only-face)
+(make-face 'mode-line-modified-face)
+(make-face 'mode-line-folder-face)
+(make-face 'mode-line-filename-face)
+(make-face 'mode-line-position-face)
+(make-face 'mode-line-mode-face)
+(make-face 'mode-line-minor-mode-face)
+(make-face 'mode-line-process-face)
+(make-face 'mode-line-80col-face)
+
+(set-face-attribute 'mode-line nil
+    :foreground "gray60" :background "gray20"
+    :inverse-video nil
+    :box '(:line-width 6 :color "gray20" :style nil))
+(set-face-attribute 'mode-line-inactive nil
+    :foreground "gray80" :background "gray40"
+    :inverse-video nil
+    :box '(:line-width 6 :color "gray40" :style nil))
+
+(set-face-attribute 'mode-line-read-only-face nil
+    :inherit 'mode-line-face
+    :foreground "#4271ae"
+    :box '(:line-width 2 :color "#4271ae"))
+(set-face-attribute 'mode-line-modified-face nil
+    :inherit 'mode-line-face
+    :foreground "#c82829"
+    ;; :background "#ffffff"
+    :box '(:line-width 2 :color "#c82829"))
+(set-face-attribute 'mode-line-folder-face nil
+    :inherit 'mode-line-face
+    :foreground "gray60")
+(set-face-attribute 'mode-line-filename-face nil
+    :inherit 'mode-line-face
+    :foreground "#eab700"
+    :weight 'bold)
+(set-face-attribute 'mode-line-position-face nil
+    :inherit 'mode-line-face
+    :family "Menlo" :height 100)
+(set-face-attribute 'mode-line-mode-face nil
+    :inherit 'mode-line-face
+    :foreground "gray80")
+(set-face-attribute 'mode-line-minor-mode-face nil
+    :inherit 'mode-line-mode-face
+    :foreground "gray40"
+    :height 110)
+(set-face-attribute 'mode-line-process-face nil
+    :inherit 'mode-line-face
+    :foreground "#718c00")
+(set-face-attribute 'mode-line-80col-face nil
+    :inherit 'mode-line-position-face
+    :foreground "black" :background "#eab700")
+#+END_SRC
+
+*** Spacemacsline
+Spacemacs modeline looks cool and is fairly organized and informative.
+#+BEGIN_SRC emacs-lisp
+(use-package spaceline
+  :ensure t
+  :defer 0.2
+  :init
+  (progn
+    (require 'spaceline-config)
+    (setq powerline-default-separator 'box))
+  :config
+  (progn
+    (spaceline-emacs-theme)
+    (spaceline-helm-mode)))
+#+END_SRC
+
+* Interactivity
+** Helm
+I'll try to switch to helm by copying someone else's configuration.
+The following was taken from [[https://github.com/sachac/.emacs.d/blob/gh-pages/Sacha.org][Sacha.org]], but I made some modifications suggested in [[http://tuhdo.github.io/helm-intro.html][this helm introduction text]].
+#+BEGIN_SRC emacs-lisp
+    (use-package helm
+      :ensure t
+      :diminish helm-mode
+      :init
+      (progn
+        (require 'helm)
+        (require 'helm-config)
+        (global-set-key (kbd "C-c h") 'helm-command-prefix)
+        (global-unset-key (kbd "C-x c"))
+        (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)  ;;*
+        (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)    ;;*
+        (define-key helm-map (kbd "C-z") 'helm-select-action)    ;;*
+        (setq helm-candidate-number-limit 100)
+        ;; From https://gist.github.com/antifuchs/9238468
+        (setq helm-idle-delay 0.0 ; update fast sources immediately (doesn't).
+              helm-input-idle-delay 0.01  ; this actually updates things
+                                            ; reeeelatively quickly.
+              helm-yas-display-key-on-candidate t
+              helm-quick-update t
+              helm-M-x-requires-pattern nil
+              helm-ff-skip-boring-files t
+              helm-split-window-in-side-p t ;;*
+              helm-move-to-line-cycle-in-source t ;;*
+              helm-ff-search-library-in-sexp t ;;*
+              helm-scroll-amount 8 ;;*
+              helm-ff-file-name-history-use-recentf t) ;;*
+        (helm-mode 1))
+      :bind (("M-x" . helm-M-x)
+             ("M-y" . helm-show-kill-ring)
+             ("C-x b" . helm-mini)
+             ("C-x C-f" . helm-find-files)
+             ("C-c h /" . helm-find)
+             ("C-h a" . helm-apropos)
+             ("C-x C-b" . helm-buffers-list)
+             ("C-c h o" . helm-occur)
+             ("C-c h s" . helm-swoop)
+             ("C-c h i" . helm-semantic-or-imenu)
+             ("C-c h l" . helm-locate)
+             ("C-c h y" . helm-yas-complete)
+             ("C-c h Y" . helm-yas-create-snippet-on-region)
+             ("C-c h SPC" . helm-all-mark-rings)
+             ("C-c h r" . helm-regex)
+             ("C-c h x" . helm-register)
+             ("C-c h t" . helm-top)
+             ("C-c h M-:" . helm-eval-expression-with-eldoc)
+             ("C-c h C-," . helm-calcul-expression)
+             ("C-c h <tab>" . helm-lisp-completion-at-point)))
+  (ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
+#+END_SRC
+
+I won't even change the next assertion, let's come back later to evaluate it.
+"Great for describing bindings. I'll replace the binding for =where-is= too."
+
+#+BEGIN_SRC emacs-lisp
+(use-package helm-descbinds
+  :defer t
+  :ensure t
+  :bind (("C-h b" . helm-descbinds)))
+#+END_SRC
+
+** Which-key
+#+BEGIN_SRC emacs-lisp
+(use-package which-key
+  :ensure t
+  :init (which-key-mode))
+#+END_SRC
+
+** Ace-window
+   Better window movement
+#+BEGIN_SRC emacs-lisp
+(use-package ace-window
+  :ensure t
+  :config
+  (progn
+    (ace-window-display-mode 0)
+    (setq aw-keys '(?a ?s ?d ?f ?z ?x ?c ?v))
+    (global-set-key (kbd "M-'") 'ace-window)))
+#+END_SRC
+
+** Try
+#+BEGIN_SRC emacs-lisp
+(use-package try
+  :ensure t)
+#+END_SRC
+** TODO Hydras
+Just to have it working
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package hydra
+  :ensure t
+  :config
+  (hydra-add-font-lock))
+#+END_SRC
+
+** Old Configurations (Not being used)
+   This is my ido/smex configuration before switching to helm. I don't remember from where I took it, but I suspect it was from Howard Abrams.
+*** Ido
+Ido makes suggetions on opening files, buffers and some M-x commnads
+#+BEGIN_SRC emacs-lisp :tangle no
+(setq ido-enable-flex-matching t
+      ido-everywhere t
+      ido-create-new-buffer 'always)
+(ido-mode 1)
+#+END_SRC
+
+this package makes ido works in more contexts
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package ido-ubiquitous
+  :ensure t
+  :disabled t
+  :ensure ido
+  :config
+  (ido-ubiquitous-mode t))
+#+END_SRC
+
+*** Smex
+makes ido work with more M-x commands
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package smex
+    :ensure t
+    :config
+    (progn
+      (smex-initialize)
+      (global-set-key (kbd "M-x") 'smex)
+      (global-set-key (kbd "M-X") 'smex-major-mode-commands)))
+#+END_SRC
+
+* Editing
+** Expand Region
+let's try the simplest thing
+#+BEGIN_SRC emacs-lisp
+(use-package expand-region
+  :ensure t
+  :bind(("M-@" . er/expand-region)))
+#+END_SRC
+
+** Text Wrappers
+Copying from [[https://github.com/howardabrams/dot-files/blob/master/emacs.org#block-wrappers][Howard Abrams]] again
+#+BEGIN_SRC emacs-lisp
+(use-package wrap-region
+  :ensure   t
+  :config
+  (wrap-region-global-mode t)
+  (wrap-region-add-wrappers
+   '(("(" ")")
+     ("[" "]")
+     ("{" "}")
+     ("<" ">")
+     ("'" "'")
+     ("\"" "\"")
+     ("‘" "’"   "q")
+     ("“" "”"   "Q")
+     ("*" "*"   "b"   org-mode)                 ; bolden
+     ("*" "*"   "*"   org-mode)                 ; bolden
+     ("/" "/"   "i"   org-mode)                 ; italics
+     ("/" "/"   "/"   org-mode)                 ; italics
+     ("~" "~"   "c"   org-mode)                 ; code
+     ("~" "~"   "~"   org-mode)                 ; code
+     ("=" "="   "v"   org-mode)                 ; verbatim
+     ("=" "="   "="   org-mode)                 ; verbatim
+     ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
+     ("**" "**" "b"   markdown-mode)            ; bolden
+     ("*" "*"   "i"   markdown-mode)            ; italics
+     ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
+     ("`" "'"   "c"   lisp-mode)                ; code
+     ))
+  :diminish wrap-region-mode)
+#+END_SRC
+He also does something that seems useful for org mode blocks, but I try just as it is now for a while.
+
+** Suggestions and Completions
+
+*** Company
+    company seems a better package than auto-complete overall
+#+BEGIN_SRC emacs-lisp
+(use-package company
+  :ensure t
+  :init (setq company-require-match 'never)
+  :bind ("C-|" . company-complete)
+  :config
+  (add-hook 'after-init-hook 'global-company-mode))
+#+END_SRC
+
+*** Auto-complete
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package auto-complete
+  :disabled t
+  :ensure t
+  :config
+  (progn
+    (ac-config-default)))
+#+END_SRC
+
+** TODO Avy
+
+** TODO Highlighting and Narrowing
+
+** Flycheck
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :ensure t
+  :init
+  (add-hook 'after-init-hook 'global-flycheck-mode)
+  :diminish "FC"
+  :config
+  (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+#+END_SRC
+
+** TODO Calc
+calc is awesome. i have to learn it and make a good configuration to write my papers.
+
+** TODO Undo-tree
+
+* Magit
+I'll start by copying from [[https://github.com/howardabrams/dot-files/blob/master/emacs.org][howardabrams configuration]]
+#+BEGIN_SRC emacs-lisp
+(use-package magit
+  :ensure t
+  :commands magit-status magit-blame
+  :init
+  (defadvice magit-status (around magit-fullscreen activate)
+    (window-configuration-to-register :magit-fullscreen)
+    ad-do-it
+    (delete-other-windows))
+  :config
+  (setq magit-branch-arguments nil
+        ;; use ido to look for branches
+        magit-completing-read-function 'magit-ido-completing-read
+        ;; don't put "origin-" in front of new branch names by default
+        magit-default-tracking-name-function 'magit-default-tracking-name-branch-only
+        magit-push-always-verify nil
+        ;; Get rid of the previous advice to go into fullscreen
+        magit-restore-window-configuration t)
+  :bind ("C-x g" . magit-status))
+#+END_SRC
+
+** TODO Fix the ido error that I get everytime I use magit
+
+* Smartparens
+automatically matches delimiters
+#+BEGIN_SRC emacs-lisp
+(use-package smartparens
+  :ensure t
+  :diminish smartparens-mode
+  :config
+  (progn
+    (setq sp-highlight-pair-overlay nil)
+    (show-smartparens-global-mode t)
+    (smartparens-global-mode t)))
+#+END_SRC
+
+* Transpose-frame
+not sure why i used this...
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package transpose-frame
+  :ensure t
+  :config
+  (progn
+    (global-set-key (kbd "M-Z") 'flop-frame)))
+#+END_SRC
+
+* Languages [2/7]
+
+** DONE Racket-mode
+#+BEGIN_SRC emacs-lisp
+(use-package rainbow-delimiters
+  :ensure t)
+(use-package racket-mode
+  :ensure t
+  :config
+  (progn
+    (add-to-list 'auto-mode-alist '("\\.rkt\\'" . racket-mode))
+    (add-hook 'racket-mode-hook 'rainbow-delimiters-mode)
+    (add-hook 'racket-mode-hook #'racket-unicode-input-method-enable)
+    (add-hook 'racket-repl-mode-hook #'racket-unicode-input-method-enable)))
+#+END_SRC
+
+** DONE Python mode
+
+*** Basic setup
+#+BEGIN_SRC emacs-lisp
+  (use-package python
+    :mode ("\\.py\\'" . python-mode)
+    :interpreter ("python" . python-mode)
+    :init
+    (setq-default indent-tabs-mode nil)
+    :config
+    (setq python-indent 4)
+    (add-hook 'python-mode-hook 'color-identifiers-mode)
+    (highlight-indentation-mode -1))
+#+END_SRC
+
+*** Elpy
+#+BEGIN_SRC emacs-lisp
+(use-package elpy
+  :ensure t
+  :commands elpy-enable
+  :init (with-eval-after-load 'python (elpy-enable))
+
+  :config
+  (progn
+    (elpy-use-ipython)
+    ; use flycheck not flymake with elpy
+    (when (require 'flycheck nil t)
+      (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+      (add-hook 'elpy-mode-hook 'flycheck-mode))))
+#+END_SRC
+
+*** live-py-mode
+#+BEGIN_SRC emacs-lisp
+(use-package live-py-mode
+  :ensure t)
+#+END_SRC
+** Fish mode
+#+BEGIN_SRC emacs-lisp
+(use-package fish-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.fish\\'" . fish-mode)))
+#+END_SRC
+** TODO Julia-mode [0/1]
+#+BEGIN_SRC emacs-lisp
+(use-package julia-mode
+  :ensure t)
+
+(use-package julia-shell
+  :ensure t)
+#+END_SRC
+
+*** TODO ESS
+#+BEGIN_SRC emacs-lisp
+(use-package ess
+  :ensure t
+  :defer t
+  :init (setq inferior-julia-program-name "/home/felippe/.local/bin/julia"))
+#+END_SRC
+
+** TODO Hy-mode
+#+BEGIN_SRC emacs-lisp
+(use-package hy-mode
+  :ensure t)
+#+END_SRC
+
+** TODO Haskell
+#+BEGIN_SRC emacs-lisp
+(use-package haskell-mode
+  :ensure t
+  :config
+  (progn
+    (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-mode))
+    (add-hook 'haskell-mode-hook 'haskell-indent-mode)
+    (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+    (add-hook 'haskell-mode-hook 'haskell-doc-mode)))
+#+END_SRC
+** TODO APL
+** TODO Ledger
+   #+BEGIN_SRC emacs-lisp :tangle no
+   (use-package ledger-mode
+     :ensure t
+     :config
+     (progn
+       (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))))
+   #+END_SRC
+* TODO Code Snippets [1/2]
+
+** DONE Yasnippet
+Need to add good snippets to use org mode
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+  :ensure t
+  :defer t
+  :config 'yas-global-mode 1)
+#+END_SRC
+It is possible to use as a minor mode hooked to specific languages by, for example, replacing the above with
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package yasnippet
+  :ensure t
+  :defer t
+  :config
+  (progn
+    (yas-reload-all)
+    (add-hook 'python-mode #'yas-minor-mode)))
+#+END_SRC
+
+** TODO Language Snippets [0/9]
+
+*** TODO Python
+
+*** TODO Julia
+
+*** TODO Racket
+
+*** TODO Haskell
+
+*** TODO Apl
+
+*** TODO Emacs Lisp
+
+*** TODO Org Mode
+
+*** TODO LaTeX
+
+*** TODO Other
+
+* Searches
+regex searches by default
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+(global-set-key (kbd "C-r") 'isearch-backward-regexp)
+(global-set-key (kbd "C-M-s") 'isearch-forward)
+(global-set-key (kbd "C-M-r") 'isearch-backward)
+#+END_SRC
+
+activate occur mode inside isearch
+#+BEGIN_SRC emacs-lisp
+(define-key isearch-mode-map (kbd "C-o")
+  (lambda () (interactive)
+    (let ((case-fold-search isearch-case-fold-search))
+      (occur (if isearch-regexp
+                 isearch-string
+               (regexp-quote isearch-string))))))
+#+END_SRC
+
+use hippie-expand with =M-/=
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "M-/") 'hippie-expand)
+#+END_SRC
+
+** TODO re-builder
+
+* Org-mode
+typical bindings
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-ca" 'org-agenda)
+(global-set-key "\C-cc" 'org-capture)
+(global-set-key "\C-cb" 'org-iswitchb)
+#+END_SRC
+
+** some eye-candy
+#+BEGIN_SRC emacs-lisp
+  (use-package org-bullets
+    :ensure t
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+  ;; (use-package org-beautify-theme
+  ;;   :ensure t)
+#+END_SRC
+
+** Editing code within org-mode
+better for editing source code
+#+BEGIN_SRC emacs-lisp
+(setq ;org-src-fontify-natively t
+      org-src-preserve-indentation t
+      org-list-allow-alphabetical t
+      org-completion-use-ido t)
+#+END_SRC
+
+inline display of linked file images
+#+BEGIN_SRC emacs-lisp
+(add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
+#+END_SRC
+
+** don't ask if i really want to run the code
+i want to run the code
+#+BEGIN_SRC emacs-lisp
+(setq org-confirm-babel-evaluate nil
+      org-confirm-elisp-link-function nil
+      org-confirm-shell-link-function nil)
+#+END_SRC
+
+** some language support
+ob-ipython to make emacs emulate ipython notebooks
+#+BEGIN_SRC emacs-lisp
+  (use-package ob-ipython
+    :ensure t)
+#+END_SRC
+
+loading some laguages to work with org
+#+BEGIN_SRC emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (sh . t)
+     (python . t)
+     (org . t)))
+#+END_SRC
+
+** TODO Org-ref
+Just to have it running. Still need to configure the variables and keybidings.
+#+BEGIN_SRC emacs-lisp
+(use-package org-ref
+  :ensure t)
+#+END_SRC
+
+* Functions and Macros
+
+** Comment line or region
+function to comment line or selected region
+#+BEGIN_SRC emacs-lisp
+(defun comment-line-or-region (n)
+  "Comment or uncomment current line and leave point after it.
+With positive prefix, apply to N lines including current one.
+With negative prefix, apply to -N lines above.
+If region is active, apply to active region instead."
+  (interactive "p")
+  (if (use-region-p)
+      (comment-or-uncomment-region
+       (region-beginning) (region-end))
+    (let ((range
+           (list (line-beginning-position)
+                 (goto-char (line-end-position n)))))
+      (comment-or-uncomment-region
+       (apply #'min range)
+       (apply #'max range)))
+    (forward-line 1)
+    (back-to-indentation)))
+#+END_SRC
+
+binding a suggestive command
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-;")
+                'comment-line-or-region)
+#+END_SRC
+
+** TODO Persp-mode or eyebrowse to replace the stupidity below
+
+*** A basic 3-windows setup macro
+this one creates makes 3 windows with format
+where the one in the left still in the buffer you called the macro and the ones at the right
+run a eshell and a dired.
+#+BEGIN_SRC emacs-lisp
+(fset 'typical-window-session
+      (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([24 51 134217959 24 50 134217848 101 115 104 101 108 108 13 134217959 100 24 6 6 13 134217959 97] 0 "%d")) arg)))
+(global-set-key (kbd "M-z") 'typical-window-session)
+(fset 'create-3-windows-session
+   (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([134217767 97 67108911 24 51 134217767 115 67108911 134217848 101 115 104 101 108 108 return 24 50 134217767 100 24 6 6 return 134217767 97] 0 "%d")) arg)))
+(global-set-key (kbd "M-z") 'create-3-windows-session)
+#+END_SRC
