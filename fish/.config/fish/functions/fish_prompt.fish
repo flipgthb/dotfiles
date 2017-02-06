@@ -1,1 +1,1 @@
-/home/felippe/.config/fisherman/clearance/fish_prompt.fish
+/home/felippe/.config/fisherman/clearer/fish_prompt.fish
