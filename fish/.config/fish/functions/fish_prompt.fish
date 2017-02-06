@@ -1,0 +1,1 @@
+/home/felippe/.config/fisherman/clearance/fish_prompt.fish
