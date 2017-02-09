@@ -18,14 +18,14 @@
    ["#ecf0f1" "#e74c3c" "#2ecc71" "#f1c40f" "#2492db" "#9b59b6" "#1abc9c" "#2c3e50"])
  '(custom-safe-themes
    (quote
-    ("8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "54ece5659cc7acdcd529dddd78675c2972a5ac69260af4a6aec517dcea16208b" default)))
+    ("fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "54ece5659cc7acdcd529dddd78675c2972a5ac69260af4a6aec517dcea16208b" default)))
  '(fci-rule-color "#f1c40f")
  '(hl-paren-background-colors (quote ("#2492db" "#95a5a6" nil)))
  '(hl-paren-colors (quote ("#ecf0f1" "#ecf0f1" "#c0392b")))
  '(indicate-empty-lines t)
  '(package-selected-packages
    (quote
-    (solarized wrap-region white-sand-theme which-key use-package underwater-theme try transpose-frame swiper sublime-themes subatomic-theme spaceline solarized-theme smartparens smart-mode-line rainbow-delimiters racket-mode py-autopep8 org-ref org-bullets org-beautify-theme ob-ipython magit live-py-mode ledger-mode julia-shell hy-mode helm-descbinds haskell-mode flycheck flatui-theme fish-mode expand-region ess elpy darktooth-theme auto-complete atom-one-dark-theme ace-window)))
+    (persistent-soft ergoemacs-status ergoemacs-mode xah-fly-keys eyebrowse solarized wrap-region white-sand-theme which-key use-package underwater-theme try transpose-frame swiper sublime-themes subatomic-theme spaceline solarized-theme smartparens smart-mode-line rainbow-delimiters racket-mode py-autopep8 org-ref org-bullets org-beautify-theme ob-ipython magit live-py-mode ledger-mode julia-shell hy-mode helm-descbinds haskell-mode flycheck flatui-theme fish-mode expand-region ess elpy darktooth-theme auto-complete atom-one-dark-theme ace-window)))
  '(sml/active-background-color "#34495e")
  '(sml/active-foreground-color "#ecf0f1")
  '(sml/inactive-background-color "#dfe4ea")

@@ -56,7 +56,7 @@
   (blink-cursor-mode -1)               ;; no cursor blinking
   (fringe-mode '(10 . 1))              ;; 10 pixel window fringes
   (toggle-indicate-empty-lines t)      ;; display dashes on left border end of buffer
-  (highlight-indentation-mode -1)     ;; do not highlight indentation
+;;  (highlight-indentation-mode -1)     ;; do not highlight indentation
 
   (setq-default indent-tabs-mode nil)  ;; never use hard tabs
 
@@ -97,146 +97,34 @@
 
 I've been using
 #+BEGIN_SRC emacs-lisp
-(use-package flatui-theme
-  :ensure t)
+  (use-package spacemacs-theme
+    :ensure t)
 
-(use-package darktooth-theme
-  :ensure t)
+  (load-theme 'spacemacs-light t)
 
-(load-theme 'flatui t)
-;; (setq my-light-theme 'flatui
-;;       my-dark-theme 'darktooth
-;;       active-theme my-light-theme)
+  (setq theme-moods '(spacemacs-light
+                      spacemacs-dark))
 
-;; (defun toogle-theme-mood ()
-;;   (interactive)
-;;   (if (eq active-theme my-dark-theme)
-;;       (progn
-;;         (disable-theme active-theme)
-;;         (setq active-theme my-dark-theme))
-;;     (setq active-theme my-light-theme))
-;;   (load-theme active-theme t))
+  (defun toogle-theme-mood ()
+    (interactive)
+    (disable-theme (car theme-moods))
+    (setq theme-moods (reverse theme-moods))
+    (load-theme (car theme-moods) t))
+
+  ;; (setq my-light-theme 'flatui
+  ;;       my-dark-theme 'darktooth
+  ;;       active-theme my-light-theme)
+
+  ;; (defun toogle-theme-mood ()
+  ;;   (interactive)
+  ;;   (if (eq active-theme my-dark-theme)
+  ;;       (progn
+  ;;         (disable-theme active-theme)
+  ;;         (setq active-theme my-dark-theme))
+  ;;     (setq active-theme my-light-theme))
+  ;;   (load-theme active-theme t))
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package tango-plus-theme
-  :ensure t
-  :config
-  (load-theme 'tango-plus t))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package flatui-theme
-  :ensure t
-  :config
-  (load-theme 'flatui t))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package dakrone-theme
-  :ensure t
-  :config
-  (load-theme 'dakrone t))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package atom-one-dark-theme
-    :ensure t
-    :config
-    (progn
-      (load-theme 'atom-one-dark t)))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package solarized-theme
-  :ensure t
-  :config
-  (progn
-    (load-theme 'solarized-dark t)))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(setq color-tone "light")
-(use-package sublime-themes
-  :ensure t
-  :config
-  (progn
-    (if (string-equal color-tone "dark")
-        ;; (load-theme 'brin t)
-        (load-theme 'odersky t)
-      (progn
-        (load-theme 'mccarthy t)
-        (set-face-background 'fringe "#e0e0e0")))))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package mbo70-theme
-  :ensure t
-  :config
-  (progn (load-theme 'mbo70 t)))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package subatomic-theme
-  :ensure t
-  :config
-  (progn (load-theme subatomic t)))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package underwater-theme
-  :ensure t
-  :config
-  (progn (load-theme underwater t)))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package darktooth-theme
-  :ensure t
-  :config
-  (progn (load-theme 'darktooth t)))
-#+END_SRC
-Also, there goes a list of themes I sympathize with (from [[https://emacsthemes.com]])
-1. [[https://emacsthemes.com/themes/atom-one-dark-theme.html][Atom One Dark]] currenly using
-2. [[https://emacsthemes.com/themes/brin-theme.html][Brin]] used and liked
-3. [[https://emacsthemes.com/themes/solarized-themes.html][Solarized]] used and liked
-4. [[https://emacsthemes.com/themes/deep-thought-theme.html][Deep Thought]] didn't use yet, but want to test it someday
-5. [[https://emacsthemes.com/themes/flatland-theme.html][Flatland]] used and liked
-6. [[https://emacsthemes.com/themes/peacock-theme.html][Peacock]] didn't use yet, but want to test it someday
-7. [[https://emacsthemes.com/themes/planet-theme.html][Planet]]
-8. [[https://github.com/nashamri/spacemacs-theme][Spacemacs]]
-9. [[https://emacsthemes.com/themes/monokai-theme.html][Monokai]] used and liked
-10. [[https://emacsthemes.com/themes/mccarthy-theme.html][Mccarthy]] used and liked
-11. [[https://emacsthemes.com/themes/leuven-theme.html][Leuven]] used and liked
-12. [[https://emacsthemes.com/themes/gotham-theme.html][Gotham]] didn't use yet, but want to test it someday
-13. [[https://emacsthemes.com/themes/dakrone-theme.html][Dakrone]] cool
-14. [[https://emacsthemes.com/themes/inkpot-theme.html][Inkpot]]
-15. [[https://emacsthemes.com/themes/paper-theme.html][Paper]] cool
-16. [[https://emacsthemes.com/themes/mustang-theme.html][Mustang]]
-17. [[https://emacsthemes.com/themes/odersky-theme.html][Odersky]]
-18. [[https://emacsthemes.com/themes/mustard-theme.htmlhttps://emacsthemes.com/themes/mustard-theme.html][Mustard]] didn't use yet, but want to test it someday
-19. [[https://emacsthemes.com/themes/molokai-theme.html][Molokai]]
-20. [[https://emacsthemes.com/themes/graham-theme.html][Graham]]
-21. [[https://emacsthemes.com/themes/katester-theme.html][Katester]]
-22. [[https://emacsthemes.com/themes/junio-theme.html][Junio]]
-23. [[https://emacsthemes.com/themes/lush-theme.html][Lush]]
-24. [[https://emacsthemes.com/themes/mbo-70's-theme.html][mbo-70's]]
-25. [[https://emacsthemes.com/themes/github-theme.html][Github]]
-26. [[https://emacsthemes.com/themes/firecode-theme.html][Firecode]]
-27. [[https://emacsthemes.com/themes/darktooth-theme.html][Darktooth]]
-28. [[https://emacsthemes.com/themes/aurora-theme.html][Aurora]] didn't use yet, but want to test it someday
-29. [[https://emacsthemes.com/themes/base16-railcasts-theme.html][Base16 Railcasts]] didn't use yet, but want to test it someday
-30. [[https://emacsthemes.com/themes/rippedcasts-theme.html][Rippedcasts]]
-31. [[https://emacsthemes.com/themes/ritchie-theme.html][Ritchie]]
-32. [[https://emacsthemes.com/themes/rotor-theme.html][Rotor]]
-33. [[https://emacsthemes.com/themes/slime-theme.html][Slime]] used and liked
-34. [[https://emacsthemes.com/themes/soft-stone-theme.html][Soft Stone]]
-35. [[https://emacsthemes.com/themes/standard-theme.html][Standard]]
-36. [[https://emacsthemes.com/themes/subatomic-theme.html][Subatomic]]
-37. [[https://emacsthemes.com/themes/tommyh-theme.html][Tommyh]]
-38. [[https://emacsthemes.com/themes/tronesque-theme.html][Tronesque]]
-39. [[https://emacsthemes.com/themes/vim-colors-theme.html][Vim Colors]]
-40. [[https://emacsthemes.com/themes/whateveryouwant-theme.html][Whateveryouwant]]
 ** Mode Line
 For now I use smart-mode-line
 
@@ -693,8 +581,8 @@ not sure why i used this...
     (setq-default indent-tabs-mode nil)
     :config
     (setq python-indent 4)
-    (add-hook 'python-mode-hook 'color-identifiers-mode)
-    (highlight-indentation-mode -1))
+    (add-hook 'python-mode-hook 'color-identifiers-mode))
+    ;;(highlight-indentation-mode -1))
 #+END_SRC
 
 *** Elpy
@@ -858,7 +746,7 @@ typical bindings
 ** Editing code within org-mode
 better for editing source code
 #+BEGIN_SRC emacs-lisp
-(setq ;org-src-fontify-natively t
+(setq org-src-fontify-natively t
       org-src-preserve-indentation t
       org-list-allow-alphabetical t
       org-completion-use-ido t)

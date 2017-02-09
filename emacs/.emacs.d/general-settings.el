@@ -20,44 +20,44 @@
 (require 'bind-key)
 
 (setq inhibit-startup-screen t       ;; don't show startup screen
-      visible-bell nil               ;; no visual bell
-      apropos-do-all t               ;; more options on aproppos search (C-h a)
-      shift-select-mode nil)         ;; no region selecting with shift arrows
+        visible-bell nil               ;; no visual bell
+        apropos-do-all t               ;; more options on aproppos search (C-h a)
+        shift-select-mode nil)         ;; no region selecting with shift arrows
 
-(fset 'yes-or-no-p 'y-or-n-p)        ;; use y/n instead of yes/no
-(defalias 'list-buffers 'ibuffer)    ;; use ibuffer as default buffer list (C-x C-b)
+  (fset 'yes-or-no-p 'y-or-n-p)        ;; use y/n instead of yes/no
+  (defalias 'list-buffers 'ibuffer)    ;; use ibuffer as default buffer list (C-x C-b)
 
-(menu-bar-mode -1)                   ;; no menu bar
-(tool-bar-mode -1)                   ;; no tool bar
-(scroll-bar-mode -1)                 ;; no scroll bar
-(blink-cursor-mode -1)               ;; no cursor blinking
-(fringe-mode '(10 . 1))              ;; 10 pixel window fringes
-(toggle-indicate-empty-lines t)      ;; display dashes on left border end of buffer
-(highlight-indentation-mode -1)     ;; do not highlight indentation
+  (menu-bar-mode -1)                   ;; no menu bar
+  (tool-bar-mode -1)                   ;; no tool bar
+  (scroll-bar-mode -1)                 ;; no scroll bar
+  (blink-cursor-mode -1)               ;; no cursor blinking
+  (fringe-mode '(10 . 1))              ;; 10 pixel window fringes
+  (toggle-indicate-empty-lines t)      ;; display dashes on left border end of buffer
+;;  (highlight-indentation-mode -1)     ;; do not highlight indentation
 
-(setq-default indent-tabs-mode nil)  ;; never use hard tabs
+  (setq-default indent-tabs-mode nil)  ;; never use hard tabs
 
-(setq show-paren-delay 0)            ;; immediatly show matching delimiter
-(show-paren-mode t)                  ;; turn of highlighting of matching delimiters
+  (setq show-paren-delay 0)            ;; immediatly show matching delimiter
+  (show-paren-mode t)                  ;; turn of highlighting of matching delimiters
 
-(column-number-mode 1)               ;; show column number in mode line
-(setq-default fill-column 80)        ;; number of characters before line wrap
-(global-visual-line-mode 1)          ;; turn on line wrap on window border
-(diminish 'visual-line-mode "w↩")   ;; diminish the bulky "Wrap"
+  (column-number-mode 1)               ;; show column number in mode line
+  (setq-default fill-column 80)        ;; number of characters before line wrap
+  (global-visual-line-mode 1)          ;; turn on line wrap on window border
+  (diminish 'visual-line-mode "w↩")   ;; diminish the bulky "Wrap"
 
-(require 'cl)
-;; function to test fonts installed before setting some as default
-(defun font-candidate (&rest fonts)
-  "Return existing font which first match."
-  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+  (require 'cl)
+  ;; function to test fonts installed before setting some as default
+  (defun font-candidate (&rest fonts)
+    "Return existing font which first match."
+    (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
 
-;; try to set some fonts as default
-(set-face-attribute 'default nil :font (font-candidate "Hack-14:weight=normal"
-                                                       "Droid Sans Mono-14:weight=normal"
-                                                       "DejaVu Sans Mono-14:weight=normal"))
-(setq linum-format " %3d ")           ;; linum format to keep line numbers 2 spaces from border and text
-(global-linum-mode 0)                  ;; don't display lateral line numbers
-(global-set-key (kbd "M-n") 'global-linum-mode) ;; toggle lateral line numbers
+  ;; try to set some fonts as default
+  (set-face-attribute 'default nil :font (font-candidate "Hack-14:weight=normal"
+                                                         "Droid Sans Mono-14:weight=normal"
+                                                         "DejaVu Sans Mono-14:weight=normal"))
+  (setq linum-format " %3d ")           ;; linum format to keep line numbers 2 spaces from border and text
+  (global-linum-mode 0)                  ;; don't display lateral line numbers
+  (global-set-key (kbd "M-n") 'global-linum-mode) ;; toggle lateral line numbers
 
 (setq backup-directory-alist `(("." . "~/.emacs.d/backups")))
 (setq backup-by-copying t      ;; backup files are copies of the original
@@ -66,13 +66,20 @@
       kept-old-versions 2
       version-control t)       ;; and use version control
 
-(use-package flatui-theme
+(use-package spacemacs-theme
   :ensure t)
 
-;; (use-package darktooth-theme
-;;   :ensure t)
+(load-theme 'spacemacs-light t)
 
-(load-theme 'flatui t)
+(setq theme-moods '(spacemacs-light
+                    spacemacs-dark))
+
+(defun toogle-theme-mood ()
+  (interactive)
+  (disable-theme (car theme-moods))
+  (setq theme-moods (reverse theme-moods))
+  (load-theme (car theme-moods) t))
+
 ;; (setq my-light-theme 'flatui
 ;;       my-dark-theme 'darktooth
 ;;       active-theme my-light-theme)
@@ -261,8 +268,8 @@
   (setq-default indent-tabs-mode nil)
   :config
   (setq python-indent 4)
-  (add-hook 'python-mode-hook 'color-identifiers-mode)
-  (highlight-indentation-mode -1))
+  (add-hook 'python-mode-hook 'color-identifiers-mode))
+  ;;(highlight-indentation-mode -1))
 
 (use-package elpy
   :ensure t
@@ -340,7 +347,7 @@
 ;; (use-package org-beautify-theme
 ;;   :ensure t)
 
-(setq ;org-src-fontify-natively t
+(setq org-src-fontify-natively t
       org-src-preserve-indentation t
       org-list-allow-alphabetical t
       org-completion-use-ido t)
