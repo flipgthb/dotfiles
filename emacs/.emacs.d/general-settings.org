@@ -421,6 +421,34 @@ makes ido work with more M-x commands
 #+END_SRC
 
 * Editing
+** Comment line or region
+function to comment line or selected region
+#+BEGIN_SRC emacs-lisp
+(defun comment-line-or-region (n)
+  "Comment or uncomment current line and leave point after it.
+With positive prefix, apply to N lines including current one.
+With negative prefix, apply to -N lines above.
+If region is active, apply to active region instead."
+  (interactive "p")
+  (if (use-region-p)
+      (comment-or-uncomment-region
+       (region-beginning) (region-end))
+    (let ((range
+           (list (line-beginning-position)
+                 (goto-char (line-end-position n)))))
+      (comment-or-uncomment-region
+       (apply #'min range)
+       (apply #'max range)))
+    (forward-line 1)
+    (back-to-indentation)))
+#+END_SRC
+
+binding a suggestive command
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-;")
+                'comment-line-or-region)
+#+END_SRC
+
 ** Expand Region
 let's try the simplest thing
 #+BEGIN_SRC emacs-lisp
@@ -790,37 +818,7 @@ Just to have it running. Still need to configure the variables and keybidings.
 #+END_SRC
 
 * Functions and Macros
-
-** Comment line or region
-function to comment line or selected region
-#+BEGIN_SRC emacs-lisp
-(defun comment-line-or-region (n)
-  "Comment or uncomment current line and leave point after it.
-With positive prefix, apply to N lines including current one.
-With negative prefix, apply to -N lines above.
-If region is active, apply to active region instead."
-  (interactive "p")
-  (if (use-region-p)
-      (comment-or-uncomment-region
-       (region-beginning) (region-end))
-    (let ((range
-           (list (line-beginning-position)
-                 (goto-char (line-end-position n)))))
-      (comment-or-uncomment-region
-       (apply #'min range)
-       (apply #'max range)))
-    (forward-line 1)
-    (back-to-indentation)))
-#+END_SRC
-
-binding a suggestive command
-#+BEGIN_SRC emacs-lisp
-(global-set-key (kbd "C-;")
-                'comment-line-or-region)
-#+END_SRC
-
 ** TODO Persp-mode or eyebrowse to replace the stupidity below
-
 *** A basic 3-windows setup macro
 this one creates makes 3 windows with format
 where the one in the left still in the buffer you called the macro and the ones at the right
