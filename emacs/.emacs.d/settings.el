@@ -19,6 +19,14 @@
 (require 'diminish)
 (require 'bind-key)
 
+(use-package paradox
+  :ensure t
+  :commands paradox-list-packages
+  :config
+  (setq paradox-github-token t
+        paradox-automatically-star nil
+        paradox-execute-asynchronously nil))
+
 (setq inhibit-startup-screen t       ;; don't show startup screen
         visible-bell nil               ;; no visual bell
         apropos-do-all t               ;; more options on aproppos search (C-h a)
@@ -27,7 +35,7 @@
   (fset 'yes-or-no-p 'y-or-n-p)        ;; use y/n instead of yes/no
   (defalias 'list-buffers 'ibuffer)    ;; use ibuffer as default buffer list (C-x C-b)
 
-  (menu-bar-mode -1)                   ;; no menu bar
+  (menu-bar-mode 1)                   ;; ~no~ menu bar
   (tool-bar-mode -1)                   ;; no tool bar
   (scroll-bar-mode -1)                 ;; no scroll bar
   (blink-cursor-mode -1)               ;; no cursor blinking
@@ -66,32 +74,21 @@
       kept-old-versions 2
       version-control t)       ;; and use version control
 
-(use-package spacemacs-theme
+(use-package github-modern-theme
+  :ensure t)
+(use-package zenburn-theme
   :ensure t)
 
-(load-theme 'spacemacs-light t)
+(setq theme-moods '(zenburn
+                    github-modern))
 
-(setq theme-moods '(spacemacs-light
-                    spacemacs-dark))
+(load-theme (car theme-moods) t)
 
-(defun toogle-theme-mood ()
+(defun toggle-theme-mood ()
   (interactive)
   (disable-theme (car theme-moods))
   (setq theme-moods (reverse theme-moods))
   (load-theme (car theme-moods) t))
-
-;; (setq my-light-theme 'flatui
-;;       my-dark-theme 'darktooth
-;;       active-theme my-light-theme)
-
-;; (defun toogle-theme-mood ()
-;;   (interactive)
-;;   (if (eq active-theme my-dark-theme)
-;;       (progn
-;;         (disable-theme active-theme)
-;;         (setq active-theme my-dark-theme))
-;;     (setq active-theme my-light-theme))
-;;   (load-theme active-theme t))
 
 (use-package spaceline
   :ensure t
@@ -105,59 +102,55 @@
     (spaceline-emacs-theme)
     (spaceline-helm-mode)))
 
-(use-package helm
-    :ensure t
-    :diminish helm-mode
-    :init
-    (progn
-      (require 'helm)
-      (require 'helm-config)
-      (global-set-key (kbd "C-c h") 'helm-command-prefix)
-      (global-unset-key (kbd "C-x c"))
-      (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)  ;;*
-      (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)    ;;*
-      (define-key helm-map (kbd "C-z") 'helm-select-action)    ;;*
-      (setq helm-candidate-number-limit 100)
-      ;; From https://gist.github.com/antifuchs/9238468
-      (setq helm-idle-delay 0.0 ; update fast sources immediately (doesn't).
-            helm-input-idle-delay 0.01  ; this actually updates things
-                                          ; reeeelatively quickly.
-            helm-yas-display-key-on-candidate t
-            helm-quick-update t
-            helm-M-x-requires-pattern nil
-            helm-ff-skip-boring-files t
-            helm-split-window-in-side-p t ;;*
-            helm-move-to-line-cycle-in-source t ;;*
-            helm-ff-search-library-in-sexp t ;;*
-            helm-scroll-amount 8 ;;*
-            helm-ff-file-name-history-use-recentf t) ;;*
-      (helm-mode 1))
-    :bind (("M-x" . helm-M-x)
-           ("M-y" . helm-show-kill-ring)
-           ("C-x b" . helm-mini)
-           ("C-x C-f" . helm-find-files)
-           ("C-c h /" . helm-find)
-           ("C-h a" . helm-apropos)
-           ("C-x C-b" . helm-buffers-list)
-           ("C-c h o" . helm-occur)
-           ("C-c h s" . helm-swoop)
-           ("C-c h i" . helm-semantic-or-imenu)
-           ("C-c h l" . helm-locate)
-           ("C-c h y" . helm-yas-complete)
-           ("C-c h Y" . helm-yas-create-snippet-on-region)
-           ("C-c h SPC" . helm-all-mark-rings)
-           ("C-c h r" . helm-regex)
-           ("C-c h x" . helm-register)
-           ("C-c h t" . helm-top)
-           ("C-c h M-:" . helm-eval-expression-with-eldoc)
-           ("C-c h C-," . helm-calcul-expression)
-           ("C-c h <tab>" . helm-lisp-completion-at-point)))
-(ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
+(use-package counsel
+  :ensure t)
 
-(use-package helm-descbinds
-  :defer t
-  :ensure t
-  :bind (("C-h b" . helm-descbinds)))
+(use-package swiper
+  :ensure try
+  :config
+  (progn
+    (ivy-mode 1)
+    (setq ivy-use-virtual-buffers t)
+    (global-set-key (kbd "C-s") 'swiper)
+    (global-set-key (kbd "C-c C-r") 'ivy-resume)
+    (global-set-key (kbd "<f6>") 'ivy-resume)
+    (global-set-key (kbd "M-x") 'counsel-M-x)
+    (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+    (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+    (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+    (global-set-key (kbd "<f1> l") 'counsel-load-library)
+    (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+    (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+    (global-set-key (kbd "C-c g") 'counsel-git)
+    (global-set-key (kbd "C-c j") 'counsel-git-grep)
+    (global-set-key (kbd "C-c k") 'counsel-ag)
+    (global-set-key (kbd "C-x l") 'counsel-locate)
+    (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+    (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+  ))
+
+;; (use-package ivy :ensure t
+  ;; :diminish (ivy-mode . "")
+  ;; :bind
+  ;; (:map ivy-mode-map
+   ;; ("C-'" . ivy-avy))
+  ;; :config
+  ;; (ivy-mode 1))
+  ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
+  ;; (setq ivy-use-virtual-buffers t)
+  ;; number of result lines to display
+  ;; (setq ivy-height 10))
+  ;; does not count candidates
+  ;; (setq ivy-count-format "")
+  ;; no regexp by default
+  ;; (setq ivy-initial-inputs-alist nil)
+  ;; configure regexp engine.
+  ;; (setq ivy-re-builders-alist
+  ;;  ;; allow input not in order
+  ;     '((t   . ivy--regex-ignore-order))))
+
+;; (use-package ivy-hydra
+  ;; :ensure t)
 
 (use-package which-key
   :ensure t
@@ -173,6 +166,27 @@
 
 (use-package try
   :ensure t)
+
+(defun comment-line-or-region (n)
+  "Comment or uncomment current line and leave point after it.
+With positive prefix, apply to N lines including current one.
+With negative prefix, apply to -N lines above.
+If region is active, apply to active region instead."
+  (interactive "p")
+  (if (use-region-p)
+      (comment-or-uncomment-region
+       (region-beginning) (region-end))
+    (let ((range
+           (list (line-beginning-position)
+                 (goto-char (line-end-position n)))))
+      (comment-or-uncomment-region
+       (apply #'min range)
+       (apply #'max range)))
+    (forward-line 1)
+    (back-to-indentation)))
+
+(global-set-key (kbd "C-;")
+                'comment-line-or-region)
 
 (use-package expand-region
   :ensure t
@@ -320,11 +334,6 @@
   :defer t
   :config 'yas-global-mode 1)
 
-(global-set-key (kbd "C-s") 'isearch-forward-regexp)
-(global-set-key (kbd "C-r") 'isearch-backward-regexp)
-(global-set-key (kbd "C-M-s") 'isearch-forward)
-(global-set-key (kbd "C-M-r") 'isearch-backward)
-
 (define-key isearch-mode-map (kbd "C-o")
   (lambda () (interactive)
     (let ((case-fold-search isearch-case-fold-search))
@@ -333,6 +342,15 @@
                (regexp-quote isearch-string))))))
 
 (global-set-key (kbd "M-/") 'hippie-expand)
+
+(use-package ox-reveal
+:ensure ox-reveal)
+
+(setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
+(setq org-reveal-mathjax t)
+
+(use-package htmlize
+:ensure t)
 
 (global-set-key "\C-cl" 'org-store-link)
 (global-set-key "\C-ca" 'org-agenda)
@@ -370,27 +388,6 @@
 
 (use-package org-ref
   :ensure t)
-
-(defun comment-line-or-region (n)
-  "Comment or uncomment current line and leave point after it.
-With positive prefix, apply to N lines including current one.
-With negative prefix, apply to -N lines above.
-If region is active, apply to active region instead."
-  (interactive "p")
-  (if (use-region-p)
-      (comment-or-uncomment-region
-       (region-beginning) (region-end))
-    (let ((range
-           (list (line-beginning-position)
-                 (goto-char (line-end-position n)))))
-      (comment-or-uncomment-region
-       (apply #'min range)
-       (apply #'max range)))
-    (forward-line 1)
-    (back-to-indentation)))
-
-(global-set-key (kbd "C-;")
-                'comment-line-or-region)
 
 (fset 'typical-window-session
       (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([24 51 134217959 24 50 134217848 101 115 104 101 108 108 13 134217959 100 24 6 6 13 134217959 97] 0 "%d")) arg)))

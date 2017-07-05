@@ -30,7 +30,7 @@
 
 *** Paradox
  modern package manager for emacs
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp 
   (use-package paradox
     :ensure t
     :commands paradox-list-packages
@@ -50,7 +50,7 @@
   (fset 'yes-or-no-p 'y-or-n-p)        ;; use y/n instead of yes/no
   (defalias 'list-buffers 'ibuffer)    ;; use ibuffer as default buffer list (C-x C-b)
 
-  (menu-bar-mode -1)                   ;; no menu bar
+  (menu-bar-mode 1)                   ;; ~no~ menu bar
   (tool-bar-mode -1)                   ;; no tool bar
   (scroll-bar-mode -1)                 ;; no scroll bar
   (blink-cursor-mode -1)               ;; no cursor blinking
@@ -94,40 +94,27 @@
 #+END_SRC
 
 ** Color Theme
-
 I've been using
 #+BEGIN_SRC emacs-lisp
-  (use-package spacemacs-theme
+  (use-package github-modern-theme
+    :ensure t)
+  (use-package zenburn-theme
     :ensure t)
 
-  (load-theme 'spacemacs-light t)
+  (setq theme-moods '(zenburn
+                      github-modern))
 
-  (setq theme-moods '(spacemacs-light
-                      spacemacs-dark))
+  (load-theme (car theme-moods) t)
 
-  (defun toogle-theme-mood ()
+  (defun toggle-theme-mood ()
     (interactive)
     (disable-theme (car theme-moods))
     (setq theme-moods (reverse theme-moods))
     (load-theme (car theme-moods) t))
-
-  ;; (setq my-light-theme 'flatui
-  ;;       my-dark-theme 'darktooth
-  ;;       active-theme my-light-theme)
-
-  ;; (defun toogle-theme-mood ()
-  ;;   (interactive)
-  ;;   (if (eq active-theme my-dark-theme)
-  ;;       (progn
-  ;;         (disable-theme active-theme)
-  ;;         (setq active-theme my-dark-theme))
-  ;;     (setq active-theme my-light-theme))
-  ;;   (load-theme active-theme t))
 #+END_SRC
 
 ** Mode Line
-For now I use smart-mode-line
-
+For now I use spacemacsline
 *** Smart-mode-line
 a smarter mode line
 #+BEGIN_SRC emacs-lisp :tangle no
@@ -289,11 +276,11 @@ Spacemacs modeline looks cool and is fairly organized and informative.
     (spaceline-helm-mode)))
 #+END_SRC
 
-* Interactivity
 ** Helm
 I'll try to switch to helm by copying someone else's configuration.
 The following was taken from [[https://github.com/sachac/.emacs.d/blob/gh-pages/Sacha.org][Sacha.org]], but I made some modifications suggested in [[http://tuhdo.github.io/helm-intro.html][this helm introduction text]].
-#+BEGIN_SRC emacs-lisp
+<2017-07-03 Mon> Disabled to try ivy for a while.
+#+BEGIN_SRC emacs-lisp :tangle no
     (use-package helm
       :ensure t
       :diminish helm-mode
@@ -347,13 +334,65 @@ The following was taken from [[https://github.com/sachac/.emacs.d/blob/gh-pages/
 I won't even change the next assertion, let's come back later to evaluate it.
 "Great for describing bindings. I'll replace the binding for =where-is= too."
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package helm-descbinds
   :defer t
   :ensure t
   :bind (("C-h b" . helm-descbinds)))
 #+END_SRC
 
+** Ivy, Counsel and Swiper
+#+BEGIN_SRC emacs-lisp 
+  (use-package counsel
+    :ensure t)
+
+  (use-package swiper
+    :ensure try
+    :config
+    (progn
+      (ivy-mode 1)
+      (setq ivy-use-virtual-buffers t)
+      (global-set-key (kbd "C-s") 'swiper)
+      (global-set-key (kbd "C-c C-r") 'ivy-resume)
+      (global-set-key (kbd "<f6>") 'ivy-resume)
+      (global-set-key (kbd "M-x") 'counsel-M-x)
+      (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+      (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+      (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+      (global-set-key (kbd "<f1> l") 'counsel-load-library)
+      (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+      (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+      (global-set-key (kbd "C-c g") 'counsel-git)
+      (global-set-key (kbd "C-c j") 'counsel-git-grep)
+      (global-set-key (kbd "C-c k") 'counsel-ag)
+      (global-set-key (kbd "C-x l") 'counsel-locate)
+      (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+      (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+    ))
+
+  ;; (use-package ivy :ensure t
+    ;; :diminish (ivy-mode . "")
+    ;; :bind
+    ;; (:map ivy-mode-map
+     ;; ("C-'" . ivy-avy))
+    ;; :config
+    ;; (ivy-mode 1))
+    ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
+    ;; (setq ivy-use-virtual-buffers t)
+    ;; number of result lines to display
+    ;; (setq ivy-height 10))
+    ;; does not count candidates
+    ;; (setq ivy-count-format "")
+    ;; no regexp by default
+    ;; (setq ivy-initial-inputs-alist nil)
+    ;; configure regexp engine.
+    ;; (setq ivy-re-builders-alist
+    ;;	;; allow input not in order
+    ;     '((t   . ivy--regex-ignore-order))))
+
+  ;; (use-package ivy-hydra
+    ;; :ensure t)
+#+END_SRC
 ** Which-key
 #+BEGIN_SRC emacs-lisp
 (use-package which-key
@@ -727,7 +766,7 @@ It is possible to use as a minor mode hooked to specific languages by, for examp
 
 * Searches
 regex searches by default
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-regexp)
 (global-set-key (kbd "C-M-s") 'isearch-forward)
@@ -752,6 +791,17 @@ use hippie-expand with =M-/=
 ** TODO re-builder
 
 * Org-mode
+
+#+BEGIN_SRC emacs-lisp
+(use-package ox-reveal
+:ensure ox-reveal)
+
+(setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
+(setq org-reveal-mathjax t)
+
+(use-package htmlize
+:ensure t)
+#+END_SRC
 typical bindings
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\C-cl" 'org-store-link)
