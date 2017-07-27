@@ -4,7 +4,9 @@
 
 (require 'package)
 (add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/"))
+             '(("melpa" . "https://melpa.org/packages/")
+              ("elpy" . "https://jorgenschaefer.github.io/packages/")
+              ("org" . "http://orgmode.org/elpa/")))
 (when (< emacs-major-version 24)
   ;; For important compatibility libraries like cl-lib
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
