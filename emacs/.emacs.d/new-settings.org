@@ -1,0 +1,185 @@
+#+TITLE: EMACS General Configuration File
+#+AUTHOR: Felippe Alves
+
+* TODO User Interface [0/6]
+** TODO Internals [1/5]
+*** TODO Set UTF-8 as default encodins
+    Need to comment on that
+#+BEGIN_SRC emacs-lisp
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+#+END_SRC
+*** TODO Package Manager
+    Need to comment on that
+#+BEGIN_SRC emacs-lisp
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+(when (< emacs-major-version 24)
+  ;; For important compatibility libraries like cl-lib
+  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+(package-initialize)
+
+(unless (package-installed-p 'use-package)
+  (progn
+    (package-refresh-contents)
+    (package-install 'use-package)))
+(eval-when-compile
+  (require 'use-package))
+(require 'diminish)
+(require 'bind-key)
+#+END_SRC
+#+BEGIN_SRC emacs-lisp 
+  (use-package paradox
+    :ensure t
+    :commands paradox-list-packages
+    :config
+    (setq paradox-github-token t
+          paradox-automatically-star nil
+          paradox-execute-asynchronously nil))
+#+END_SRC
+*** TODO Dash
+    Need to comment on that
+#+BEGIN_SRC emacs-lisp
+(use-package dash
+  :ensure t
+  :demand
+  :config
+  (dash-enable-font-lock))
+#+END_SRC
+*** TODO Security
+*** DONE Server
+    Start an emacs server if there isn't one yet
+#+BEGIN_SRC emacs-lisp
+(load "server")
+(unless (server-running-p) (start-server))
+#+END_SRC
+   ...and set a key to kill the client
+#+BEGIN_SRC emacs-lisp
+(add-hook 'server-switch-hook
+          (lambda ()
+            (when (current-local-map)
+              (use-local-map (copy-keymap (current-local-map))))
+            (local-set-key (kbd "C-x C-k") 'server-edit)))
+#+END_SRC
+   Copied from [[https://ogbe.net/emacsconfig.html][D. Ogbe]]
+** TODO Keybindings [0/1]
+*** TODO xah-fly-keys?
+** TODO Things on the screen [0/5]
+*** TODO Frame elements and behavior
+    Setting:
+    - no startup screen
+    - no splash screen
+    - no scratch message
+    - no bells
+    - no menu bar
+    - no tool bar
+    - no scroll bar
+    - fringe mode 10 px
+    - empty lines indication
+    - no cursor blinking
+    - scroll speed
+    - more options for apropos
+    - no shift selection
+    - shorter confirmation/negation
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-screen t       ;; don't show startup screen
+        visible-bell nil               ;; no visual bell
+        inhibit-splash-screen t        ;; no splash screen
+        initial-scratch-message nil    ;; no scratch message
+        scroll-step 1
+        scroll-conservatively 10000
+        apropos-do-all t               ;; more options on aproppos search (C-h a)
+        shift-select-mode nil)         ;; no region selecting with shift arrows - to editing
+  (fset 'yes-or-no-p 'y-or-n-p)        ;; use y/n instead of yes/no - to interaction
+  (menu-bar-mode 1)                   ;; ~no~ menu bar
+  (tool-bar-mode -1)                   ;; no tool bar
+  (scroll-bar-mode -1)                 ;; no scroll bar
+  (blink-cursor-mode -1)               ;; no cursor blinking
+  (fringe-mode '(10 . 1))              ;; 10 pixel window fringes
+  (toggle-indicate-empty-lines t)      ;; display dashes on left border end of buffer
+#+END_SRC
+*** TODO Fonts
+    Need to comment on that
+#+BEGIN_SRC emacs-lisp
+(require 'cl)
+;; function to test fonts installed before setting some as default
+(defun font-candidate (&rest fonts)
+  "Return existing font which first match."
+  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+;; try to set some fonts as default
+(set-face-attribute 'default nil :font (font-candidate "Source Code Pro-14:weight=normal" 
+                                                       "Hack-14:weight=normal"
+                                                       "Droid Sans Mono-14:weight=normal"
+                                                       "DejaVu Sans Mono-14:weight=normal"))
+
+#+END_SRC
+*** TODO Modeline
+*** TODO Line Numbers
+#+BEGIN_SRC emacs-lisp
+(setq linum-format " %3d ")                     ;; linum format to keep line numbers 2 spaces from border and text
+(global-linum-mode 0)                           ;; don't display lateral line numbers
+(global-set-key (kbd "M-n") 'global-linum-mode) ;; toggle lateral line numbers
+#+END_SRC
+*** TODO Color Theme
+** TODO Interacting with Emacs [0/7]
+*** TODO Helm, Ivy, Counsel and Swiper
+*** TODO Whichkey
+*** TODO Hydras
+*** TODO Avy, Ace
+*** TODO Buffers
+*** TODO Dired
+*** TODO Reloading Configuration
+    Utility functions to edit and reload emacs configuration, copied from [[https://ogbe.net/emacsconfig.html][D. Ogbe]]
+#+BEGIN_SRC emacs-lisp
+(defun reload-settings ()
+  (interactive)
+  (org-babel-load-file "~/.emacs.d/settings.org"))
+(defun edit-settings ()
+  (interactive)
+  (find-file "~/.emacs.d/settings.org"))
+#+END_SRC
+    Need to set keybindings.
+** TODO Magit
+* TODO Editing [0/8]
+** TODO Moving
+** TODO Searching
+** TODO Bakcup directory
+   Need to comment on that
+#+BEGIN_SRC emacs-lisp
+(setq backup-directory-alist `(("." . "~/.emacs.d/backups")))
+(setq backup-by-copying t      ;; backup files are copies of the original
+      delete-old-versions t    ;; no point in keeping all backaups
+      kept-new-versions 6      ;; but keep some of them
+      kept-old-versions 2
+      version-control t)       ;; and use version control
+#+END_SRC
+
+** TODO Yasnippets
+** TODO Auto-completion [0/1]
+*** TODO Company
+** TODO Comments
+** TODO Text Selection [0/1]
+*** TODO Expand Region
+** TODO Delimiters [0/2]
+*** TODO Text wrappers 
+*** TODO Smartparens
+* TODO Org-mode
+Need to comment on that
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :init ; loaded before package is initialized
+  ;; The background color of my org source code blocks needs to be defined before
+  ;; org is loaded.
+  (defface org-block-begin-line
+    '((t (:foreground "#99968b" :background "#303030" :box (:style released-button))))
+    "Face used for the line delimiting the begin of source blocks.")
+  (defface org-block-end-line
+    '((t (:foreground "#99968b" :background "#303030" :box (:style released-button))))
+    "Face used for the line delimiting the end of source blocks.")
+  :demand
+  :ensure org-plus-contrib ; make sure to load org from orgmode.org
+  :pin "org")
+#+END_SRC
+* TODO Coding
+
