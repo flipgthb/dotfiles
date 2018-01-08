@@ -1,12 +1,9 @@
-
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 
 (require 'package)
 (add-to-list 'package-archives
-             '(("melpa" . "https://melpa.org/packages/")
-              ("elpy" . "https://jorgenschaefer.github.io/packages/")
-              ("org" . "http://orgmode.org/elpa/")))
+             '("melpa" . "https://melpa.org/packages/"))
 (when (< emacs-major-version 24)
   ;; For important compatibility libraries like cl-lib
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
@@ -148,7 +145,7 @@
   ;; (setq ivy-initial-inputs-alist nil)
   ;; configure regexp engine.
   ;; (setq ivy-re-builders-alist
-  ;;  ;; allow input not in order
+  ;;	;; allow input not in order
   ;     '((t   . ivy--regex-ignore-order))))
 
 ;; (use-package ivy-hydra

@@ -1,0 +1,126 @@
+
+* User Interface
+** Genearal UI elements
+#+BEGIN_SRC emacs-lisp
+(setq inhibit-startup-message t)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+#+END_SRC
+** Key bindings discovery and other discoverability related stuff
+*** which-key
+#+BEGIN_SRC emacs-lisp
+(use-package which-key
+	:ensure t 
+	:config
+	(which-key-mode))
+#+END_SRC
+*** TODO Helpful
+*** TODO Suggest
+*** try
+#+BEGIN_SRC emacs-lisp
+  (use-package try
+    :ensure t)
+#+END_SRC
+** Navigation
+*** Ivy/Counsel/Swiper - Search and completion framework (or emacs elements navigation)
+ #+BEGIN_SRC emacs-lisp
+   (use-package ivy
+     :ensure t
+     :diminish (ivy-mode)
+     :bind (("C-x b" . ivy-switch-buffer))
+     :config
+     (ivy-mode 1)
+     (setq ivy-use-virtual-buffers t)
+     (setq ivy-display-style 'fancy))
+
+   (use-package counsel
+     :ensure t
+     )
+
+   (use-package swiper
+     :ensure t
+     :bind (("C-s" . swiper)
+	    ("C-r" . swiper)
+	    ("C-c C-r" . ivy-resume)
+	    ("M-x" . counsel-M-x)
+	    ("C-x C-f" . counsel-find-file))
+     :config
+     (progn
+       (ivy-mode 1)
+       (setq ivy-use-virtual-buffers t)
+       (setq ivy-display-style 'fancy)
+       (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+       ;; (global-set-key "\C-s" 'swiper)
+       ;; (global-set-key (kbd "C-c C-r") 'ivy-resume)
+       ;; (global-set-key (kbd "<f6>") 'ivy-resume)
+       ;; (global-set-key (kbd "M-x") 'counsel-M-x)
+       ;; (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+       ;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+       ;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+       ;; (global-set-key (kbd "<f1> l") 'counsel-load-library)
+       ;; (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+       ;; (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+       ;; (global-set-key (kbd "C-c g") 'counsel-git)
+       ;; (global-set-key (kbd "C-c j") 'counsel-git-grep)
+       ;; (global-set-key (kbd "C-c k") 'counsel-ag)
+       ;; (global-set-key (kbd "C-x l") 'counsel-locate)
+       ;; (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+       ))
+ #+END_SRC
+*** Avy - Text navigation
+#+BEGIN_SRC emacs-lisp
+ (use-package avy
+   :ensure t
+   :bind ("M-s" . avy-goto-char))
+ ;; (use-package avy
+ ;;   :ensure t
+ ;;   :config
+ ;;   (avy-setup-default))
+#+END_SRC
+*** Ace-window and winner - Window and workspace navigation 
+#+BEGIN_SRC emacs-lisp
+ ;; ace-window
+ (use-package ace-window
+   :ensure t
+   :init
+   (progn
+     (global-set-key [remap other-window] 'ace-window)
+     (custom-set-faces
+      '(aw-leading-char-face
+	((t (:inherit ace-jump-face-foreground :height 3.0))))) 
+     ))
+
+ ;; preserve and navigate through window configurations with C-c <- or C-c ->
+ (winner-mode 1)
+ #+END_SRC
+*** Buffers
+#+BEGIN_SRC emacs-lisp
+  (defalias 'list-buffers 'ibuffer) ; make ibuffer default
+  ;; (defalias 'list-buffers 'ibuffer-other-window) ; make ibuffer default
+#+END_SRC
+** Appearance
+*** Theme
+#+BEGIN_SRC emacs-lisp
+    (use-package zenburn-theme
+      :ensure t
+      :config (load-theme 'zenburn t))
+#+END_SRC
+*** Org-bullets
+    #+BEGIN_SRC emacs-lisp
+    ;; org mode stuff
+    (use-package org-bullets
+      :ensure t
+      :config
+      (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+    #+END_SRC
+* Editing
+** Auto-complete
+ #+BEGIN_SRC emacs-lisp
+   ;; auto-complete
+   (use-package auto-complete
+     :ensure t
+     :init
+     (progn
+       (ac-config-default)
+       (global-auto-complete-mode t)))
+ #+END_SRC
