@@ -17,9 +17,10 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(indicate-empty-lines t)
  '(package-selected-packages
    (quote
-    (auto-complete zenburn-theme wrap-region which-key use-package try spaceline smartparens rainbow-delimiters racket-mode paradox ox-reveal org-ref org-bullets ob-ipython magit live-py-mode julia-shell hy-mode htmlize haskell-mode github-modern-theme flycheck fish-mode expand-region ess elpy counsel ace-window))))
+    (zenburn-theme wrap-region which-key use-package undo-tree try spacemacs-theme spaceline spacegray-theme solarized-theme smartparens rainbow-delimiters racket-mode paradox ox-reveal org-ref org-bullets ob-ipython mode-line-bell magit live-py-mode julia-shell jedi iedit hy-mode hungry-delete htmlize haskell-mode github-modern-theme flycheck fish-mode expand-region ess elpy doom-themes counsel beacon ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

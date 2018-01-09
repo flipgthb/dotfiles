@@ -1,38 +1,55 @@
-#+STARTUP: overview
+#+title: EMACS Configuration
+#+author: Felippe Alves
+#+startup: overview, indent
 
 * User Interface
 ** Genearal UI elements
-   #+BEGIN_SRC emacs-lisp
-     (setq inhibit-startup-message t)
-     (tool-bar-mode -1)
-     (scroll-bar-mode -1)
-     (fset 'yes-or-no-p 'y-or-n-p)
-     (global-set-key (kbd "<f5>") 'revert-buffer)
-     (global-hl-line-mode t)
+   #+begin_src emacs-lisp
+     (setq inhibit-startup-message t  ;; don't show startup screen
+	   visible-bell nil           ;; no visual bell
+	   apropos-do-all t           ;; more options on apropos search
+	   shift-select-mode nil      ;; no region selecting by holding the shift key
+      )
 
-     (global-auto-revert-mode 1)
-     (setq auto-revert-verbose nil)
+     (tool-bar-mode -1)                           ;; no tool bar
+     (scroll-bar-mode -1)                         ;; no scroll bar
+     (fset 'yes-or-no-p 'y-or-n-p)                ;; y = yes, n = no
+     (global-set-key (kbd "<f5>") 'revert-buffer) ;; buffer refresh
+     (global-hl-line-mode t)                      ;; highlight current line
+
+     (global-auto-revert-mode 1)  ;; revert buffers when file is changed on disk
+     (setq auto-revert-verbose t) ;; but alert me
 
      (setq save-interprogram-paste-before-kill t)
-   #+END_SRC
+
+     (fringe-mode '(10 . 1))             ;; 10 pixel window fringes
+     (toggle-indicate-empty-lines t)     ;; display dashes on left border end of buffer
+     (setq-default indent-tabs-mode nil) ;; never use hard tabs
+
+     (setq show-paren-delay 0) ;; immediatly show matching delimiter
+     (show-paren-mode t)       ;; turn of highlighting of matching delimiters
+
+     (column-number-mode 1)        ;; show column number in mode line
+     (setq-default fill-column 80) ;; number of characters before line wrap
+   #+end_src
 ** Key bindings discovery and other discoverability related stuff
 *** which-key
-    #+BEGIN_SRC emacs-lisp
+    #+begin_src emacs-lisp
       (use-package which-key
 	:ensure t 
 	:config
 	(which-key-mode))
-    #+END_SRC
+    #+end_src
 *** TODO Helpful
 *** TODO Suggest
 *** try
-    #+BEGIN_SRC emacs-lisp
+    #+begin_src emacs-lisp
       (use-package try
 	:ensure t)
-    #+END_SRC
+    #+end_src
 ** Navigation
 *** Ivy/Counsel/Swiper - Search and completion framework (or emacs elements navigation)
-    #+BEGIN_SRC emacs-lisp
+    #+begin_src emacs-lisp
       (use-package counsel
         :ensure t
         :bind
@@ -78,9 +95,9 @@
           ;; (global-set-key (kbd "C-x l") 'counsel-locate)
           ;; (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
           ))
-     #+END_SRC
+     #+end_src
 *** Avy - Text navigation
-    #+BEGIN_SRC emacs-lisp
+    #+begin_src emacs-lisp
       (use-package avy
 	:ensure t
 	:bind ("M-s" . avy-goto-char))
@@ -88,79 +105,172 @@
       ;;   :ensure t
       ;;   :config
       ;;   (avy-setup-default))
-    #+END_SRC
+    #+end_src
 *** Ace-window and winner - Window and workspace navigation 
-    #+BEGIN_SRC emacs-lisp
-      ;; ace-window
-      (use-package ace-window
-	:ensure t
-	:init
-	(progn
-	  (global-set-key [remap other-window] 'ace-window)
-	  (custom-set-faces
-	   '(aw-leading-char-face
-	     ((t (:inherit ace-jump-face-foreground :height 3.0))))) 
-	  ))
+     #+begin_src emacs-lisp
+       ;; ace-window
+       (use-package ace-window
+	 :ensure t
+	 :init
+	 (progn
+	   (global-set-key [remap other-window] 'ace-window)
+	   (custom-set-faces
+	    '(aw-leading-char-face
+	      ((t (:inherit ace-jump-face-foreground :height 3.0))))) 
+	   ))
 
-      ;; preserve and navigate through window configurations with C-c <- or C-c ->
-      (winner-mode 1)
-     #+END_SRC
+       ;; preserve and navigate through window configurations with C-c <- or C-c ->
+       (winner-mode 1)
+      #+end_src
+**** TODO persp or eyebrowse
 *** Buffers
-    #+BEGIN_SRC emacs-lisp
+    #+begin_src emacs-lisp
       (defalias 'list-buffers 'ibuffer) ; make ibuffer default
       ;; (defalias 'list-buffers 'ibuffer-other-window) ; make ibuffer default
-    #+END_SRC
+    #+end_src
 ** Appearance
+*** Fonts
+    #+begin_src emacs-lisp
+	(require 'cl)
+	;; function to test fonts installed before setting some as default
+	(defun font-candidate (&rest fonts)
+	  "Return existing font which first match."
+	  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+
+	;; try to set some fonts as default
+	(set-face-attribute 'default nil :font (font-candidate "Hack-14:weight=normal"
+							       "Droid Sans Mono-14:weight=normal"
+							       "DejaVu Sans Mono-14:weight=normal"))
+    #+end_src
 *** Theme
-    #+BEGIN_SRC emacs-lisp
+    #+begin_src emacs-lisp
+          ;; (use-package doom-themes
+          ;;   :ensure t
+          ;;   :config
+          ;;   (setq doom-themes-enable-bold t
+          ;;         doom-themes-enable-italic t)
+          ;;   (load-theme 'doom-spacegrey t)
+          ;;   (doom-themes-visual-bell-config)
+          ;;   ;; (doom-themes-neotree-config)
+          ;;   (doom-themes-org-config)
+          ;;   )
+          ;; (use-package solarized-theme
+          ;;   :ensure t
+          ;;   :config
+          ;;   (load-theme 'solarized-dark t))
+          ;; (use-package spacemacs-theme
+          ;;   :ensure t
+          ;;   :init (load-theme 'spacemacs-dark t))
+          ;; (use-package goose-theme
+          ;;   :ensure t
+          ;;   :init (load-theme 'goose t))
+      (use-package github-modern-theme
+        :ensure t)
       (use-package zenburn-theme
-	:ensure t
-	:config (load-theme 'zenburn t))
-    #+END_SRC
+        :ensure t)
+
+      (setq my-theme-list '(zenburn
+                            github-modern))
+
+      (load-theme (car my-theme-list) t)
+
+      (defun cycle-themes ()
+        "Cycle between theme in my-theme-list"
+        (interactive)
+        (disable-theme (car my-theme-list))
+        (setq my-theme-list (-rotate 1 my-theme-list))
+        (load-theme (car my-theme-list) t))
+    #+end_src
 *** Org-bullets
-    #+BEGIN_SRC emacs-lisp
+    #+begin_src emacs-lisp
       ;; org mode stuff
       (use-package org-bullets
 	:ensure t
 	:config
 	(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
-    #+END_SRC
+    #+end_src
 *** Beacon mode
-    #+BEGIN_SRC emacs-lisp
+    #+begin_src emacs-lisp
       (use-package beacon
-	:ensure t
-	:config
-	(beacon-mode 1)
-	; this color looks good for the zenburn theme but not for the one
-	; I'm using for the videos
-	(setq beacon-color "#666600"))
-    #+END_SRC
+        :ensure t
+        :config
+        (beacon-mode 1)
+        ; this color looks good for the zenburn theme but not for the one
+        ; I'm using for the videos
+        ;; (setq beacon-color "#666600")
+        )
+    #+end_src
+** Toggle linum mode
+   #+begin_src emacs-lisp
+     (setq linum-format " %3d ")      ;; linum format to keep line numbers 2 spaces from border and text
+     (global-linum-mode 0)            ;; don't display lateral line numbers
+     (global-set-key
+      (kbd "C-c n") 'global-linum-mode) ;; toggle lateral line numbers
+   #+end_src
+** mode-line-bell
+#+begin_src emacs-lisp
+  (use-package mode-line-bell
+    :ensure t
+    :config (mode-line-bell-mode))
+#+end_src
 * Editing
+** Comment line or region
+   function to comment line or selected region
+   #+begin_src emacs-lisp
+     (defun comment-line-or-region (n)
+       "Comment or uncomment current line and leave point after it.
+     With positive prefix, apply to N lines including current one.
+     With negative prefix, apply to -N lines above.
+     If region is active, apply to active region instead."
+       (interactive "p")
+       (if (use-region-p)
+           (comment-or-uncomment-region
+            (region-beginning) (region-end))
+         (let ((range
+                (list (line-beginning-position)
+                      (goto-char (line-end-position n)))))
+           (comment-or-uncomment-region
+            (apply #'min range)
+            (apply #'max range)))
+         (forward-line 1)
+         (back-to-indentation)))
+
+
+     (global-set-key (kbd "C-;")
+                     'comment-line-or-region)
+   #+end_src
 ** Expand region
-   #+BEGIN_SRC emacs-lisp
+   #+begin_src emacs-lisp
      ; expand the marked region in semantic increments (negative prefix to reduce region)
      (use-package expand-region
        :ensure t
        :config 
        (global-set-key (kbd "C-=") 'er/expand-region))
-   #+END_SRC
+   #+end_src
 ** Hungry delete
-   #+BEGIN_SRC emacs-lisp
+   #+begin_src emacs-lisp
      ; deletes all the whitespace when you hit backspace or delete
      (use-package hungry-delete
        :ensure t
        :config
        (global-hungry-delete-mode))
-   #+END_SRC
+   #+end_src
 ** Undo-tree
-   #+BEGIN_SRC emacs-lisp
+   #+begin_src emacs-lisp
      (use-package undo-tree
      :ensure t
        :init
 	 (global-undo-tree-mode))
-   #+END_SRC
+   #+end_src
+** Iedit
+   #+begin_src emacs-lisp
+     (use-package iedit
+       :ensure t
+       :bind (("C-:" . iedit-mode)))
+   #+end_src
+** TODO Multiple cursors
 ** Auto-complete
-   #+BEGIN_SRC emacs-lisp
+   #+begin_src emacs-lisp
      ;; auto-complete
      (use-package auto-complete
        :ensure t
@@ -168,24 +278,24 @@
        (progn
 	 (ac-config-default)
 	 (global-auto-complete-mode t)))
-   #+END_SRC
+   #+end_src
 ** Flycheck
-   #+BEGIN_SRC emacs-lisp
+   #+begin_src emacs-lisp
      (use-package flycheck
        :ensure t
        :init
        (global-flycheck-mode t))
-   #+END_SRC
+   #+end_src
 ** Yasnippet
-   #+BEGIN_SRC emacs-lisp
+   #+begin_src emacs-lisp
      (use-package yasnippet
        :ensure t
        :init
 	 (yas-global-mode 1))
-   #+END_SRC
+   #+end_src
 * Org mode and Babel
 ** Reveal.js and Org-reveal
-   #+BEGIN_SRC emacs-lisp
+   #+begin_src emacs-lisp
      (use-package ox-reveal
      :ensure ox-reveal)
 
@@ -194,20 +304,39 @@
 
      (use-package htmlize
      :ensure t)
-   #+END_SRC
+   #+end_src
 * Python
-** Elpy
-   #+BEGIN_SRC emacs-lisp
-     (use-package elpy
-     :ensure t
-     :config 
-     (elpy-enable))
-   #+END_SRC
 ** Jedi
-   #+BEGIN_SRC emacs-lisp
+   #+begin_src emacs-lisp
      (use-package jedi
        :ensure t
        :init
        (add-hook 'python-mode-hook 'jedi:setup)
        (add-hook 'python-mode-hook 'jedi:ac-setup))
-   #+END_SRC
+   #+end_src
+** Elpy
+   #+begin_src emacs-lisp
+     (use-package elpy
+     :ensure t
+     :config 
+     (elpy-enable))
+   #+end_src
+* TODO Magit
+* TODO AucTeX, org-ref, pdf-tools and such
+* Emacs Internals
+** Dash
+#+begin_src emacs-lisp
+  (use-package dash
+    :ensure t)
+#+end_src
+* Load External Files
+#+begin_src emacs-lisp
+  (defun load-if-exists (f)
+    "Load a file only when it exists and is readable,"
+    (if (file-readable-p (expand-file-name f))
+        (load-file f)))
+
+  (-map 'load-if-exists '("~/Dropbox/shared/mu4e-config.el"
+                          "~/Dropbox/shared/tempstuff.el"
+                          "~/Dropbox/shared/not-for-github.el"))
+#+end_src
