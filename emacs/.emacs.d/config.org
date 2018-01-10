@@ -239,6 +239,13 @@
     :ensure t
     :config (mode-line-bell-mode))
 #+end_src
+** shell and eshell
+#+begin_src emacs-lisp
+(use-package better-shell
+    :ensure t
+    :bind (("C-?'" . better-shell-shell)
+	   ("C-c C-;" . better-shell-remote-open)))
+#+end_src
 * Editing
 ** Comment line or region
    function to comment line or selected region
@@ -345,7 +352,8 @@ He also does something that seems useful for org mode blocks, but I try just as 
        :init
        (global-flycheck-mode t))
    #+end_src
-** Yasnippet
+** TODO Yasnippet
+<2018-01-10 qua> Apparently the snippets are not loading
    #+begin_src emacs-lisp
      (use-package yasnippet
        :ensure t
@@ -424,6 +432,54 @@ He also does something that seems useful for org mode blocks, but I try just as 
   (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
     (org-capture)))
 #+end_src
+** Google Calendar and org agenda
+Follow the instructions from [[http://cestlaz.github.io/posts/using-emacs-26-gcal/][Episode 26]] of Zamansky's series
+<2018-01-10 qua> Disabled until being able to instal org-gcal
+#+begin_src emacs-lisp :tangle no
+(setq package-check-signature nil)
+
+
+(use-package org-gcal
+  :ensure t
+  :config
+  (setq org-gcal-client-id my-gcal-client-id
+	org-gcal-client-secret my-gcal-client-secret
+	org-gcal-file-alist '(("flipgm@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
+
+(add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
+(add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
+
+(setq org-agenda-custom-commands
+      '(("c" "Simple agenda view"
+	 ((agenda "")
+	  (alltodo "")))))
+#+end_src
+Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, but I'm not sure how to use it
+#+begin_src emacs-lisp :tangle no
+(use-package calfw
+  :ensure ;TODO: 
+  :config
+  (require 'calfw) 
+  (require 'calfw-org)
+  (setq cfw:org-overwrite-default-keybinding t)
+  (require 'calfw-ical)
+
+  (defun mycalendar ()
+    (interactive)
+    (cfw:open-calendar-buffer
+     :contents-sources
+     (list
+      ;; (cfw:org-create-source "Green")  ; orgmode source
+      (cfw:ical-create-source "gcal" "https://somecalnedaraddress" "IndianRed") ; devorah calender
+      (cfw:ical-create-source "gcal" "https://anothercalendaraddress" "IndianRed") ; google calendar ICS
+      ))) 
+  (setq cfw:org-overwrite-default-keybinding t))
+
+(use-package calfw-gcal
+	:ensure t
+	:config
+	(require 'calfw-gcal))
+#+end_src
 ** Reveal.js and Org-reveal
 <2018-01-10 qua> Disabled until compatibility issue ie resolved
    #+begin_src emacs-lisp :tangle no
@@ -474,3 +530,4 @@ He also does something that seems useful for org mode blocks, but I try just as 
   (setq web-mode-enable-auto-closing t)
   (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
 #+end_src
+
