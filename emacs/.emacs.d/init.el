@@ -2,7 +2,8 @@
 (require 'package)
 (setq package-enable-at-startup nil)
 (add-to-list 'package-archives
-	     '("melpa" . "https://melpa.org/packages/"))
+	     '("melpa" . "https://melpa.org/packages/")
+             '("org" . "http://orgmode.org/elpa/"))
 
 (package-initialize)
 
@@ -20,10 +21,10 @@
  '(indicate-empty-lines t)
  '(package-selected-packages
    (quote
-    (zenburn-theme wrap-region which-key use-package undo-tree try spacemacs-theme spaceline spacegray-theme solarized-theme smartparens rainbow-delimiters racket-mode paradox ox-reveal org-ref org-bullets ob-ipython mode-line-bell magit live-py-mode julia-shell jedi iedit hy-mode hungry-delete htmlize haskell-mode github-modern-theme flycheck fish-mode expand-region ess elpy doom-themes counsel beacon ace-window))))
+    (org-ac web-mode elpy jedi htmlize ox-reveal yasnippet flycheck auto-complete iedit undo-tree hungry-delete expand-region mode-line-bell beacon org-bullets zenburn-theme github-modern-theme ace-window avy counsel try which-key dash use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(aw-leading-char-face ((t (:inherit ace-jump-face-foreground :height 3.0)))))
+ '(aw-leading-char-face ((t (:inherit aw-mode-line-face)))))

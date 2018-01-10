@@ -2,13 +2,33 @@
 #+author: Felippe Alves
 #+startup: overview, indent
 
+* Emacs Internals
+** Dash
+#+begin_src emacs-lisp
+  (use-package dash
+    :ensure t)
+#+end_src
+* Load External Files
+#+begin_src emacs-lisp
+  (defun load-if-exists (f)
+    "Load a file only when it exists and is readable,"
+    (if (file-readable-p (expand-file-name f))
+        (load-file f)))
+
+  (-map 'load-if-exists '("~/Dropbox/shared/mu4e-config.el"
+                          "~/Dropbox/shared/tempstuff.el"
+                          "~/Dropbox/shared/not-for-github.el"))
+#+end_src
 * User Interface
 ** Genearal UI elements
    #+begin_src emacs-lisp
+     (set-language-environment "UTF-8")
+     (set-default-coding-systems 'utf-8)
+
      (setq inhibit-startup-message t  ;; don't show startup screen
-	   visible-bell nil           ;; no visual bell
-	   apropos-do-all t           ;; more options on apropos search
-	   shift-select-mode nil      ;; no region selecting by holding the shift key
+           visible-bell nil           ;; no visual bell
+           apropos-do-all t           ;; more options on apropos search
+           shift-select-mode nil      ;; no region selecting by holding the shift key
       )
 
      (tool-bar-mode -1)                           ;; no tool bar
@@ -294,6 +314,38 @@
 	 (yas-global-mode 1))
    #+end_src
 * Org mode and Babel
+** Org-ac
+#+begin_src emacs-lisp
+  (use-package org-ac
+    :ensure t
+    :init (progn
+            (require 'org-ac)
+            (org-ac/config-default)))
+#+end_src 
+
+#+RESULTS:
+
+** Capture
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-c c")
+                  'org-capture)
+
+  (setq org-capture-templates
+        '(("a" "Appointment" entry (file  "~/Dropbox/orgfiles/gcal.org" "Appointments")
+           "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
+          ("n" "Note" entry (file+headline "~/Dropbox/orgfiles/notes.org" "Notes")
+           "* Note %?\n%T")
+          ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
+           "* %? %^L %^g \n%T" :prepend t)
+          ("b" "Blog idea" entry (file+headline "~/Dropbox/orgfiles/i.org" "Blog Topics:")
+           "* %?\n%T" :prepend t)
+          ("t" "To Do Item" entry (file+headline "~/Dropbox/orgfiles/i.org" "To Do Items")
+           "* %?\n%T" :prepend t)
+          ("j" "Journal" entry (file+datetree "~/Dropbox/journal.org")
+           "* %?\nEntered on %U\n  %i\n  %a")
+          ("s" "Screencast" entry (file "~/Dropbox/orgfiles/screencastnotes.org")
+           "* %?\n%i\n")))
+#+end_src
 ** Reveal.js and Org-reveal
    #+begin_src emacs-lisp
      (use-package ox-reveal
@@ -323,20 +375,18 @@
    #+end_src
 * TODO Magit
 * TODO AucTeX, org-ref, pdf-tools and such
-* Emacs Internals
-** Dash
+* Web mode
 #+begin_src emacs-lisp
-  (use-package dash
-    :ensure t)
-#+end_src
-* Load External Files
-#+begin_src emacs-lisp
-  (defun load-if-exists (f)
-    "Load a file only when it exists and is readable,"
-    (if (file-readable-p (expand-file-name f))
-        (load-file f)))
+  (use-package web-mode
+      :ensure t
+      :config
+           (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+           (setq web-mode-engines-alist
+                 '(("django"    . "\\.html\\'")))
+           (setq web-mode-ac-sources-alist
+                 '(("css" . (ac-source-css-property))
+                   ("html" . (ac-source-words-in-buffer ac-source-abbrev))))
 
-  (-map 'load-if-exists '("~/Dropbox/shared/mu4e-config.el"
-                          "~/Dropbox/shared/tempstuff.el"
-                          "~/Dropbox/shared/not-for-github.el"))
+  (setq web-mode-enable-auto-closing t)
+  (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
 #+end_src
