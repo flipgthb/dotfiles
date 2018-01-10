@@ -151,16 +151,16 @@
 ** Appearance
 *** Fonts
     #+begin_src emacs-lisp
-	(require 'cl)
-	;; function to test fonts installed before setting some as default
-	(defun font-candidate (&rest fonts)
-	  "Return existing font which first match."
-	  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+(require 'cl)
+;; function to test fonts installed before setting some as default
+(defun font-candidate (&rest fonts)
+  "Return existing font which first match."
+  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
 
-	;; try to set some fonts as default
-	(set-face-attribute 'default nil :font (font-candidate "Hack-14:weight=normal"
-							       "Droid Sans Mono-14:weight=normal"
-							       "DejaVu Sans Mono-14:weight=normal"))
+;; try to set some fonts as default
+(set-face-attribute 'default nil :font (font-candidate "Hack-14:weight=normal"
+                                                       "Droid Sans Mono-14:weight=normal"
+						             "DejaVu Sans Mono-14:weight=normal"))
     #+end_src
 *** Theme
     #+begin_src emacs-lisp
@@ -201,13 +201,19 @@
         (setq my-theme-list (-rotate 1 my-theme-list))
         (load-theme (car my-theme-list) t))
     #+end_src
-*** Org-bullets
+*** Org-bullets, source code highlight
     #+begin_src emacs-lisp
       ;; org mode stuff
       (use-package org-bullets
-	:ensure t
-	:config
-	(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+        :ensure t
+        :config
+        (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+
+      (setq org-src-fontify-natively t
+            org-src-preserve-indentation t
+            org-list-allow-alphabetical t
+            org-completion-use-ido t)
     #+end_src
 *** Beacon mode
     #+begin_src emacs-lisp
@@ -267,6 +273,39 @@
        :config 
        (global-set-key (kbd "C-=") 'er/expand-region))
    #+end_src
+** TODO Text Wrappers
+Copying from [[https://github.com/howardabrams/dot-files/blob/master/emacs.org#block-wrappers][Howard Abrams]] again
+#+begin_src emacs-lisp :tangle no
+(use-package wrap-region
+  :ensure   t
+  :config
+  (wrap-region-global-mode t)
+  (wrap-region-add-wrappers
+   '(("(" ")")
+     ("[" "]")
+     ("{" "}")
+     ("<" ">")
+     ("'" "'")
+     ("\"" "\"")
+     ("‘" "’"   "q")
+     ("“" "”"   "Q")
+     ("*" "*"   "b"   org-mode)                 ; bolden
+     ("*" "*"   "*"   org-mode)                 ; bolden
+     ("/" "/"   "i"   org-mode)                 ; italics
+     ("/" "/"   "/"   org-mode)                 ; italics
+     ("~" "~"   "c"   org-mode)                 ; code
+     ("~" "~"   "~"   org-mode)                 ; code
+     ("=" "="   "v"   org-mode)                 ; verbatim
+     ("=" "="   "="   org-mode)                 ; verbatim
+     ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
+     ("**" "**" "b"   markdown-mode)            ; bolden
+     ("*" "*"   "i"   markdown-mode)            ; italics
+     ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
+     ("`" "'"   "c"   lisp-mode)                ; code
+     ))
+  :diminish wrap-region-mode)
+#+end_src
+He also does something that seems useful for org mode blocks, but I try just as it is now for a while.
 ** Hungry delete
    #+begin_src emacs-lisp
      ; deletes all the whitespace when you hit backspace or delete
@@ -313,7 +352,26 @@
        :init
 	 (yas-global-mode 1))
    #+end_src
+** TODO Smartparens
 * Org mode and Babel
+** Org behavior
+#+begin_src emacs-lisp 
+(custom-set-variables
+ '(org-directory "~/Dropbox/orgfiles")
+ '(org-default-notes-file (concat org-directory "notes.org"))
+ '(org-export-html-postamble nil)
+ '(org-hide-leading-stars t)
+ '(org-startup-folded  'overview)
+ '(org-startup-indented t)
+ )
+
+(setq org-file-apps
+      (append '(
+                ("\\.pdf\\'" . "okular %s")
+                ) org-file-apps ))
+
+(global-set-key "\C-ca" 'org-agenda)
+#+end_src
 ** Org-ac
 #+begin_src emacs-lisp
   (use-package org-ac
@@ -321,10 +379,7 @@
     :init (progn
             (require 'org-ac)
             (org-ac/config-default)))
-#+end_src 
-
-#+RESULTS:
-
+#+end_src
 ** Capture
 #+begin_src emacs-lisp
   (global-set-key (kbd "C-c c")
@@ -345,9 +400,33 @@
            "* %?\nEntered on %U\n  %i\n  %a")
           ("s" "Screencast" entry (file "~/Dropbox/orgfiles/screencastnotes.org")
            "* %?\n%i\n")))
+
+(defadvice org-capture-finalize 
+    (after delete-capture-frame activate)  
+  "Advise capture-finalize to close the frame"  
+  (if (equal "capture" (frame-parameter nil 'name))  
+    (delete-frame)))
+
+(defadvice org-capture-destroy 
+    (after delete-capture-frame activate)  
+  "Advise capture-destroy to close the frame"  
+  (if (equal "capture" (frame-parameter nil 'name))  
+    (delete-frame)))  
+
+(use-package noflet
+  :ensure t )
+(defun make-capture-frame ()
+  "Create a new frame and run org-capture."
+  (interactive)
+  (make-frame '((name . "capture")))
+  (select-frame-by-name "capture")
+  (delete-other-windows)
+  (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
+    (org-capture)))
 #+end_src
 ** Reveal.js and Org-reveal
-   #+begin_src emacs-lisp
+<2018-01-10 qua> Disabled until compatibility issue ie resolved
+   #+begin_src emacs-lisp :tangle no
      (use-package ox-reveal
      :ensure ox-reveal)
 
@@ -374,6 +453,11 @@
      (elpy-enable))
    #+end_src
 * TODO Magit
+#+begin_src emacs-lisp
+(use-package magit
+  :ensure t
+  :bind ("C-x g" . magit-status))
+#+end_src
 * TODO AucTeX, org-ref, pdf-tools and such
 * Web mode
 #+begin_src emacs-lisp
