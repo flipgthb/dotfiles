@@ -364,15 +364,17 @@ He also does something that seems useful for org mode blocks, but I try just as 
    #+end_src
 ** TODO Yasnippet
 <2018-01-10 qua> Apparently the snippets are not loading
+<2018-01-11 qui> I can load manually by calling `yas-load-directory` and choosing the yasnippet directory
    #+begin_src emacs-lisp
      (use-package yasnippet
        :ensure t
        :init
-	 (yas-global-mode 1))
+	   (yas-global-mode 1))
    #+end_src
 ** TODO Smartparens
 * Org mode and Babel
 ** Org and org-plus-contrib from org elpa
+<2018-01-11 qui> Don't no why `org-plus-contrib` can't be loaded
 #+begin_src emacs-lisp :tangle no
 (use-package org
   :ensure t)
@@ -453,9 +455,8 @@ He also does something that seems useful for org mode blocks, but I try just as 
 ** Google Calendar and org agenda
 Follow the instructions from [[http://cestlaz.github.io/posts/using-emacs-26-gcal/][Episode 26]] of Zamansky's series
 <2018-01-10 qua> Disabled until being able to instal org-gcal
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (setq package-check-signature nil)
-
 
 (use-package org-gcal
   :ensure t
@@ -472,6 +473,7 @@ Follow the instructions from [[http://cestlaz.github.io/posts/using-emacs-26-gca
 	 ((agenda "")
 	  (alltodo "")))))
 #+end_src
+
 Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, but I'm not sure how to use it
 #+begin_src emacs-lisp :tangle no
 (use-package calfw
@@ -500,7 +502,7 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
 #+end_src
 ** Reveal.js and Org-reveal
 <2018-01-10 qua> Disabled until compatibility issue ie resolved
-   #+begin_src emacs-lisp :tangle no
+   #+begin_src emacs-lisp
      (use-package ox-reveal
      :ensure ox-reveal)
 
@@ -548,4 +550,61 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   (setq web-mode-enable-auto-closing t)
   (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
 #+end_src
+* Elfeed
+#+begin_src emacs-lisp 
+(use-package elfeed
+  :ensure t)
 
+(setq elfeed-db-directory "~/Dropbox/shared/elfeeddb")
+
+
+(defun elfeed-mark-all-as-read ()
+      (interactive)
+      (mark-whole-buffer)
+      (elfeed-search-untag-all-unread))
+
+
+;;functions to support syncing .elfeed between machines
+;;makes sure elfeed reads index from disk before launching
+(defun bjm/elfeed-load-db-and-open ()
+  "Wrapper to load the elfeed db from disk before opening"
+  (interactive)
+  (elfeed-db-load)
+  (elfeed)
+  (elfeed-search-update--force))
+
+;;write to disk when quiting
+(defun bjm/elfeed-save-db-and-bury ()
+  "Wrapper to save the elfeed db to disk before burying buffer"
+  (interactive)
+  (elfeed-db-save)
+  (quit-window))
+
+
+
+(defalias 'elfeed-toggle-star
+  (elfeed-expose #'elfeed-search-toggle-all 'star))
+
+(use-package elfeed
+  :ensure t
+  :bind (:map elfeed-search-mode-map
+	      ("q" . bjm/elfeed-save-db-and-bury)
+	      ("Q" . bjm/elfeed-save-db-and-bury)
+	      ("m" . elfeed-toggle-star)
+	      ("M" . elfeed-toggle-star)
+	      )
+  )
+
+(use-package elfeed-goodies
+  :ensure t
+  :config
+  (elfeed-goodies/setup))
+
+
+(use-package elfeed-org
+  :ensure t
+  :config
+  (elfeed-org)
+  (setq rmh-elfeed-org-files (list "~/Dropbox/shared/elfeed.org")))
+#+end_src
+* TODO Weboob
