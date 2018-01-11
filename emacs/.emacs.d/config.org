@@ -256,6 +256,57 @@
     :bind (("C-'" . better-shell-shell)
 	   ("C-c C-;" . better-shell-remote-open)))
 #+end_src
+** Hydra
+#+begin_src emacs-lisp
+(use-package hydra 
+  :ensure t)
+
+;; Hydra for modes that toggle on and off
+(global-set-key
+ (kbd "C-x t")
+ (defhydra toggle (:color blue)
+   "toggle"
+   ("a" abbrev-mode "abbrev")
+   ("s" flyspell-mode "flyspell")
+   ("d" toggle-debug-on-error "debug")
+   ("c" fci-mode "fCi")
+   ("f" auto-fill-mode "fill")
+   ("t" toggle-truncate-lines "truncate")
+   ("w" whitespace-mode "whitespace")
+   ("q" nil "cancel")))
+
+;; Hydra for navigation
+(global-set-key
+ (kbd "C-x j")
+ (defhydra gotoline 
+   ( :pre (linum-mode 1)
+	  :post (linum-mode -1))
+   "goto"
+   ("t" (lambda () (interactive)(move-to-window-line-top-bottom 0)) "top")
+   ("b" (lambda () (interactive)(move-to-window-line-top-bottom -1)) "bottom")
+   ("m" (lambda () (interactive)(move-to-window-line-top-bottom)) "middle")
+   ("e" (lambda () (interactive)(end-of-buffer)) "end")
+   ("c" recenter-top-bottom "recenter")
+   ("n" next-line "down")
+   ("p" (lambda () (interactive) (forward-line -1))  "up")
+   ("g" goto-line "goto-line")
+   ))
+
+;; Hydra for some org-mode stuff
+(global-set-key
+ (kbd "C-c t")
+ (defhydra hydra-global-org (:color blue)
+   "Org"
+   ("t" org-timer-start "Start Timer")
+   ("s" org-timer-stop "Stop Timer")
+   ("r" org-timer-set-timer "Set Timer") ; This one requires you be in an orgmode doc, as it sets the timer for the header
+   ("p" org-timer "Print Timer") ; output timer value to buffer
+   ("w" (org-clock-in '(4)) "Clock-In") ; used with (org-clock-persistence-insinuate) (setq org-clock-persist t)
+   ("o" org-clock-out "Clock-Out") ; you might also want (setq org-log-note-clock-out t)
+   ("j" org-clock-goto "Clock Goto") ; global visit the clocked task
+   ("c" org-capture "Capture") ; Don't forget to define the captures you want http://orgmode.org/manual/Capture.html
+   ("l" (or )rg-capture-goto-last-stored "Last Capture")))
+#+end_src
 * Editing
 ** Comment line or region
    function to comment line or selected region
@@ -389,7 +440,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
  '(org-default-notes-file (concat org-directory "notes.org"))
  '(org-export-html-postamble nil)
  '(org-hide-leading-stars t)
- '(org-startup-folded  'overview)
+ ;'(org-startup-folded  'overview)
  '(org-startup-indented t)
  )
 
@@ -512,48 +563,25 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
      (use-package htmlize
      :ensure t)
    #+end_src
-* Python
-** Jedi
-   #+begin_src emacs-lisp
-     (use-package jedi
-       :ensure t
-       :init
-       (add-hook 'python-mode-hook 'jedi:setup)
-       (add-hook 'python-mode-hook 'jedi:ac-setup))
-   #+end_src
-** Elpy
-   #+begin_src emacs-lisp
-     (use-package elpy
-     :ensure t
-     :config 
-     (elpy-enable))
-   #+end_src
-* TODO Magit
+* Magit
 #+begin_src emacs-lisp
 (use-package magit
   :ensure t
   :bind ("C-x g" . magit-status))
 #+end_src
-* TODO AucTeX, org-ref, pdf-tools and such
-* Web mode
-#+begin_src emacs-lisp
-  (use-package web-mode
-      :ensure t
-      :config
-           (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-           (setq web-mode-engines-alist
-                 '(("django"    . "\\.html\\'")))
-           (setq web-mode-ac-sources-alist
-                 '(("css" . (ac-source-css-property))
-                   ("html" . (ac-source-words-in-buffer ac-source-abbrev))))
-
-  (setq web-mode-enable-auto-closing t)
-  (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
-#+end_src
 * Elfeed
+** Elfeed, elfeed-org and elfeed-goodies
 #+begin_src emacs-lisp 
 (use-package elfeed
-  :ensure t)
+  :ensure t
+  :bind (("C-c e" . elfeed)
+         :map elfeed-search-mode-map
+	      ("q" . bjm/elfeed-save-db-and-bury)
+	      ("Q" . bjm/elfeed-save-db-and-bury)
+	      ("m" . elfeed-toggle-star)
+	      ("M" . elfeed-toggle-star)
+	      ("j" . mz/hydra-elfeed/body)
+	      ("J" . mz/hydra-elfeed/body)))
 
 (setq elfeed-db-directory "~/Dropbox/shared/elfeeddb")
 
@@ -564,7 +592,7 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
       (elfeed-search-untag-all-unread))
 
 
-;;functions to support syncing .elfeed between machines
+      ;;functions to support syncing .elfeed between machines
 ;;makes sure elfeed reads index from disk before launching
 (defun bjm/elfeed-load-db-and-open ()
   "Wrapper to load the elfeed db from disk before opening"
@@ -607,4 +635,52 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   (elfeed-org)
   (setq rmh-elfeed-org-files (list "~/Dropbox/shared/elfeed.org")))
 #+end_src
+** Elfeed hydra
+#+begin_src emacs-lisp
+`(defhydra mz/hydra-elfeed ()
+   "filter"
+   ("c" (elfeed-search-set-filter "@6-months-ago +cs") "cs")
+   ("e" (elfeed-search-set-filter "@6-months-ago +emacs") "emacs")
+   ("d" (elfeed-search-set-filter "@6-months-ago +education") "education")
+   ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
+   ("M" elfeed-toggle-star "Mark")
+   ("A" (elfeed-search-set-filter "@6-months-ago") "All")
+   ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
+   ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
+   ("q" nil "quit" :color blue)
+   )
+
+#+end_src
 * TODO Weboob
+* TODO AucTeX, org-ref, pdf-tools and such
+* Python
+** Jedi
+   #+begin_src emacs-lisp
+     (use-package jedi
+       :ensure t
+       :init
+       (add-hook 'python-mode-hook 'jedi:setup)
+       (add-hook 'python-mode-hook 'jedi:ac-setup))
+   #+end_src
+** Elpy
+   #+begin_src emacs-lisp
+     (use-package elpy
+     :ensure t
+     :config 
+     (elpy-enable))
+   #+end_src
+* Web mode
+#+begin_src emacs-lisp
+  (use-package web-mode
+      :ensure t
+      :config
+           (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+           (setq web-mode-engines-alist
+                 '(("django"    . "\\.html\\'")))
+           (setq web-mode-ac-sources-alist
+                 '(("css" . (ac-source-css-property))
+                   ("html" . (ac-source-words-in-buffer ac-source-abbrev))))
+
+  (setq web-mode-enable-auto-closing t)
+  (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
+#+end_src
