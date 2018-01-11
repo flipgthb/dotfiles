@@ -61,6 +61,16 @@
 	(which-key-mode))
     #+end_src
 *** TODO Helpful
+#+begin_src emacs-lisp
+(use-package helpful
+  :ensure t
+  :bind (("C-h f" . helpful-callable)
+         ("C-h v" . helpful-variable)
+         ("C-h k" . helpful-key)
+         ("C-h SPC" . helpful-at-point)
+         ("C-h F" . helpful-function)
+         ("C-h C" . helpful-command)))
+#+end_src
 *** TODO Suggest
 *** try
     #+begin_src emacs-lisp
@@ -243,7 +253,7 @@
 #+begin_src emacs-lisp
 (use-package better-shell
     :ensure t
-    :bind (("C-?'" . better-shell-shell)
+    :bind (("C-'" . better-shell-shell)
 	   ("C-c C-;" . better-shell-remote-open)))
 #+end_src
 * Editing
@@ -362,6 +372,14 @@ He also does something that seems useful for org mode blocks, but I try just as 
    #+end_src
 ** TODO Smartparens
 * Org mode and Babel
+** Org and org-plus-contrib from org elpa
+#+begin_src emacs-lisp :tangle no
+(use-package org
+  :ensure t)
+
+(use-package org-plus-contrib
+  :ensure t)
+#+end_src
 ** Org behavior
 #+begin_src emacs-lisp 
 (custom-set-variables
