@@ -1,6 +1,6 @@
 #+title: EMACS Configuration
 #+author: Felippe Alves
-#+startup: overview, indent
+#+startup: indent overview
 
 * Emacs Internals
 ** Dash
@@ -307,6 +307,10 @@
    ("c" org-capture "Capture") ; Don't forget to define the captures you want http://orgmode.org/manual/Capture.html
    ("l" (or )rg-capture-goto-last-stored "Last Capture")))
 #+end_src
+
+#+RESULTS:
+: hydra-global-org/body
+
 * Editing
 ** Comment line or region
    function to comment line or selected region
@@ -416,6 +420,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
 ** TODO Yasnippet
 <2018-01-10 qua> Apparently the snippets are not loading
 <2018-01-11 qui> I can load manually by calling `yas-load-directory` and choosing the yasnippet directory
+<2018-01-11 qui> I "solved" with `ln -s ~/.emacs.d/elpa/yasnippets*/snippets ~/.emacs.d/snippets`
    #+begin_src emacs-lisp
      (use-package yasnippet
        :ensure t
@@ -440,7 +445,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
  '(org-default-notes-file (concat org-directory "notes.org"))
  '(org-export-html-postamble nil)
  '(org-hide-leading-stars t)
- ;'(org-startup-folded  'overview)
+ '(org-startup-folded  'overview)
  '(org-startup-indented t)
  )
 
@@ -580,8 +585,11 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
 	      ("Q" . bjm/elfeed-save-db-and-bury)
 	      ("m" . elfeed-toggle-star)
 	      ("M" . elfeed-toggle-star)
-	      ("j" . mz/hydra-elfeed/body)
-	      ("J" . mz/hydra-elfeed/body)))
+              ("j" . mz/make-and-run-elfeed-hydra)
+              ("J" . mz/make-and-run-elfeed-hydra)
+;	      ("j" . mz/hydra-elfeed/body)
+;	      ("J" . mz/hydra-elfeed/body))
+              ))
 
 (setq elfeed-db-directory "~/Dropbox/shared/elfeeddb")
 
@@ -590,7 +598,6 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
       (interactive)
       (mark-whole-buffer)
       (elfeed-search-untag-all-unread))
-
 
       ;;functions to support syncing .elfeed between machines
 ;;makes sure elfeed reads index from disk before launching
@@ -607,8 +614,6 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   (interactive)
   (elfeed-db-save)
   (quit-window))
-
-
 
 (defalias 'elfeed-toggle-star
   (elfeed-expose #'elfeed-search-toggle-all 'star))
@@ -628,7 +633,6 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   :config
   (elfeed-goodies/setup))
 
-
 (use-package elfeed-org
   :ensure t
   :config
@@ -636,20 +640,64 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   (setq rmh-elfeed-org-files (list "~/Dropbox/shared/elfeed.org")))
 #+end_src
 ** Elfeed hydra
-#+begin_src emacs-lisp
-`(defhydra mz/hydra-elfeed ()
-   "filter"
-   ("c" (elfeed-search-set-filter "@6-months-ago +cs") "cs")
-   ("e" (elfeed-search-set-filter "@6-months-ago +emacs") "emacs")
-   ("d" (elfeed-search-set-filter "@6-months-ago +education") "education")
-   ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
-   ("M" elfeed-toggle-star "Mark")
-   ("A" (elfeed-search-set-filter "@6-months-ago") "All")
-   ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
-   ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
-   ("q" nil "quit" :color blue)
-   )
+#+begin_src emacs-lisp :tangle no
+;; (defhydra mz/hydra-elfeed ()
+;;    "filte - take 1"
+;;    ("c" (elfeed-search-set-filter "@6-months-ago +cs") "cs")
+;;    ("e" (elfeed-search-set-filter "@6-months-ago +emacs") "emacs")
+;;    ("d" (elfeed-search-set-filter "@6-months-ago +education") "education")
+;;    ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
+;;    ("M" elfeed-toggle-star "Mark")
+;;    ("A" (elfeed-search-set-filter "@6-months-ago") "All")
+;;    ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
+;;    ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
+;;    ("q" nil "quit" :color blue)
+;;    )
 
+
+(defun z/hasCap (s) ""
+       (let ((case-fold-search nil))
+       (string-match-p "[[:upper:]]" s)
+       ))
+
+(defun z/get-hydra-option-key (s)
+  "returns single upper case letter (converted to lower) or first"
+  (interactive)
+  (let ( (loc (z/hasCap s)))
+    (if loc
+	(downcase (substring s loc (+ loc 1)))
+      (substring s 0 1)
+    )))
+
+(defun mz/make-elfeed-cats (tags)
+  "Returns a list of lists. Each one is line for the hydra configuratio in the form
+     (c function hint)"
+  (interactive)
+  (mapcar (lambda (tag)
+	    (let* (
+		   (tagstring (symbol-name tag))
+		   (c (z/get-hydra-option-key tagstring))
+		   )
+	      (list c (append '(elfeed-search-set-filter) (list (format "@6-months-ago +%s" tagstring) ))tagstring  )))
+	  tags))
+
+(defmacro mz/make-elfeed-hydra ()
+  `(defhydra mz/hydra-elfeed ()
+     "filter"
+     ,@(mz/make-elfeed-cats (elfeed-db-get-all-tags))
+     ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
+     ("M" elfeed-toggle-star "Mark")
+     ("A" (elfeed-search-set-filter "@6-months-ago") "All")
+     ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
+     ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
+     ("q" nil "quit" :color blue)
+     ))
+
+(defun mz/make-and-run-elfeed-hydra ()
+  ""
+  (interactive)
+  (mz/make-elfeed-hydra)
+  (mz/hydra-elfeed/body))
 #+end_src
 * TODO Weboob
 * TODO AucTeX, org-ref, pdf-tools and such
