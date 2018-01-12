@@ -212,6 +212,14 @@
   (dumb-jump-mode))
 #+end_src
 *** Dired
+Basic dired commands 
+- Enter vs a
+- f to visit, v to view
+- o and C-o
+- + to make a directory
+- m to mark
+- C copy, R rename/move, D delete
+- C-x C-q dired-inline-mode
 #+begin_src emacs-lisp
 (use-package dired+
   :ensure t
@@ -951,7 +959,7 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   (mz/make-elfeed-hydra)
   (mz/hydra-elfeed/body))
 #+end_src
-* TODO Weboob
+* TODO Elbank
 * TODO AucTeX, org-ref, pdf-tools and such
 * Python
 ** Jedi
