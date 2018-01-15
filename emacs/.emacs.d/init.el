@@ -1,3 +1,5 @@
+(setq gc-cons-threshold 80000000)
+
 ;; package manager
 (require 'package)
 (setq package-enable-at-startup nil)

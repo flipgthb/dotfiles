@@ -136,6 +136,11 @@
       ;;   :config
       ;;   (avy-setup-default))
     #+end_src
+*** smex
+#+begin_src emacs-lisp 
+(use-package smex
+  :ensure t)
+#+end_src
 *** Ace-window and winner - Window and workspace navigation 
      #+begin_src emacs-lisp
 ;; ace-window
