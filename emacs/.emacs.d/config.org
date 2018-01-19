@@ -60,7 +60,7 @@
 	:config
 	(which-key-mode))
     #+end_src
-*** TODO Helpful
+*** Helpful
 #+begin_src emacs-lisp
 (use-package helpful
   :ensure t
@@ -231,135 +231,6 @@ Basic dired commands
   :config (require 'dired+)
   )
 #+end_src
-** Appearance
-*** Fonts
-    #+begin_src emacs-lisp
-(require 'cl)
-;; function to test fonts installed before setting some as default
-(defun font-candidate (&rest fonts)
-  "Return existing font which first match."
-  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
-
-;; try to set some fonts as default
-(set-face-attribute 'default nil :font (font-candidate "Hack-14:weight=normal"
-                                                       "Droid Sans Mono-14:weight=normal"
-						             "DejaVu Sans Mono-14:weight=normal"))
-
-(use-package all-the-icons
-  :ensure t)
-
-(setq inhibit-compacting-font-caches t)
-    #+end_src
-*** Theme
-#+begin_src emacs-lisp
-(use-package doom-themes
-  :ensure t
-  :config
-  (setq doom-themes-enable-bold t
-        doom-themes-enable-italic t)
-;;   (load-theme 'doom-spacegrey t)
-  (doom-themes-visual-bell-config)
-;;   ;; (doom-themes-neotree-config)
-  (doom-themes-org-config)
-  )
-(use-package solarized-theme
-  :ensure t)
-;; (use-package spacemacs-theme
-;;   :ensure try)
-;; (use-package goose-theme
-;;   :ensure t
-;;   :init (load-theme 'goose t))
-(use-package github-modern-theme
-  :ensure t)
-(use-package zenburn-theme
-  :ensure t)
-
-(setq my-theme-list '(doom-spacegrey
-                      zenburn
-                      github-modern
-                      solarized-dark
-                      solarized-light
-                      ;; spacemacs-dark
-                      ;; spacemacs-light
-                      doom-nova
-                      doom-tomorrow
-                      doom-one
-                      doom-solarized-light))
-
-(load-theme (car my-theme-list) t)
-
-(defun cycle-themes ()
-  "Cycle between theme in my-theme-list"
-  (interactive)
-  (disable-theme (car my-theme-list))
-  (setq my-theme-list (-rotate 1 my-theme-list))
-  (load-theme (car my-theme-list) t))
-
-(global-set-key (kbd "C-c m") 'cycle-themes)
-#+end_src
-*** Mode Line
-#+begin_src emacs-lisp
-(use-package spaceline
-  :ensure t
-  :defer 0.2
-  :init
-  (progn
-    (require 'spaceline-config)
-    (setq powerline-default-separator 'slant))
-  :config
-  (progn
-    (spaceline-emacs-theme)
-    (spaceline-helm-mode)))
-
-(use-package spaceline-all-the-icons 
-  :after spaceline
-  :config (spaceline-all-the-icons-theme))
-#+end_src
-*** Org-bullets, source code highlight
-    #+begin_src emacs-lisp
-      ;; org mode stuff
-      (use-package org-bullets
-        :ensure t
-        :config
-        (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
-
-
-      (setq org-src-fontify-natively t
-            org-src-preserve-indentation t
-            org-list-allow-alphabetical t
-            org-completion-use-ido t)
-    #+end_src
-*** Beacon mode
-    #+begin_src emacs-lisp
-      (use-package beacon
-        :ensure t
-        :config
-        (beacon-mode 1)
-        ; this color looks good for the zenburn theme but not for the one
-        ; I'm using for the videos
-        ;; (setq beacon-color "#666600")
-        )
-    #+end_src
-** Toggle linum mode
-   #+begin_src emacs-lisp
-     (setq linum-format " %3d ")      ;; linum format to keep line numbers 2 spaces from border and text
-     (global-linum-mode 0)            ;; don't display lateral line numbers
-     (global-set-key
-      (kbd "C-c n") 'global-linum-mode) ;; toggle lateral line numbers
-   #+end_src
-** mode-line-bell
-#+begin_src emacs-lisp
-  (use-package mode-line-bell
-    :ensure t
-    :config (mode-line-bell-mode))
-#+end_src
-** shell and eshell
-#+begin_src emacs-lisp
-(use-package better-shell
-    :ensure t
-    :bind (("C-'" . better-shell-shell)
-	   ("C-c C-;" . better-shell-remote-open)))
-#+end_src
 ** Hydra
 #+begin_src emacs-lisp
 (use-package hydra 
@@ -410,6 +281,136 @@ Basic dired commands
    ("j" org-clock-goto "Clock Goto") ; global visit the clocked task
    ("c" org-capture "Capture") ; Don't forget to define the captures you want http://orgmode.org/manual/Capture.html
    ("l" (or )rg-capture-goto-last-stored "Last Capture")))
+#+end_src
+** Appearance
+*** Fonts
+    #+begin_src emacs-lisp
+(require 'cl)
+;; function to test fonts installed before setting some as default
+(defun font-candidate (&rest fonts)
+  "Return existing font which first match."
+  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+
+;; try to set some fonts as default
+(set-face-attribute 'default nil :font (font-candidate "Hack-14:weight=normal"
+                                                       "Droid Sans Mono-14:weight=normal"
+						             "DejaVu Sans Mono-14:weight=normal"))
+
+(use-package all-the-icons
+  :ensure t)
+
+(setq inhibit-compacting-font-caches t)
+    #+end_src
+*** Theme
+#+begin_src emacs-lisp
+(use-package doom-themes
+  :ensure t
+  :config
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+;;   (load-theme 'doom-spacegrey t)
+  (doom-themes-visual-bell-config)
+;;   ;; (doom-themes-neotree-config)
+  (doom-themes-org-config)
+  )
+(use-package solarized-theme
+  :ensure t)
+;; (use-package spacemacs-theme
+;;   :ensure t)
+;; (use-package goose-theme
+;;   :ensure t
+;;   :init (load-theme 'goose t))
+(use-package github-modern-theme
+  :ensure t)
+(use-package zenburn-theme
+  :ensure t)
+
+(setq my-theme-list '(zenburn
+                      github-modern
+                      solarized-dark
+                      solarized-light
+                      ;; spacemacs-dark
+                      ;; spacemacs-light
+                      doom-spacegrey
+                      doom-nova
+                      doom-tomorrow
+                      doom-one
+                      doom-solarized-light))
+
+(load-theme (car my-theme-list) t)
+
+(defun cycle-themes ()
+  "Cycle between theme in my-theme-list"
+  (interactive)
+  (disable-theme (car my-theme-list))
+  (setq my-theme-list (-rotate 1 my-theme-list))
+  (load-theme (car my-theme-list) t))
+
+(global-set-key (kbd "C-c m") 'cycle-themes)
+#+end_src
+*** Mode Line
+#+begin_src emacs-lisp
+(use-package spaceline
+  :ensure t
+  :defer 0.2
+  :init
+  (progn
+    (require 'spaceline-config)
+    (setq powerline-default-separator 'slant))
+  :config
+  (progn
+    (spaceline-emacs-theme)
+    (spaceline-helm-mode)))
+
+(use-package spaceline-all-the-icons
+  :ensure t
+  :after spaceline
+  :config (spaceline-all-the-icons-theme))
+#+end_src
+*** Org-bullets, source code highlight
+    #+begin_src emacs-lisp
+      ;; org mode stuff
+      (use-package org-bullets
+        :ensure t
+        :config
+        (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+
+      (setq org-src-fontify-natively t
+            org-src-preserve-indentation t
+            org-list-allow-alphabetical t
+            org-completion-use-ido t)
+    #+end_src
+*** Beacon mode
+    #+begin_src emacs-lisp
+      (use-package beacon
+        :ensure t
+        :config
+        (beacon-mode 1)
+        ; this color looks good for the zenburn theme but not for the one
+        ; I'm using for the videos
+        ;; (setq beacon-color "#666600")
+        )
+    #+end_src
+** Toggle linum mode
+   #+begin_src emacs-lisp
+     (setq linum-format " %3d ")      ;; linum format to keep line numbers 2 spaces from border and text
+     (global-linum-mode 0)            ;; don't display lateral line numbers
+     (global-set-key
+      (kbd "C-c n") 'global-linum-mode) ;; toggle lateral line numbers
+   #+end_src
+** mode-line-bell
+#+begin_src emacs-lisp
+  (use-package mode-line-bell
+    :ensure t
+    :config (mode-line-bell-mode))
+#+end_src
+** shell and eshell
+#+begin_src emacs-lisp
+(use-package better-shell
+    :ensure t
+    :bind (("C-'" . better-shell-shell)
+	   ("C-c C-;" . better-shell-remote-open)))
 #+end_src
 ** Projectile
 #+begin_src emacs-lisp
@@ -629,10 +630,13 @@ He also does something that seems useful for org mode blocks, but I try just as 
 <2018-01-11 qui> I can load manually by calling `yas-load-directory` and choosing the yasnippet directory
 <2018-01-11 qui> I "solved" with `ln -s ~/.emacs.d/elpa/yasnippets*/snippets ~/.emacs.d/snippets`
    #+begin_src emacs-lisp
-     (use-package yasnippet
-       :ensure t
-       :init
-	   (yas-global-mode 1))
+(use-package yasnippet
+  :ensure t
+  :init
+  (yas-global-mode 1))
+
+(use-package yasnippet-snippets
+  :ensure t)
    #+end_src
 ** TODO Smartparens
 #+begin_src emacs-lisp
@@ -905,7 +909,7 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   (setq rmh-elfeed-org-files (list "~/Dropbox/shared/elfeed.org")))
 #+end_src
 ** Elfeed hydra
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :
 ;; (defhydra mz/hydra-elfeed ()
 ;;    "filte - take 1"
 ;;    ("c" (elfeed-search-set-filter "@6-months-ago +cs") "cs")
