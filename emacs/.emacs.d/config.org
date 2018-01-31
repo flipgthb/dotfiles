@@ -334,8 +334,11 @@ Basic dired commands
   :ensure t)
 (use-package arjen-grey-theme
   :ensure t)
+(use-package zerodark-theme
+  :ensure t)
 
-(setq my-theme-list '(arjen-grey
+(setq my-theme-list '(zerodark
+                      arjen-grey
                       zenburn
                       github-modern
                       solarized-dark
@@ -360,6 +363,10 @@ Basic dired commands
 (global-set-key (kbd "C-c m") 'cycle-themes)
 #+end_src
 *** Mode Line
+**** zerodark-theme modeline
+#+begin_src emacs-lisp
+(zerodark-setup-modeline-format)
+#+end_src
 **** Spaceline 
 <2018-01-23 ter> disabled to try other
 #+begin_src emacs-lisp :tangle no
@@ -387,7 +394,7 @@ Basic dired commands
   :ensure t
   :config (minibuffer-line-mode t))
 #+end_src
-**** Old Doom emacs line
+**** Old Doom emacs line :tangle no
 #+begin_src emacs-lisp
 ;; (use-package mode-icons
 ;;   :ensure t
@@ -2013,3 +2020,10 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
 * Blogging
 Zamansky uses [[https://getnikola.com/blog/index.html][Nikola]] to produce the blog posts, but he don't show how to setup it.
 I'm thinking about starting to blog my work, so maybe I should look at it.
+* Browser Editing
+#+begin_src emacs-lisp
+(use-package atomic-chrome
+  :ensure t
+  :config
+  (atomic-chrome-start-server))
+#+end_src
