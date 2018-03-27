@@ -23,9 +23,11 @@
 ;; package manager
 (require 'package)
 (setq package-enable-at-startup nil)
-(add-to-list 'package-archives
-	     '(("melpa" . "https://melpa.org/packages/")
-             '("org" . "http://orgmode.org/elpa/"))
+(setq package-archives '(("ELPA"  . "http://tromey.com/elpa/")
+			 ("gnu"   . "http://elpa.gnu.org/packages/")
+			 ("melpa" . "https://melpa.org/packages/")
+			 ("org"   . "https://orgmode.org/elpa/")
+			 ("SC" . "http://joseito.republika.pl/sunrise-commander/")))
 (package-initialize)
 
 ;; Bootstrap `use-package'
