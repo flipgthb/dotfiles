@@ -1642,6 +1642,9 @@ He also does something that seems useful for org mode blocks, but I try just as 
 
 (use-package yasnippet-snippets
   :ensure t)
+
+(use-package auto-yasnippet
+  :ensure t)
    #+end_src
 ** TODO Smartparens
 #+begin_src emacs-lisp
@@ -2036,4 +2039,11 @@ I'm thinking about starting to blog my work, so maybe I should look at it.
   :ensure t
   :config
   (atomic-chrome-start-server))
+#+end_src
+* Personal Keymap
+#+begin_src emacs-lisp
+(define-prefix-command 'f-map
+  (global-set-key (kbd "C-.") 'f-map)
+  (define-key f-map (kbd "y") 'aya-create)
+  (define-key f-map (kbd "e") 'aya-expand))
 #+end_src
