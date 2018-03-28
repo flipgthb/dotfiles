@@ -1999,8 +1999,8 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   (elfeed-db-save)
   (quit-window))
 
-(defalias 'elfeed-toggle-star
-  (elfeed-expose #'elfeed-search-toggle-all 'star))
+;; (defalias 'elfeed-toggle-star
+;;   (elfeed-expose #'elfeed-search-toggle-all 'star))
 
 (use-package elfeed
   :ensure t
@@ -2261,7 +2261,7 @@ change =zzz-up-to-char= into =zzz-to-char=.
     :bind ("M-z" . zzz-up-to-char))
 #+END_SRC
 * Personal Keymap
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (define-prefix-command 'f-map)
 (global-set-key (kbd "C-.") 'f-map)
 (define-key f-map (kbd "y") 'aya-create)
