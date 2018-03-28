@@ -310,7 +310,6 @@ Basic dired commands
 (setq inhibit-compacting-font-caches t)
     #+end_src
 *** Theme
-**** Theme cycler
 #+begin_src emacs-lisp :tangle no
 (use-package doom-themes
   :ensure t
@@ -363,37 +362,16 @@ Basic dired commands
 
 (global-set-key (kbd "C-c m") 'cycle-themes)
 #+end_src
-**** Doom themes
-#+begin_src emacs-lisp :tangle no
-(use-package doom-themes
-    :ensure t
-    :config
-    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-          doom-themes-enable-italic t) ; if nil, italics is universally disabled
-    
-    ;; Load the theme (doom-one, doom-molokai, etc); keep in mind that each theme
-    ;; may have their own settings.
-    (load-theme 'doom-one t)
 
-    ;; Enable flashing mode-line on errors
-    (doom-themes-visual-bell-config)
-
-    ;; Enable custom neotree theme
-    (doom-themes-neotree-config)  ; all-the-icons fonts must be installed!
-
-    ;; Corrects (and improves) org-mode's native fontification.
-    (doom-themes-org-config))
-#+end_src
-**** Zerodark Theme
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (use-package zerodark-theme
-  :ensure t
-  :config
-  (load-theme 'zerodark t))
+    :ensure t
+    :init
+      (load-theme 'zerodark t))
 #+end_src
-***** Some customization for the zerodark theme
+**** Some customization
 Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (let ((class '((class color) (min-colors 89)))
         (default (if (true-color-p) "#abb2bf" "#afafaf"))
         (light (if (true-color-p) "#ccd4e3" "#d7d7d7"))
@@ -491,41 +469,40 @@ Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org]
      `(org-block-end-line ((,class (:background ,background-blue :foreground ,blue
                                                 :bold t :height 1.0))))))
 #+end_src
-**** Spacemacs theme
-#+begin_src emacs-lisp
-(use-package spacemacs-theme
-  :ensure t)
-(load-theme 'spacemacs-dark t)
-#+end_src
-
-#+RESULTS:
-: t
-
 *** Mode Line
 **** zerodark-theme modeline
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (zerodark-setup-modeline-format)
 #+end_src
 **** Spaceline 
 <2018-01-23 ter> disabled to try other
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package spaceline
   :ensure t
   :defer 0.2
-  :config
+  :init
+  (progn
     (require 'spaceline-config)
-    (setq powerline-default-separator 'slant)
-    (spaceline-helm-mode)
-    ;; (spaceline-spacemacs-theme)
-)
+    (setq powerline-default-separator 'slant))
+  :config
+  (progn
+    (spaceline-emacs-theme)
+    (spaceline-helm-mode)))
 
 (use-package spaceline-all-the-icons
   :ensure t
   :after spaceline
   :config (spaceline-all-the-icons-theme))
 #+end_src
-**** Old Doom emacs line
+**** Minibuffer line
+<2018-01-23 ter> disabled to try other
 #+begin_src emacs-lisp :tangle no
+(use-package minibuffer-line
+  :ensure t
+  :config (minibuffer-line-mode t))
+#+end_src
+**** Old Doom emacs line :tangle no
+#+begin_src emacs-lisp
 ;; (use-package mode-icons
 ;;   :ensure t
 ;;   :config
@@ -1835,7 +1812,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
     ("C-c `"  . wrap-with-back-quotes)
     ))
 #+end_src
-* Org mode
+* Org mode and Babel
 ** Org and org-plus-contrib from org elpa
 <2018-01-11 qui> Don't no why `org-plus-contrib` can't be loaded
 #+begin_src emacs-lisp :tangle no
@@ -1975,16 +1952,141 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
      (use-package htmlize
      :ensure t)
    #+end_src
-* Programming
-** Magit
+* Magit
 #+begin_src emacs-lisp
 (use-package magit
   :ensure t
-  :bind ("C-x g . magit-status"))
+  :bind ("C-x g" . magit-status))
 #+end_src
-** Programming Languages
-*** Python
-**** Jedi
+* Elfeed
+** Elfeed, elfeed-org and elfeed-goodies
+#+begin_src emacs-lisp 
+(use-package elfeed
+  :ensure t
+  :bind (("C-c e" . elfeed)
+         :map elfeed-search-mode-map
+	      ("q" . bjm/elfeed-save-db-and-bury)
+	      ("Q" . bjm/elfeed-save-db-and-bury)
+	      ("m" . elfeed-toggle-star)
+	      ("M" . elfeed-toggle-star)
+              ("j" . mz/make-and-run-elfeed-hydra)
+              ("J" . mz/make-and-run-elfeed-hydra)
+;	      ("j" . mz/hydra-elfeed/body)
+;	      ("J" . mz/hydra-elfeed/body))
+              ))
+
+(setq elfeed-db-directory "~/Dropbox/shared/elfeeddb")
+
+
+(defun elfeed-mark-all-as-read ()
+      (interactive)
+      (mark-whole-buffer)
+      (elfeed-search-untag-all-unread))
+
+      ;;functions to support syncing .elfeed between machines
+;;makes sure elfeed reads index from disk before launching
+(defun bjm/elfeed-load-db-and-open ()
+  "Wrapper to load the elfeed db from disk before opening"
+  (interactive)
+  (elfeed-db-load)
+  (elfeed)
+  (elfeed-search-update--force))
+
+;;write to disk when quiting
+(defun bjm/elfeed-save-db-and-bury ()
+  "Wrapper to save the elfeed db to disk before burying buffer"
+  (interactive)
+  (elfeed-db-save)
+  (quit-window))
+
+;; (defalias 'elfeed-toggle-star
+;;   (elfeed-expose #'elfeed-search-toggle-all 'star))
+
+(use-package elfeed
+  :ensure t
+  :bind (:map elfeed-search-mode-map
+	      ("q" . bjm/elfeed-save-db-and-bury)
+	      ("Q" . bjm/elfeed-save-db-and-bury)
+	      ("m" . elfeed-toggle-star)
+	      ("M" . elfeed-toggle-star)
+	      )
+  )
+
+(use-package elfeed-goodies
+  :ensure t
+  :config
+  (elfeed-goodies/setup))
+
+(use-package elfeed-org
+  :ensure t
+  :config
+  (elfeed-org)
+  (setq rmh-elfeed-org-files (list "~/Dropbox/shared/elfeed.org")))
+#+end_src
+** Elfeed hydra
+#+begin_src emacs-lisp :
+;; (defhydra mz/hydra-elfeed ()
+;;    "filte - take 1"
+;;    ("c" (elfeed-search-set-filter "@6-months-ago +cs") "cs")
+;;    ("e" (elfeed-search-set-filter "@6-months-ago +emacs") "emacs")
+;;    ("d" (elfeed-search-set-filter "@6-months-ago +education") "education")
+;;    ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
+;;    ("M" elfeed-toggle-star "Mark")
+;;    ("A" (elfeed-search-set-filter "@6-months-ago") "All")
+;;    ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
+;;    ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
+;;    ("q" nil "quit" :color blue)
+;;    )
+
+
+(defun z/hasCap (s) ""
+       (let ((case-fold-search nil))
+       (string-match-p "[[:upper:]]" s)
+       ))
+
+(defun z/get-hydra-option-key (s)
+  "returns single upper case letter (converted to lower) or first"
+  (interactive)
+  (let ( (loc (z/hasCap s)))
+    (if loc
+	(downcase (substring s loc (+ loc 1)))
+      (substring s 0 1)
+    )))
+
+(defun mz/make-elfeed-cats (tags)
+  "Returns a list of lists. Each one is line for the hydra configuratio in the form
+     (c function hint)"
+  (interactive)
+  (mapcar (lambda (tag)
+	    (let* (
+		   (tagstring (symbol-name tag))
+		   (c (z/get-hydra-option-key tagstring))
+		   )
+	      (list c (append '(elfeed-search-set-filter) (list (format "@6-months-ago +%s" tagstring) ))tagstring  )))
+	  tags))
+
+(defmacro mz/make-elfeed-hydra ()
+  `(defhydra mz/hydra-elfeed ()
+     "filter"
+     ,@(mz/make-elfeed-cats (elfeed-db-get-all-tags))
+     ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
+     ("M" elfeed-toggle-star "Mark")
+     ("A" (elfeed-search-set-filter "@6-months-ago") "All")
+     ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
+     ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
+     ("q" nil "quit" :color blue)
+     ))
+
+(defun mz/make-and-run-elfeed-hydra ()
+  ""
+  (interactive)
+  (mz/make-elfeed-hydra)
+  (mz/hydra-elfeed/body))
+#+end_src
+* TODO Elbank
+* TODO AucTeX, org-ref, pdf-tools and such
+* Python
+** Jedi
    #+begin_src emacs-lisp
      (use-package jedi
        :ensure t
@@ -1992,14 +2094,14 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
        (add-hook 'python-mode-hook 'jedi:setup)
        (add-hook 'python-mode-hook 'jedi:ac-setup))
    #+end_src
-**** Elpy
+** Elpy
    #+begin_src emacs-lisp
      (use-package elpy
      :ensure t
      :config 
      (elpy-enable))
    #+end_src
-*** Julia
+* Julia
 #+begin_src emacs-lisp
 (use-package julia-mode
   :ensure t)
@@ -2009,8 +2111,8 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   :config
   (add-hook 'julia-mode-hook 'julia-repl-mode))
 #+end_src
-** Web Stuff
-*** Web mode
+* Web Stuff
+** Web mode
 #+begin_src emacs-lisp
   (use-package web-mode
       :ensure t
@@ -2025,7 +2127,7 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   (setq web-mode-enable-auto-closing t)
   (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
 #+end_src
-*** Emmet
+** Emmet
 #+begin_src emacs-lisp
 (use-package emmet-mode
   :ensure t
@@ -2035,13 +2137,16 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
 )
 #+end_src
-* TODO Publishing
-** TODO AucTeX
-** TODO org-ref
-** TODO pdf-tools
-** TODO Blogging
+* TODO Blogging
 Zamansky uses [[https://getnikola.com/blog/index.html][Nikola]] to produce the blog posts, but he don't show how to setup it.
 I'm thinking about starting to blog my work, so maybe I should look at it.
+* Browser Editing
+#+begin_src emacs-lisp
+(use-package atomic-chrome
+  :ensure t
+  :config
+  (atomic-chrome-start-server))
+#+end_src
 * Minor conveniences
 <2018-03-28 qua> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
 Emacs is at it's best when it just does things for you, shows you the way, guides you so to speak.
@@ -2155,140 +2260,6 @@ change =zzz-up-to-char= into =zzz-to-char=.
     :ensure t
     :bind ("M-z" . zzz-up-to-char))
 #+END_SRC
-* Extras
-** Elfeed
-*** Elfeed, elfeed-org and elfeed-goodies
-#+begin_src emacs-lisp 
-(use-package elfeed
-  :ensure t
-  :bind (("C-c e" . elfeed)
-         :map elfeed-search-mode-map
-	      ("q" . bjm/elfeed-save-db-and-bury)
-	      ("Q" . bjm/elfeed-save-db-and-bury)
-	      ("m" . elfeed-toggle-star)
-	      ("M" . elfeed-toggle-star)
-              ("j" . mz/make-and-run-elfeed-hydra)
-              ("J" . mz/make-and-run-elfeed-hydra)
-;	      ("j" . mz/hydra-elfeed/body)
-;	      ("J" . mz/hydra-elfeed/body))
-              ))
-
-(setq elfeed-db-directory "~/Dropbox/shared/elfeeddb")
-
-
-(defun elfeed-mark-all-as-read ()
-      (interactive)
-      (mark-whole-buffer)
-      (elfeed-search-untag-all-unread))
-
-      ;;functions to support syncing .elfeed between machines
-;;makes sure elfeed reads index from disk before launching
-(defun bjm/elfeed-load-db-and-open ()
-  "Wrapper to load the elfeed db from disk before opening"
-  (interactive)
-  (elfeed-db-load)
-  (elfeed)
-  (elfeed-search-update--force))
-
-;;write to disk when quiting
-(defun bjm/elfeed-save-db-and-bury ()
-  "Wrapper to save the elfeed db to disk before burying buffer"
-  (interactive)
-  (elfeed-db-save)
-  (quit-window))
-
-;; (defalias 'elfeed-toggle-star
-;;   (elfeed-expose #'elfeed-search-toggle-all 'star))
-
-(use-package elfeed
-  :ensure t
-  :bind (:map elfeed-search-mode-map
-	      ("q" . bjm/elfeed-save-db-and-bury)
-	      ("Q" . bjm/elfeed-save-db-and-bury)
-	      ("m" . elfeed-toggle-star)
-	      ("M" . elfeed-toggle-star)
-	      )
-  )
-
-(use-package elfeed-goodies
-  :ensure t
-  :config
-  (elfeed-goodies/setup))
-
-(use-package elfeed-org
-  :ensure t
-  :config
-  (elfeed-org)
-  (setq rmh-elfeed-org-files (list "~/Dropbox/shared/elfeed.org")))
-#+end_src
-*** Elfeed hydra
-#+begin_src emacs-lisp :
-;; (defhydra mz/hydra-elfeed ()
-;;    "filte - take 1"
-;;    ("c" (elfeed-search-set-filter "@6-months-ago +cs") "cs")
-;;    ("e" (elfeed-search-set-filter "@6-months-ago +emacs") "emacs")
-;;    ("d" (elfeed-search-set-filter "@6-months-ago +education") "education")
-;;    ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
-;;    ("M" elfeed-toggle-star "Mark")
-;;    ("A" (elfeed-search-set-filter "@6-months-ago") "All")
-;;    ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
-;;    ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
-;;    ("q" nil "quit" :color blue)
-;;    )
-
-
-(defun z/hasCap (s) ""
-       (let ((case-fold-search nil))
-       (string-match-p "[[:upper:]]" s)
-       ))
-
-(defun z/get-hydra-option-key (s)
-  "returns single upper case letter (converted to lower) or first"
-  (interactive)
-  (let ( (loc (z/hasCap s)))
-    (if loc
-	(downcase (substring s loc (+ loc 1)))
-      (substring s 0 1)
-    )))
-
-(defun mz/make-elfeed-cats (tags)
-  "Returns a list of lists. Each one is line for the hydra configuratio in the form
-     (c function hint)"
-  (interactive)
-  (mapcar (lambda (tag)
-	    (let* (
-		   (tagstring (symbol-name tag))
-		   (c (z/get-hydra-option-key tagstring))
-		   )
-	      (list c (append '(elfeed-search-set-filter) (list (format "@6-months-ago +%s" tagstring) ))tagstring  )))
-	  tags))
-
-(defmacro mz/make-elfeed-hydra ()
-  `(defhydra mz/hydra-elfeed ()
-     "filter"
-     ,@(mz/make-elfeed-cats (elfeed-db-get-all-tags))
-     ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
-     ("M" elfeed-toggle-star "Mark")
-     ("A" (elfeed-search-set-filter "@6-months-ago") "All")
-     ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
-     ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
-     ("q" nil "quit" :color blue)
-     ))
-
-(defun mz/make-and-run-elfeed-hydra ()
-  ""
-  (interactive)
-  (mz/make-elfeed-hydra)
-  (mz/hydra-elfeed/body))
-#+end_src
-** TODO Elbank
-** Browser Editing
-#+begin_src emacs-lisp :tangle no
-(use-package atomic-chrome 
-  :ensure t
-  :config
-  (atomic-chrome-start-server))
-#+end_src
 * Personal Keymap
 #+begin_src emacs-lisp
 (define-prefix-command 'f-map)
