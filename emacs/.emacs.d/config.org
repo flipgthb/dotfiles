@@ -501,8 +501,8 @@ Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org]
   :ensure t
   :config (minibuffer-line-mode t))
 #+end_src
-**** Old Doom emacs line :tangle no
-#+begin_src emacs-lisp
+**** Old Doom emacs line
+#+begin_src emacs-lisp :tangle no
 ;; (use-package mode-icons
 ;;   :ensure t
 ;;   :config
