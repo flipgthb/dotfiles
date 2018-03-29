@@ -8,11 +8,18 @@
   (use-package dash
     :ensure t)
 #+end_src
+
 ** f
 #+begin_src emacs-lisp
 (use-package f
   :ensure t)
 #+end_src
+
+** cl
+#+begin_src emacs-lisp
+(require 'cl)
+#+end_src
+
 * Load External Files
 #+begin_src emacs-lisp
   (defun load-if-exists (f)
@@ -24,47 +31,140 @@
                           "~/Dropbox/shared/tempstuff.el"
                           "~/Dropbox/shared/not-for-github.el"))
 #+end_src
+
 * User Interface
 ** Genearal UI elements
-   #+begin_src emacs-lisp
-     (set-language-environment "UTF-8")
-     (set-default-coding-systems 'utf-8)
+*** Looks
+**** Remove lame startup screen
+We use an actual replacement for it, keep reading or head directly to =dashboard=.
+#+BEGIN_SRC emacs-lisp
+(setq inhibit-startup-message t)
+#+END_SRC
 
-     (setq inhibit-startup-message t  ;; don't show startup screen
-           visible-bell nil           ;; no visual bell
-           apropos-do-all t           ;; more options on apropos search
-           shift-select-mode nil      ;; no region selecting by holding the shift key
-      )
+**** Disable menus and scrollbars
+If you like using any of those, change =-1= to =1=.
+#+BEGIN_SRC emacs-lisp
+(tool-bar-mode -1)
+(menu-bar-mode -1)
+(scroll-bar-mode -1)
+#+END_SRC
 
-     (tool-bar-mode -1)                           ;; no tool bar
-     (scroll-bar-mode -1)                         ;; no scroll bar
-     (fset 'yes-or-no-p 'y-or-n-p)                ;; y = yes, n = no
-     (global-set-key (kbd "<f5>") 'revert-buffer) ;; buffer refresh
-     (global-hl-line-mode t)                      ;; highlight current line
+**** Disable bell
+This is annoying, remove this line if you like being visually reminded of events.
+#+BEGIN_SRC emacs-lisp
+(setq ring-bell-function 'ignore)
+#+END_SRC
 
-     (global-auto-revert-mode 1)  ;; revert buffers when file is changed on disk
-     (setq auto-revert-verbose t) ;; but alert me
+**** Set UTF-8 encoding
+#+BEGIN_SRC emacs-lisp 
+  (setq locale-coding-system 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (set-selection-coding-system 'utf-8)
+  (prefer-coding-system 'utf-8)
+#+END_SRC
 
-     (setq save-interprogram-paste-before-kill t)
+**** Highligh current line
+=hl-line= is awesome! It's not very awesome in the terminal version of emacs though, so we don't use that.
+Besides, it's only used for programming.
+#+BEGIN_SRC emacs-lisp
+  ;; (when window-system (add-hook 'prog-mode-hook 'hl-line-mode))
+(global-hl-line-mode t)
+#+END_SRC
 
-     (fringe-mode '(10 . 1))             ;; 10 pixel window fringes
-     (toggle-indicate-empty-lines t)     ;; display dashes on left border end of buffer
-     (setq-default indent-tabs-mode nil) ;; never use hard tabs
+**** Pretty symbols
+Changes =lambda= to an actual symbol and a few others as well, only in the GUI version though.
+#+BEGIN_SRC emacs-lisp
+  (when window-system
+        (use-package pretty-mode
+        :ensure t
+        :config
+        (global-pretty-mode t)))
+#+END_SRC
 
-     (setq show-paren-delay 0) ;; immediatly show matching delimiter
-     (show-paren-mode t)       ;; turn of highlighting of matching delimiters
+**** Fringes
+#+begin_src emacs-lisp
+(fringe-mode '(10 . 1))             ;; 10 pixel window fringes
+#+end_src
 
-     (column-number-mode 1)        ;; show column number in mode line
-     (setq-default fill-column 80) ;; number of characters before line wrap
+**** Empity lines indicators
+#+begin_src emacs-lisp
+(toggle-indicate-empty-lines t)     ;; display dashes on left border end of buffer
+#+end_src
+
+*** Functionality
+**** Disable backups and auto-saves
+I don't use either, you might want to turn those from =nil= to =t= if you do.
+#+BEGIN_SRC emacs-lisp :tangle no
+(setq make-backup-files nil)
+(setq auto-save-default nil)
+#+END_SRC
+
+**** Change yes-or-no questions into y-or-n questions
+#+BEGIN_SRC emacs-lisp
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+**** Async
+Lets us use asynchronous processes wherever possible, pretty useful.
+#+BEGIN_SRC emacs-lisp
+  (use-package async
+    :ensure t
+    :init (dired-async-mode 1))
+#+END_SRC
+
+**** Apropos
+More options on apropos search
+#+begin_src emacs-lisp
+(setq apropos-do-all t)
+#+end_src
+
+**** Buffer refresh and auto revert
+Hit =F5= to refresh the buffer
+#+begin_src emacs-lisp
+(global-set-key (kbd "<f5>") 'revert-buffer)
+#+end_src
+
+Allow for automatic refresh when file in buffer is changed on disk
+#+begin_src emacs-lisp
+(global-auto-revert-mode 1)  ;; revert buffers when file is changed on disk
+(setq auto-revert-verbose t) ;; but alert me
+#+end_src
+
+**** Pasting
+#+begin_src emacs-lisp
+(setq save-interprogram-paste-before-kill t)
+#+end_src
+
+**** Tabs
+Never use hard tabs
+#+begin_src emacs-lisp :tangle yes
+    (setq-default indent-tabs-mode nil)
+#+end_src
+
+**** Paren Mode
+Turn of highlighting of matching delimiters and immediatly show matching delimiter
+#+begin_src emacs-lisp
+(show-paren-mode t)
+(setq show-paren-delay 0)
+#+end_src
+
+**** Column number and fill column
+Show column number in mode line and set the number of characters before line wrap
+#+begin_src emacs-lisp
+(column-number-mode 1)
+(setq-default fill-column 80)
    #+end_src
+
 ** Key bindings discovery and other discoverability related stuff
 *** which-key
-    #+begin_src emacs-lisp
-      (use-package which-key
-	:ensure t 
-	:config
-	(which-key-mode))
-    #+end_src
+#+begin_src emacs-lisp
+(use-package which-key
+  :ensure t 
+  :config
+  (which-key-mode))
+#+end_src
+
 *** Helpful
 #+begin_src emacs-lisp
 (use-package helpful
@@ -76,12 +176,14 @@
          ("C-h F" . helpful-function)
          ("C-h C" . helpful-command)))
 #+end_src
+
 *** TODO Suggest
 *** try
     #+begin_src emacs-lisp
       (use-package try
       :ensure t)
     #+end_src
+
 ** Hydra
 #+begin_src emacs-lisp
 (use-package hydra 
@@ -133,6 +235,7 @@
    ("c" org-capture "Capture") ; Don't forget to define the captures you want http://orgmode.org/manual/Capture.html
    ("l" (or )rg-capture-goto-last-stored "Last Capture")))
 #+end_src
+
 ** Navigation
 *** Ivy/Counsel/Swiper - Search and completion framework (or emacs elements navigation)
     #+begin_src emacs-lisp
@@ -185,6 +288,7 @@
 (use-package ivy-hydra
   :ensure t)
      #+end_src
+
 *** Avy - Text navigation
     #+begin_src emacs-lisp
       (use-package avy
@@ -195,11 +299,13 @@
       ;;   :config
       ;;   (avy-setup-default))
     #+end_src
+
 *** smex
 #+begin_src emacs-lisp 
 (use-package smex
   :ensure t)
 #+end_src
+
 *** Ace-window and winner - Window and workspace navigation 
 #+begin_src emacs-lisp
 ;; ace-window
@@ -216,15 +322,13 @@
 ;; preserve and navigate through window configurations with C-c <- or C-c ->
 (winner-mode 1)
 
-(defun z/swap-windowsn ()
+(defun f/swap-windows ()
   ""
-  ((insert )nteractive)
-  (ace-swap-(when )indow)
-  (aw-flip-window)
-  )
+  (interactive)
+  (ace-swap-window)
+  (aw-flip-window))
+#+end_src
 
-;(define-key z-map (kbd "w") 'z/swap-windows)
-      #+end_src
 **** TODO persp or eyebrowse
 *** Buffers
 #+begin_src emacs-lisp
@@ -258,10 +362,12 @@
 ;; Don't ask for confirmation to delete marked buffers
 (setq ibuffer-expert t)
 #+end_src
+
 #+begin_src emacs-lisp :tangle no
 ;; (defalias 'list-buffers 'ibuffer) ; make ibuffer default
 ;; (defalias 'list-buffers 'ibuffer-other-window) ; make ibuffer default
 #+end_src
+
 *** Dumb-jump
 #+begin_src emacs-lisp
 (use-package dumb-jump
@@ -275,6 +381,7 @@
   :init
   (dumb-jump-mode))
 #+end_src
+
 *** Dired
 Basic dired commands 
 - Enter vs a
@@ -290,10 +397,10 @@ Basic dired commands
   :config (require 'dired+)
   )
 #+end_src
+
 ** Appearance
 *** Fonts
-    #+begin_src emacs-lisp
-(require 'cl)
+#+begin_src emacs-lisp
 ;; function to test fonts installed before setting some as default
 (defun font-candidate (&rest fonts)
   "Return existing font which first match."
@@ -302,13 +409,14 @@ Basic dired commands
 ;; try to set some fonts as default
 (set-face-attribute 'default nil :font (font-candidate "Hack-14:weight=normal"
                                                        "Droid Sans Mono-14:weight=normal"
-						             "DejaVu Sans Mono-14:weight=normal"))
+                                                       "DejaVu Sans Mono-14:weight=normal"))
 
 (use-package all-the-icons
   :ensure t)
 
 (setq inhibit-compacting-font-caches t)
-    #+end_src
+#+end_src
+
 *** Theme
 #+begin_src emacs-lisp :tangle no
 (use-package doom-themes
@@ -369,6 +477,7 @@ Basic dired commands
     :init
       (load-theme 'zerodark t))
 #+end_src
+
 **** Some customization
 Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
 #+begin_src emacs-lisp
@@ -469,11 +578,13 @@ Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org]
      `(org-block-end-line ((,class (:background ,background-blue :foreground ,blue
                                                 :bold t :height 1.0))))))
 #+end_src
+
 *** Mode Line
 **** zerodark-theme modeline
 #+begin_src emacs-lisp
 (zerodark-setup-modeline-format)
 #+end_src
+
 **** Spaceline 
 <2018-01-23 ter> disabled to try other
 #+begin_src emacs-lisp :tangle no
@@ -494,6 +605,7 @@ Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org]
   :after spaceline
   :config (spaceline-all-the-icons-theme))
 #+end_src
+
 **** Minibuffer line
 <2018-01-23 ter> disabled to try other
 #+begin_src emacs-lisp :tangle no
@@ -501,6 +613,7 @@ Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org]
   :ensure t
   :config (minibuffer-line-mode t))
 #+end_src
+
 **** Old Doom emacs line
 #+begin_src emacs-lisp :tangle no
 ;; (use-package mode-icons
@@ -734,6 +847,7 @@ Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org]
 
     (setq-default mode-line-format (my-mode-line)))
 #+end_src
+
 **** Doom emacs line
 Reference: [[https://github.com/hlissner/doom-emacs/tree/master/modules/ui/doom-modeline][doom-emacs/modeules/ui/doom-modeline]]
 <2018-01-23 ter> disabled because I can't make it work :c
@@ -1479,31 +1593,38 @@ Reference: [[https://github.com/hlissner/doom-emacs/tree/master/modules/ui/doom-
   (setq-default mode-line-format (doom-modeline)))
 #+end_src
 
-*** Org-bullets, source code highlight
-    #+begin_src emacs-lisp
-      ;; org mode stuff
-      (use-package org-bullets
-        :ensure t
-        :config
-        (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+*** Beacon
+While changing buffers or workspaces, the first thing you do is look for your cursor.
+Unless you know its position, you can not move it efficiently. Every time you change
+buffers, the current position of your cursor will be briefly highlighted now.
+#+begin_src emacs-lisp
+  (use-package beacon
+    :ensure t
+    :config
+      (beacon-mode 1))
+#+end_src
 
+*** Rainbow
+Mostly useful if you are into web development or game development.
+Every time emacs encounters a hexadecimal code that resembles a color, it will automatically highlight
+it in the appropriate color. This is a lot cooler than you may think.
+#+begin_src emacs-lisp
+  (use-package rainbow-mode
+    :ensure t
+    :init
+      (add-hook 'prog-mode-hook 'rainbow-mode))
+#+end_src
 
-      (setq org-src-fontify-natively t
-            org-src-preserve-indentation t
-            org-list-allow-alphabetical t
-            org-completion-use-ido t)
-    #+end_src
-*** Beacon mode
-    #+begin_src emacs-lisp
-      (use-package beacon
-        :ensure t
-        :config
-        (beacon-mode 1)
-        ; this color looks good for the zenburn theme but not for the one
-        ; I'm using for the videos
-        ;; (setq beacon-color "#666600")
-        )
-    #+end_src
+*** Rainbow delimiters
+Colors parentheses and other delimiters depending on their depth, useful for any language using them,
+especially lisp.
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :init
+      (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+#+end_src
+
 ** Toggle linum mode
    #+begin_src emacs-lisp
      (setq linum-format " %3d ")      ;; linum format to keep line numbers 2 spaces from border and text
@@ -1511,12 +1632,14 @@ Reference: [[https://github.com/hlissner/doom-emacs/tree/master/modules/ui/doom-
      (global-set-key
       (kbd "C-c n") 'global-linum-mode) ;; toggle lateral line numbers
    #+end_src
+
 ** mode-line-bell
 #+begin_src emacs-lisp
   (use-package mode-line-bell
     :ensure t
     :config (mode-line-bell-mode))
 #+end_src
+
 ** shell and eshell
 #+begin_src emacs-lisp
 (use-package better-shell
@@ -1524,6 +1647,7 @@ Reference: [[https://github.com/hlissner/doom-emacs/tree/master/modules/ui/doom-
     :bind (("C-'" . better-shell-shell)
 	   ("C-c C-;" . better-shell-remote-open)))
 #+end_src
+
 ** Projectile
 #+begin_src emacs-lisp
 ;; projectile
@@ -1538,6 +1662,7 @@ Reference: [[https://github.com/hlissner/doom-emacs/tree/master/modules/ui/doom-
   :config
   (counsel-projectile-mode))
 #+end_src
+
 ** Treemacs
 I didn't like it so much. Maybe neotree is better...
 #+begin_src emacs-lisp :tangle no
@@ -1601,6 +1726,7 @@ I didn't like it so much. Maybe neotree is better...
   ;;             ("M-m fp" . treemacs-projectile-toggle))
   )
 #+end_src
+
 ** Prodigy
 #+begin_src emacs-lisp :tangle no
 (use-package prodigy
@@ -1616,7 +1742,13 @@ I didn't like it so much. Maybe neotree is better...
    :kill-process-buffer-on-stop t)
    )
 #+end_src
+
 * Editing
+** No text selection with shift key
+#+begin_src emacs-lisp
+(setq shift-select-mode nil)
+#+end_src
+
 ** Regex
 pcre2el lets me use the perl syntax for regexes
 #+begin_src emacs-lisp
@@ -1632,6 +1764,7 @@ pcre2el lets me use the perl syntax for regexes
 
 (setq counsel-fzf-cmd "/home/zamansky/.fzf/bin/fzf -f %s")
 #+end_src
+
 ** Comment line or region
    function to comment line or selected region
    #+begin_src emacs-lisp
@@ -1657,6 +1790,7 @@ pcre2el lets me use the perl syntax for regexes
      (global-set-key (kbd "C-;")
                      'comment-line-or-region)
    #+end_src
+
 ** Expand region
    #+begin_src emacs-lisp
      ; expand the marked region in semantic increments (negative prefix to reduce region)
@@ -1665,6 +1799,7 @@ pcre2el lets me use the perl syntax for regexes
        :config 
        (global-set-key (kbd "C-=") 'er/expand-region))
    #+end_src
+
 ** TODO Text Wrappers
 Copying from [[https://github.com/howardabrams/dot-files/blob/master/emacs.org#block-wrappers][Howard Abrams]] again
 #+begin_src emacs-lisp :tangle no
@@ -1698,6 +1833,7 @@ Copying from [[https://github.com/howardabrams/dot-files/blob/master/emacs.org#b
   :diminish wrap-region-mode)
 #+end_src
 He also does something that seems useful for org mode blocks, but I try just as it is now for a while.
+
 ** Hungry delete
    #+begin_src emacs-lisp
      ; deletes all the whitespace when you hit backspace or delete
@@ -1706,6 +1842,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
        :config
        (global-hungry-delete-mode))
    #+end_src
+
 ** Undo-tree
    #+begin_src emacs-lisp
      (use-package undo-tree
@@ -1713,12 +1850,14 @@ He also does something that seems useful for org mode blocks, but I try just as 
        :init
 	 (global-undo-tree-mode))
    #+end_src
+
 ** Iedit
    #+begin_src emacs-lisp
      (use-package iedit
        :ensure t
        :bind (("C-:" . iedit-mode)))
    #+end_src
+
 ** TODO Multiple cursors
 ** Auto-complete
    #+begin_src emacs-lisp
@@ -1730,6 +1869,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
 	 (ac-config-default)
 	 (global-auto-complete-mode t)))
    #+end_src
+
 ** Flycheck
    #+begin_src emacs-lisp
      (use-package flycheck
@@ -1737,6 +1877,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
        :init
        (global-flycheck-mode t))
    #+end_src
+
 ** Yasnippet
 <2018-01-10 qua> Apparently the snippets are not loading
 <2018-01-11 qui> I can load manually by calling `yas-load-directory` and choosing the yasnippet directory
@@ -1753,6 +1894,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
 (use-package auto-yasnippet
   :ensure t)
    #+end_src
+
 ** TODO Smartparens
 #+begin_src emacs-lisp
 (use-package smartparens
@@ -1812,7 +1954,85 @@ He also does something that seems useful for org mode blocks, but I try just as 
     ("C-c `"  . wrap-with-back-quotes)
     ))
 #+end_src
-* Org mode and Babel
+
+** Subwords
+Emacs treats camelCase strings as a single word by default, this changes said behaviour.
+#+begin_src emacs-lisp
+  (global-subword-mode 1)
+#+end_src
+
+** Electric
+If you write any code, you may enjoy this.
+Typing the first character in a set of 2, completes the second one after your cursor.
+Opening a bracket? It's closed for you already. Quoting something? It's closed for you already.
+
+You can easily add and remove pairs yourself, have a look.
+#+begin_src emacs-lisp
+(setq electric-pair-pairs '(
+                           (?\{ . ?\})
+                           (?\( . ?\))
+                           (?\[ . ?\])
+                           (?\" . ?\")
+                           ))
+#+end_src
+
+And now to enable it
+#+begin_src emacs-lisp
+(electric-pair-mode t)
+#+end_src
+
+** Expand region
+A pretty simple package, takes your cursor and semantically expands the region, so words, sentences, maybe the contents of some parentheses, it's awesome, try it out.
+#+begin_src emacs-lisp :tangle no
+  (use-package expand-region
+    :ensure t
+    :bind ("C-q" . er/expand-region))
+#+end_src
+
+** Hungry deletion
+On the list of things I like doing, deleting big whitespaces is pretty close to the bottom.
+Backspace or Delete will get rid of all whitespace until the next non-whitespace character is encountered.
+You may not like it, thus disable it if you must, but it's pretty decent.
+#+begin_src emacs-lisp :tangle no
+  (use-package hungry-delete
+    :ensure t
+    :config
+      (global-hungry-delete-mode))
+#+end_src
+
+** Zapping to char
+A nifty little package that kills all text between your cursor and a selected character.
+A lot more useful than you might think. If you wish to include the selected character in the killed region,
+change =zzz-up-to-char= into =zzz-to-char=.
+#+begin_src emacs-lisp :tangle no
+  (use-package zzz-to-char
+    :ensure t
+    :bind ("M-z" . zzz-up-to-char))
+#+end_src
+
+* Magit
+#+begin_src emacs-lisp
+(use-package magit
+  :ensure t
+  :bind ("C-x g" . magit-status))
+#+end_src
+
+* Org mode
+** Org-bullets, source code highlight
+    #+begin_src emacs-lisp
+      ;; org mode stuff
+      (use-package org-bullets
+        :ensure t
+        :config
+        (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+
+      (setq org-src-fontify-natively t
+            org-src-preserve-indentation t
+            org-list-allow-alphabetical t
+            org-completion-use-ido t)
+    #+end_src
+
 ** Org and org-plus-contrib from org elpa
 <2018-01-11 qui> Don't no why `org-plus-contrib` can't be loaded
 #+begin_src emacs-lisp :tangle no
@@ -1822,6 +2042,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
 (use-package org-plus-contrib
   :ensure t)
 #+end_src
+
 ** Org behavior
 #+begin_src emacs-lisp 
 (custom-set-variables
@@ -1840,6 +2061,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
 
 (global-set-key "\C-ca" 'org-agenda)
 #+end_src
+
 ** Org-ac
 #+begin_src emacs-lisp
   (use-package org-ac
@@ -1848,6 +2070,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
             (require 'org-ac)
             (org-ac/config-default)))
 #+end_src
+
 ** Capture
 #+begin_src emacs-lisp
   (global-set-key (kbd "C-c c")
@@ -1892,6 +2115,7 @@ He also does something that seems useful for org mode blocks, but I try just as 
   (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
     (org-capture)))
 #+end_src
+
 ** Google Calendar and org agenda
 Follow the instructions from [[http://cestlaz.github.io/posts/using-emacs-26-gcal/][Episode 26]] of Zamansky's series
 <2018-01-10 qua> Disabled until being able to instal org-gcal
@@ -1940,6 +2164,7 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
 	:config
 	(require 'calfw-gcal))
 #+end_src
+
 ** Reveal.js and Org-reveal
 <2018-01-10 qua> Disabled until compatibility issue ie resolved
    #+begin_src emacs-lisp
@@ -1952,14 +2177,100 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
      (use-package htmlize
      :ensure t)
    #+end_src
-* Magit
+
+* TODO Publishing
+** TODO AucTeX, org-ref, pdf-tools and such
+** TODO Blogging
+Zamansky uses [[https://getnikola.com/blog/index.html][Nikola]] to produce the blog posts, but he don't show how to setup it.
+I'm thinking about starting to blog my work, so maybe I should look at it.
+* Programming
+** Python
+*** Jedi
+   #+begin_src emacs-lisp
+     (use-package jedi
+       :ensure t
+       :init
+       (add-hook 'python-mode-hook 'jedi:setup)
+       (add-hook 'python-mode-hook 'jedi:ac-setup))
+   #+end_src
+
+*** Elpy
+   #+begin_src emacs-lisp
+     (use-package elpy
+     :ensure t
+     :config 
+     (elpy-enable))
+   #+end_src
+
+** Julia
 #+begin_src emacs-lisp
-(use-package magit
+(use-package julia-mode
+  :ensure t)
+
+(use-package julia-repl
   :ensure t
-  :bind ("C-x g" . magit-status))
+  :config
+  (add-hook 'julia-mode-hook 'julia-repl-mode))
 #+end_src
-* Elfeed
-** Elfeed, elfeed-org and elfeed-goodies
+
+** Web Stuff
+*** Web mode
+#+begin_src emacs-lisp
+  (use-package web-mode
+      :ensure t
+      :config
+           (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+           (setq web-mode-engines-alist
+                 '(("django"    . "\\.html\\'")))
+           (setq web-mode-ac-sources-alist
+                 '(("css" . (ac-source-css-property))
+                   ("html" . (ac-source-words-in-buffer ac-source-abbrev))))
+
+  (setq web-mode-enable-auto-closing t)
+  (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
+#+end_src
+
+*** Emmet
+#+begin_src emacs-lisp
+(use-package emmet-mode
+  :ensure t
+  :config
+  (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+  (add-hook 'web-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+  (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
+)
+#+end_src
+
+* Minor conveniences
+<2018-03-28 qua> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
+Emacs is at it's best when it just does things for you, shows you the way, guides you so to speak.
+This can be best achieved using a number of small extensions. While on their own they might not be particularly
+impressive. Together they create a nice environment for you to work in.
+
+** Visiting the configuration
+Quickly edit =~/.emacs.d/config.org=
+#+begin_src emacs-lisp
+  (defun config-visit ()
+    (interactive)
+    (find-file "~/.emacs.d/config.org"))
+  ;; (global-set-key (kbd "C-c e") 'config-visit)
+#+end_src
+
+** Reloading the configuration
+   
+Simply pressing =Control-c r= will reload this file, very handy.
+You can also manually invoke =config-reload=.
+#+begin_src emacs-lisp
+  (defun config-reload ()
+    "Reloads ~/.emacs.d/config.org at runtime"
+    (interactive)
+    (org-babel-load-file (expand-file-name "~/.emacs.d/config.org")))
+  ;; (global-set-key (kbd "C-c r") 'config-reload)
+#+end_src
+
+* Extras
+** Elfeed
+*** Elfeed, elfeed-org and elfeed-goodies
 #+begin_src emacs-lisp 
 (use-package elfeed
   :ensure t
@@ -2023,7 +2334,8 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   (elfeed-org)
   (setq rmh-elfeed-org-files (list "~/Dropbox/shared/elfeed.org")))
 #+end_src
-** Elfeed hydra
+
+*** Elfeed hydra
 #+begin_src emacs-lisp :
 ;; (defhydra mz/hydra-elfeed ()
 ;;    "filte - take 1"
@@ -2083,183 +2395,16 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
   (mz/make-elfeed-hydra)
   (mz/hydra-elfeed/body))
 #+end_src
-* TODO Elbank
-* TODO AucTeX, org-ref, pdf-tools and such
-* Python
-** Jedi
-   #+begin_src emacs-lisp
-     (use-package jedi
-       :ensure t
-       :init
-       (add-hook 'python-mode-hook 'jedi:setup)
-       (add-hook 'python-mode-hook 'jedi:ac-setup))
-   #+end_src
-** Elpy
-   #+begin_src emacs-lisp
-     (use-package elpy
-     :ensure t
-     :config 
-     (elpy-enable))
-   #+end_src
-* Julia
-#+begin_src emacs-lisp
-(use-package julia-mode
-  :ensure t)
 
-(use-package julia-repl
+** Browser Editing
+#+begin_src emacs-lisp
+use-package atomic-chrome
   :ensure t
   :config
-  (add-hook 'julia-mode-hook 'julia-repl-mode))
+  (atomic-chrome-start-server)
 #+end_src
-* Web Stuff
-** Web mode
-#+begin_src emacs-lisp
-  (use-package web-mode
-      :ensure t
-      :config
-           (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-           (setq web-mode-engines-alist
-                 '(("django"    . "\\.html\\'")))
-           (setq web-mode-ac-sources-alist
-                 '(("css" . (ac-source-css-property))
-                   ("html" . (ac-source-words-in-buffer ac-source-abbrev))))
 
-  (setq web-mode-enable-auto-closing t)
-  (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
-#+end_src
-** Emmet
-#+begin_src emacs-lisp
-(use-package emmet-mode
-  :ensure t
-  :config
-  (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
-  (add-hook 'web-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
-  (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
-)
-#+end_src
-* TODO Blogging
-Zamansky uses [[https://getnikola.com/blog/index.html][Nikola]] to produce the blog posts, but he don't show how to setup it.
-I'm thinking about starting to blog my work, so maybe I should look at it.
-* Browser Editing
-#+begin_src emacs-lisp
-(use-package atomic-chrome
-  :ensure t
-  :config
-  (atomic-chrome-start-server))
-#+end_src
-* Minor conveniences
-<2018-03-28 qua> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
-Emacs is at it's best when it just does things for you, shows you the way, guides you so to speak.
-This can be best achieved using a number of small extensions. While on their own they might not be particularly
-impressive. Together they create a nice environment for you to work in.
-
-** Visiting the configuration
-Quickly edit =~/.emacs.d/config.org=
-#+BEGIN_SRC emacs-lisp
-  (defun config-visit ()
-    (interactive)
-    (find-file "~/.emacs.d/config.org"))
-  ;; (global-set-key (kbd "C-c e") 'config-visit)
-#+END_SRC
-
-** Reloading the configuration
-   
-Simply pressing =Control-c r= will reload this file, very handy.
-You can also manually invoke =config-reload=.
-#+BEGIN_SRC emacs-lisp
-  (defun config-reload ()
-    "Reloads ~/.emacs.d/config.org at runtime"
-    (interactive)
-    (org-babel-load-file (expand-file-name "~/.emacs.d/config.org")))
-  ;; (global-set-key (kbd "C-c r") 'config-reload)
-#+END_SRC
-
-** Subwords
-Emacs treats camelCase strings as a single word by default, this changes said behaviour.
-#+BEGIN_SRC emacs-lisp
-  (global-subword-mode 1)
-#+END_SRC
-
-** Electric
-If you write any code, you may enjoy this.
-Typing the first character in a set of 2, completes the second one after your cursor.
-Opening a bracket? It's closed for you already. Quoting something? It's closed for you already.
-
-You can easily add and remove pairs yourself, have a look.
-#+BEGIN_SRC emacs-lisp
-(setq electric-pair-pairs '(
-                           (?\{ . ?\})
-                           (?\( . ?\))
-                           (?\[ . ?\])
-                           (?\" . ?\")
-                           ))
-#+END_SRC
-
-And now to enable it
-#+BEGIN_SRC emacs-lisp
-(electric-pair-mode t)
-#+END_SRC
-
-** Beacon
-While changing buffers or workspaces, the first thing you do is look for your cursor.
-Unless you know its position, you can not move it efficiently. Every time you change
-buffers, the current position of your cursor will be briefly highlighted now.
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package beacon
-    :ensure t
-    :config
-      (beacon-mode 1))
-#+END_SRC
-
-** Rainbow
-Mostly useful if you are into web development or game development.
-Every time emacs encounters a hexadecimal code that resembles a color, it will automatically highlight
-it in the appropriate color. This is a lot cooler than you may think.
-#+BEGIN_SRC emacs-lisp
-  (use-package rainbow-mode
-    :ensure t
-    :init
-      (add-hook 'prog-mode-hook 'rainbow-mode))
-#+END_SRC
-
-** Rainbow delimiters
-Colors parentheses and other delimiters depending on their depth, useful for any language using them,
-especially lisp.
-#+BEGIN_SRC emacs-lisp
-  (use-package rainbow-delimiters
-    :ensure t
-    :init
-      (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
-#+END_SRC
-
-** Expand region
-A pretty simple package, takes your cursor and semantically expands the region, so words, sentences, maybe the contents of some parentheses, it's awesome, try it out.
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package expand-region
-    :ensure t
-    :bind ("C-q" . er/expand-region))
-#+END_SRC
-
-** Hungry deletion
-On the list of things I like doing, deleting big whitespaces is pretty close to the bottom.
-Backspace or Delete will get rid of all whitespace until the next non-whitespace character is encountered.
-You may not like it, thus disable it if you must, but it's pretty decent.
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package hungry-delete
-    :ensure t
-    :config
-      (global-hungry-delete-mode))
-#+END_SRC
-
-** Zapping to char
-A nifty little package that kills all text between your cursor and a selected character.
-A lot more useful than you might think. If you wish to include the selected character in the killed region,
-change =zzz-up-to-char= into =zzz-to-char=.
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package zzz-to-char
-    :ensure t
-    :bind ("M-z" . zzz-up-to-char))
-#+END_SRC
+** TODO Elbank
 * Personal Keymap
 #+begin_src emacs-lisp
 (define-prefix-command 'f-map)
@@ -2268,5 +2413,6 @@ change =zzz-up-to-char= into =zzz-to-char=.
 (define-key f-map (kbd "e") 'aya-expand)
 (define-key f-map (kbd "v") 'config-visit)
 (define-key f-map (kbd "r") 'config-reload)
+(define-key z-map (kbd "w") 'f/swap-windows)
 #+end_src
 
