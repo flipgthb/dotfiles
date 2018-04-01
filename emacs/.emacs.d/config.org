@@ -189,7 +189,8 @@ change the numbers to suit your liking, I find 5 to be enough.
       (use-package try
       :ensure t)
     #+end_src
-
+*** TODO cheat-sh
+*** TODO cheatsheet
 ** Hydra
 #+begin_src emacs-lisp
 (use-package hydra 
@@ -754,6 +755,7 @@ Following the instructions from [[https://github.com/hlissner/doom-emacs/tree/ma
 
 
   (use-package eldoc-eval
+    :ensure t
     :config
     (defun +doom-modeline-eldoc (text)
       (concat (when (display-graphic-p)
@@ -3138,10 +3140,14 @@ He also does something that seems useful for org mode blocks, but I try just as 
 (use-package smartparens
   :ensure t
   :config
-  (use-package smartparens-config)
-  (use-package smartparens-html)
-  (use-package smartparens-python)
-  (use-package smartparens-latex)
+  (use-package smartparens-config
+    :ensure t)
+  (use-package smartparens-html
+    :ensure t)
+  (use-package smartparens-python
+    :ensure t)
+  (use-package smartparens-latex
+    :ensure t)
   (smartparens-global-mode t)
   (show-smartparens-global-mode t)
   :bind
@@ -3383,7 +3389,7 @@ Follow the instructions from [[http://cestlaz.github.io/posts/using-emacs-26-gca
 Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, but I'm not sure how to use it
 #+begin_src emacs-lisp :tangle no
 (use-package calfw
-  :ensure ;TODO: 
+  :ensure t ;TODO: 
   :config
   (require 'calfw) 
   (require 'calfw-org)
@@ -3411,7 +3417,7 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
 <2018-01-10 qua> Disabled until compatibility issue ie resolved
    #+begin_src emacs-lisp
      (use-package ox-reveal
-     :ensure ox-reveal)
+     :ensure t)
 
      (setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
      (setq org-reveal-mathjax t)
