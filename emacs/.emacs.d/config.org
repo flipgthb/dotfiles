@@ -2586,6 +2586,8 @@ In loving memory of bspwm, Super + Enter opens a new terminal, old habits die ha
 (global-set-key (kbd "<s-return>") 'ansi-term)
 #+END_SRC
 
+*** TODO fish-completion
+
 ** Toggle linum mode
 #+begin_src emacs-lisp
      (setq linum-format " %3d ")      ;; linum format to keep line numbers 2 spaces from border and text
@@ -3733,4 +3735,4 @@ and only invoke it manually when needed.
     (message "MPD Database Updated!"))
   (global-set-key (kbd "s-m u") 'mpd/update-database)
 #+END_SRC
-
+** TODO Torrent
