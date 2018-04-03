@@ -9,6 +9,16 @@ I'm gonna define "C-." as my "leader" key
 (global-set-key (kbd "C-.") 'f-map)
 #+end_src
 
+** key-chord
+Also, I'm gonna try to use key chords with ",," as an chord for "C-."
+#+begin_src emacs-lisp
+(use-package key-chord
+  :ensure t
+  :config
+  (key-chord-mode t))
+(key-chord-define-global ",," 'f-map)
+#+end_src
+
 * User Interface
 ** Emacs Internals
 *** Dash
@@ -197,8 +207,8 @@ change the numbers to suit your liking, I find 5 to be enough.
   :ensure t)
 
 ;; Hydra for modes that toggle on and off
-(global-set-key
- (kbd "C-x t")
+(define-key f-map 
+ (kbd "t")
  (defhydra toggle (:color blue)
    "toggle"
    ("a" abbrev-mode "abbrev")
@@ -211,11 +221,11 @@ change the numbers to suit your liking, I find 5 to be enough.
    ("q" nil "cancel")))
 
 ;; Hydra for navigation
-(global-set-key
- (kbd "C-x j")
+(define-key f-map
+ (kbd "n")
  (defhydra gotoline 
-   ( :pre (linum-mode 1)
-	  :post (linum-mode -1))
+   (:pre (linum-mode 1)
+	:post (linum-mode -1))
    "goto"
    ("t" (lambda () (interactive)(move-to-window-line-top-bottom 0)) "top")
    ("b" (lambda () (interactive)(move-to-window-line-top-bottom -1)) "bottom")
@@ -228,8 +238,8 @@ change the numbers to suit your liking, I find 5 to be enough.
    ))
 
 ;; Hydra for some org-mode stuff
-(global-set-key
- (kbd "C-c t")
+(define-key f-map
+ (kbd "o")
  (defhydra hydra-global-org (:color blue)
    "Org"
    ("t" org-timer-start "Start Timer")
@@ -358,7 +368,16 @@ Copied this bit from Zamansky's tutorial
   (ace-swap-window)
   (aw-flip-window))
 
-(define-key f-map (kbd "w") 'f/swap-windows)
+(define-key f-map 
+ (kbd "w")
+ (defhydra window (:color red)
+   "window"
+   ("+" enlarge-window "v-enlarge")
+   ("-" shrink-window "v-shrink")
+   (">" enlarge-window-horizontally "h-enlarge")
+   ("<" shrink-window-horizontally "h-shrink")
+   ("s" f/swap-windows "swap windows")
+   ("q" nil "quit")))
 #+end_src
 
 **** TODO persp or eyebrowse
