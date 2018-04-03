@@ -1,1 +1,1 @@
-/home/felippe/.config/fisherman/clearer/fish_prompt.fish
+/home/felippe/.config/fisherman/metro/fish_prompt.fish

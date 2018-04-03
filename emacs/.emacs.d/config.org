@@ -201,6 +201,12 @@ change the numbers to suit your liking, I find 5 to be enough.
     #+end_src
 *** TODO cheat-sh
 *** TODO cheatsheet
+*** tldr
+#+begin_src emacs-lisp
+(use-package tldr
+  :ensure t)
+#+end_src
+
 ** Hydra
 #+begin_src emacs-lisp
 (use-package hydra 
@@ -475,9 +481,11 @@ I'm not changing much, just disabling the mouse and adding buttons.
   (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
 
 ;; try to set some fonts as default
-(set-face-attribute 'default nil :font (font-candidate "Hack-14:weight=normal"
-                                                       "Droid Sans Mono-14:weight=normal"
-                                                       "DejaVu Sans Mono-14:weight=normal"))
+(set-face-attribute 'default nil :font (font-candidate
+                                        "Hack-15:weight=normal"
+                                        "Source Code Pro-15:weight=normal"
+                                        "Droid Sans Mono-15:weight=normal"
+                                        "DejaVu Sans Mono-15:weight=normal"))
 #+end_src
 
 **** All the icons font
