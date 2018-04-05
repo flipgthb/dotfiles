@@ -155,7 +155,6 @@ Show column number in mode line and set the number of characters before line wra
 (column-number-mode 1)
 (setq-default fill-column 80)
 #+end_src
-
 ** Dashboard
 This is your new startup screen, together with projectile it works in unison and
 provides you with a quick look into your latest projects and files.
@@ -343,6 +342,15 @@ change the numbers to suit your liking, I find 5 to be enough.
       ;;   (avy-setup-default))
     #+end_src
 
+*** Anzu
+#+begin_src emacs-lisp
+(use-package anzu
+  :ensure t
+  :config
+  (anzu-mode +1)
+  (global-set-key [remap query-replace] 'anzu-query-replace)
+  (global-set-key [remap query-replace-regexp] 'anzu-query-replace-regexp))
+#+end_src
 *** smex
 #+begin_src emacs-lisp 
 (use-package smex
@@ -459,7 +467,7 @@ Basic dired commands
 +I abandoned treemacs, looking for an alternative as we speak+
 I found an alternative, Sunrise Commander!
 I'm not changing much, just disabling the mouse and adding buttons.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp tangle no
   (use-package sunrise-commander
     :ensure t
     :init
@@ -660,19 +668,38 @@ Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org]
 #+end_src
 
 *** Modeline
-**** Doom-Emacs Modeline
-Anzu is required
+**** Spaceline 
+<2018-01-23 ter> disabled to try other
 #+begin_src emacs-lisp
-(use-package anzu
-  :ensure t
-  :config
-  (anzu-mode +1)
-  (global-set-key [remap query-replace] 'anzu-query-replace)
-  (global-set-key [remap query-replace-regexp] 'anzu-query-replace-regexp))
+(use-package spaceline
+  :ensure t)
+
+(require 'spaceline-config)
+;; (spaceline-helm-mode)
+(setq spaceline-buffer-encoding-abbrev-p nil)
+(setq spaceline-line-column-p nil)
+(setq spaceline-line-p nil)
+(setq powerline-default-separator (quote arrow))
+(setq anzu-cons-mode-line-p nil)
+;; (spaceline-spacemacs-theme)
+;; (spaceline-emacs-theme)
 #+end_src
 
-Following the instructions from [[https://github.com/hlissner/doom-emacs/tree/master/modules/ui/doom-modeline][Doom-Emacs]]
 #+begin_src emacs-lisp
+(use-package spaceline-all-the-icons
+  :ensure t
+  :after spaceline
+  :config
+  (spaceline-all-the-icons-theme)
+  (spaceline-all-the-icons--setup-anzu)            ;; Enable anzu searching
+  (spaceline-all-the-icons--setup-package-updates) ;; Enable package update indicator
+  (spaceline-all-the-icons--setup-git-ahead)       ;; Enable # of commits ahead of upstream in git
+  (setq spaceline-all-the-icons-separator-type 'none))
+#+end_src
+
+**** Doom-Emacs Modeline
+Following the instructions from [[https://github.com/hlissner/doom-emacs/tree/master/modules/ui/doom-modeline][Doom-Emacs]]
+#+begin_src emacs-lisp :tangle no
   (defmacro add-hook! (&rest args)
     "A convenience macro for `add-hook'. Takes, in order:
     1. Optional properties :local and/or :append, which will make the hook
@@ -1416,7 +1443,7 @@ Following the instructions from [[https://github.com/hlissner/doom-emacs/tree/ma
 #+end_src
 
 To get info on active minor modes
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (defun active-minor-modes ()
   "Get a list of active minor-mode symbols."
   (cl-loop for mode in minor-mode-list
@@ -1460,11 +1487,11 @@ This enables spaceline, it looks better and works very well with my theme of cho
     :ensure t
     :config
     (require 'spaceline-config)
-      (setq spaceline-buffer-encoding-abbrev-p nil)
-      (setq spaceline-line-column-p nil)
-      (setq spaceline-line-p nil)
-      (setq powerline-default-separator (quote arrow))
-      (spaceline-spacemacs-theme))
+    (setq spaceline-buffer-encoding-abbrev-p nil)
+    (setq spaceline-line-column-p nil)
+    (setq spaceline-line-p nil)
+    (setq powerline-default-separator (quote arrow))
+    (spaceline-spacemacs-theme))
 #+end_src
 
 ***** No separator!
@@ -1526,27 +1553,6 @@ symon can be toggled on and off with =Super + h=.
 ***** zerodark-theme modeline
 #+begin_src emacs-lisp :tangle no
 (zerodark-setup-modeline-format)
-#+end_src
-
-***** Spaceline 
-<2018-01-23 ter> disabled to try other
-#+begin_src emacs-lisp :tangle no
-(use-package spaceline
-  :ensure t
-  :defer 0.2
-  :init
-  (progn
-    (require 'spaceline-config)
-    (setq powerline-default-separator 'slant))
-  :config
-  (progn
-    (spaceline-emacs-theme)
-    (spaceline-helm-mode)))
-
-(use-package spaceline-all-the-icons
-  :ensure t
-  :after spaceline
-  :config (spaceline-all-the-icons-theme))
 #+end_src
 
 ***** Minibuffer line
@@ -3169,63 +3175,58 @@ He also does something that seems useful for org mode blocks, but I try just as 
 (use-package smartparens
   :ensure t
   :config
-  (use-package smartparens-config
-    :ensure t)
-  (use-package smartparens-html
-    :ensure t)
-  (use-package smartparens-python
-    :ensure t)
-  (use-package smartparens-latex
-    :ensure t)
+  (require 'smartparens-config)
+  (require 'smartparens-html)
+  (require 'smartparens-python)
+  (require 'smartparens-latex)
   (smartparens-global-mode t)
   (show-smartparens-global-mode t)
   :bind
-  ( ("C-<down>" . sp-down-sexp)
-    ("C-<up>"   . sp-up-sexp)
-    ("M-<down>" . sp-backward-down-sexp)
-    ("M-<up>"   . sp-backward-up-sexp)
-    ("C-M-a" . sp-beginning-of-sexp)
-    ("C-M-e" . sp-end-of-sexp)
+  (("C-<down>" . sp-down-sexp)
+   ("C-<up>"   . sp-up-sexp)
+   ("M-<down>" . sp-backward-down-sexp)
+   ("M-<up>"   . sp-backward-up-sexp)
+   ("C-M-a" . sp-beginning-of-sexp)
+   ("C-M-e" . sp-end-of-sexp)
 
-    ("C-M-f" . sp-forward-sexp)
-    ("C-M-b" . sp-backward-sexp)
+   ("C-M-f" . sp-forward-sexp)
+   ("C-M-b" . sp-backward-sexp)
+   
+   ("C-M-n" . sp-next-sexp)
+   ("C-M-p" . sp-previous-sexp)
     
-    ("C-M-n" . sp-next-sexp)
-    ("C-M-p" . sp-previous-sexp)
+   ("C-S-f" . sp-forward-symbol)
+   ("C-S-b" . sp-backward-symbol)
     
-    ("C-S-f" . sp-forward-symbol)
-    ("C-S-b" . sp-backward-symbol)
+   ("C-<right>" . sp-forward-slurp-sexp)
+   ("M-<right>" . sp-forward-barf-sexp)
+   ("C-<left>"  . sp-backward-slurp-sexp)
+   ("M-<left>"  . sp-backward-barf-sexp)
     
-    ("C-<right>" . sp-forward-slurp-sexp)
-    ("M-<right>" . sp-forward-barf-sexp)
-    ("C-<left>"  . sp-backward-slurp-sexp)
-    ("M-<left>"  . sp-backward-barf-sexp)
+   ("C-M-t" . sp-transpose-sexp)
+   ("C-M-k" . sp-kill-sexp)
+   ("C-k"   . sp-kill-hybrid-sexp)
+   ("M-k"   . sp-backward-kill-sexp)
+   ("C-M-w" . sp-copy-sexp)
     
-    ("C-M-t" . sp-transpose-sexp)
-    ("C-M-k" . sp-kill-sexp)
-    ("C-k"   . sp-kill-hybrid-sexp)
-    ("M-k"   . sp-backward-kill-sexp)
-    ("C-M-w" . sp-copy-sexp)
+   ("C-M-d" . delete-sexp)
     
-    ("C-M-d" . delete-sexp)
+   ("M-<backspace>" . backward-kill-word)
+   ("C-<backspace>" . sp-backward-kill-word)
+   ([remap sp-backward-kill-word] . backward-kill-word)
     
-    ("M-<backspace>" . backward-kill-word)
-    ("C-<backspace>" . sp-backward-kill-word)
-    ([remap sp-backward-kill-word] . backward-kill-word)
+   ("M-[" . sp-backward-unwrap-sexp)
+   ("M-]" . sp-unwrap-sexp)
     
-    ("M-[" . sp-backward-unwrap-sexp)
-    ("M-]" . sp-unwrap-sexp)
+   ("C-x C-t" . sp-transpose-hybrid-sexp)
     
-    ("C-x C-t" . sp-transpose-hybrid-sexp)
-    
-    ("C-c ("  . wrap-with-parens)
-    ("C-c ["  . wrap-with-brackets)
-    ("C-c {"  . wrap-with-braces)
-    ("C-c '"  . wrap-with-single-quotes)
-    ("C-c \"" . wrap-with-double-quotes)
-    ("C-c _"  . wrap-with-underscores)
-    ("C-c `"  . wrap-with-back-quotes)
-    ))
+   ("C-c ("  . wrap-with-parens)
+   ("C-c ["  . wrap-with-brackets)
+   ("C-c {"  . wrap-with-braces)
+   ("C-c '"  . wrap-with-single-quotes)
+   ("C-c \"" . wrap-with-double-quotes)
+   ("C-c _"  . wrap-with-underscores)
+   ("C-c `"  . wrap-with-back-quotes)))
 #+end_src
 
 ** Subwords
