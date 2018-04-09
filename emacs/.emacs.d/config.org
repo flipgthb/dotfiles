@@ -2629,7 +2629,7 @@ In loving memory of bspwm, Super + Enter opens a new terminal, old habits die ha
    #+end_src
 
 ** mode-line-bell
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package mode-line-bell
     :ensure t
     :config (mode-line-bell-mode))
@@ -3455,11 +3455,38 @@ Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, bu
      :ensure t)
    #+end_src
 
-* TODO Publishing
-** TODO AucTeX, org-ref, pdf-tools and such
+* Publishing
+** LaTeX and PDF
+Still need to configure the packages
+
+** TODO AucTeX
+#+begin_src emacs-lisp
+(use-package auctex
+  :ensure t)
+
+(use-package auctex-latexmk
+  :ensure t)
+
+(use-package auto-complete-auctex
+  :ensure t)
+#+end_src
+
+** TODO org-ref
+#+begin_src emacs-lisp
+(use-package org-ref
+  :ensure t)
+#+end_src
+
+** TODO pdf-tools
+#+begin_src emacs-lisp
+(use-package pdf-tools
+  :ensure t)
+#+end_src
+
 ** TODO Blogging
 Zamansky uses [[https://getnikola.com/blog/index.html][Nikola]] to produce the blog posts, but he don't show how to setup it.
 I'm thinking about starting to blog my work, so maybe I should look at it.
+There is also Hugo.
 * Programming
 ** Python
 *** Jedi
