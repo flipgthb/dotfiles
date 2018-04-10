@@ -3483,6 +3483,74 @@ Still need to configure the packages
   :ensure t)
 #+end_src
 
+** TODO instant preview of latex fragments
+   #+begin_src emacs-lisp :tangle no
+     ;; (org-inside-LaTeX-fragment-p)
+     (require 'xwidget)
+     (defvar katex-url "file:///PATH/TO/katex.html?")
+     (defvar katex-buffer nil)
+     (defvar katex-xw nil)
+     (setq katex-buffer (get-buffer-create "*xwidget webkit: Katex *"))
+
+     (defun org-katex-latex-fragment-maybe (&optional arg)
+       "TODO"
+       (if (org-inside-LaTeX-fragment-p)
+           (call-interactively #'org-katex-latex-fragment)))
+
+     (add-hook 'post-self-insert-hook #'org-katex-latex-fragment-maybe)
+     (add-hook! 'evil-insert-state-exit-hook (posframe-hide katex-buffer))
+
+     (defun org-katex-latex-fragment (&optional arg)
+       "TODO"
+       (interactive "P")
+       (let (beg end)
+         (let ((datum (org-element-context)))
+           (when (memq (org-element-type datum)
+                       '(latex-environment latex-fragment))
+             (setq beg (org-element-property :begin datum))
+             (setq end (org-element-property :end datum)))
+           (org-format-katex beg end))))
+
+     (defun org-format-katex (beg end)
+       "TODO"
+       (save-excursion
+         (goto-char beg)
+         (let* ((context (org-element-context))
+                (type (org-element-type context)))
+           (when (memq type '(latex-environment latex-fragment))
+             (let ((value (org-element-property :value context))
+                   (beg (org-element-property :begin context))
+                   (end (save-excursion
+                          (goto-char (org-element-property :end context))
+                          (skip-chars-backward " \r\t\n")
+                          (point))))
+               (goto-char end)
+               ;; (concat katex-url (url-hexify-string value))
+               (if (eq type 'latex-fragment)
+                   (setq value (substring value 2 -2)))
+               (if (eq type 'latex-environment)
+                   (progn
+                     (setq value (replace-regexp-in-string "begin{equation}\\|begin{align}\\|begin{align\\*}" "begin{aligned}" value))
+                     (setq value (replace-regexp-in-string "end{equation}\\|end{align}\\|end{align\\*}" "end{aligned}" value))))
+               (posframe-show
+                katex-buffer
+                :position (point)
+                :width 40
+                :height 10
+                :min-width 40
+                :min-height 10)
+               ;; (if (string-match ""))
+               (with-current-buffer katex-buffer
+                 (let ((url (concat katex-url (url-hexify-string value))))
+                   (if katex-xw
+                       (xwidget-webkit-goto-uri katex-xw url)
+                     (insert url)
+                     (put-text-property 1 (+ 1 (length url)) 'invisible t)
+                     (setq katex-xw (xwidget-insert 1 'webkit "katex" 1 1))
+                     (xwidget-put katex-xw 'callback 'xwidget-webkit-callback)
+                     (setq cursor-type nil)
+                     (xwidget-webkit-goto-uri katex-xw url)))))))))
+   #+end_src
 ** TODO Blogging
 Zamansky uses [[https://getnikola.com/blog/index.html][Nikola]] to produce the blog posts, but he don't show how to setup it.
 I'm thinking about starting to blog my work, so maybe I should look at it.
