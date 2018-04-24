@@ -562,7 +562,13 @@ Font to use fancy symbols in buffers and modeline
 #+begin_src emacs-lisp
 (use-package doom-themes
     :ensure t)
-(load-theme 'doom-one-light t)
+;; (load-theme 'doom-one-light t)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package doneburn-theme
+  :ensure t)
+(load-theme 'doneburn t)
 #+end_src
 
 **** Some customization
@@ -3470,6 +3476,8 @@ Still need to configure the packages
 (use-package auto-complete-auctex
   :ensure t)
 #+end_src
+
+*** TODO bratex
 
 ** TODO org-ref
 #+begin_src emacs-lisp
