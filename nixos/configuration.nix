@@ -56,24 +56,45 @@
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
   environment.systemPackages = with pkgs; [
-    wget curl
-    emacs
-    dropbox
-    fish
-    nix-repl
-    htop
-    man-pages
-    python3
-    ripgrep
-    # smartmontools
-    firefox
-    git
-    stow
-    terminator
-    arandr
-    rofi
-    polybar
-    vlc
+  wget curl
+  emacs
+  dropbox
+  fish
+  nix-repl
+  htop
+  man-pages
+  python3
+  ripgrep
+  # smartmontools
+  firefox
+  git
+  stow
+  terminator
+  arandr
+  rofi
+  polybar
+  yabar
+  vlc
+  mixxx
+  audacity
+  pavucontrol
+  lxappearance
+  dzen2
+  conky
+  dunst
+  nitrogen
+  gnome3.gtk
+  adapta-gtk-theme
+  numix-cursor-theme
+  numix-gtk-theme
+  numix-icon-theme
+  numix-solarized-gtk-theme
+  numix-sx-gtk-theme
+  arc-icon-theme
+  gnome3.gnome-settings-daemon
+  gnome3.networkmanagerapplet
+  networkmanager_dmenu
+  wmctrl
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -152,13 +173,13 @@
   #powerManagement.enable = true;
   services.upower.enable = true;
   powerManagement.enable = true;
-  services.logind.extraConfig = ''
-    HandlePowerKey=suspend
-    HandleSuspendKey=suspend
-    HandleHibernateKey=suspend
-    HandleLidSwitch=suspend
-    HandleLidSwitchDocked=ignore
-  '';
+  # services.logind.extraConfig = ''
+  #   HandlePowerKey=suspend
+  #   HandleSuspendKey=suspend
+  #   HandleHibernateKey=suspend
+  #   HandleLidSwitch=suspend
+  #   HandleLidSwitchDocked=ignore
+  # '';
 
 
   # Define a user account. Don't forget to set a password with ‘passwd’.

@@ -27,8 +27,10 @@
 			 ("gnu"   . "http://elpa.gnu.org/packages/")
 			 ("melpa" . "https://melpa.org/packages/")
 			 ("org"   . "https://orgmode.org/elpa/")))
-			 ;; ("SC" . "http://joseito.republika.pl/sunrise-commander/")))
+			 ;; ("SC" . "http://joseito.republika.pl/sunrise-commander/")
+
 (package-initialize)
+
 
 ;; Bootstrap `use-package'
 (unless (package-installed-p 'use-package)
