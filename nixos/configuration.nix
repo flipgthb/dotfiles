@@ -62,6 +62,8 @@
   fish
   nix-repl
   htop
+  udiskie
+  mpd
   man-pages
   python3
   ripgrep
@@ -95,6 +97,7 @@
   gnome3.networkmanagerapplet
   networkmanager_dmenu
   wmctrl
+  virtualbox
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
