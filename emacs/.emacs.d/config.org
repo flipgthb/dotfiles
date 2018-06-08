@@ -155,6 +155,13 @@ Show column number in mode line and set the number of characters before line wra
 (column-number-mode 1)
 (setq-default fill-column 80)
 #+end_src
+
+**** Tooltip uses echo area 
+#+begin_src emacs-lisp
+(tooltip-mode -1)
+(setq tooltip-use-echo-area t)
+#+end_src
+
 ** Dashboard
 This is your new startup screen, together with projectile it works in unison and
 provides you with a quick look into your latest projects and files.
