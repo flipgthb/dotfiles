@@ -162,6 +162,11 @@ Show column number in mode line and set the number of characters before line wra
 (setq tooltip-use-echo-area t)
 #+end_src
 
+**** Redisplay dont pause
+#+begin_src emacs-lisp
+(setq redisplay-dont-pause t)
+#+end_src
+
 ** Dashboard
 This is your new startup screen, together with projectile it works in unison and
 provides you with a quick look into your latest projects and files.
