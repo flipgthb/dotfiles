@@ -573,16 +573,19 @@ Font to use fancy symbols in buffers and modeline
 
 #+begin_src emacs-lisp
 (use-package doom-themes
-    :ensure t)
-(load-theme 'doom-one t)
-#+end_src
+    :defer t)
+;; (load-theme 'doom-one t)
 
-#+begin_src emacs-lisp
 (use-package doneburn-theme
-  :ensure t)
+  :defer t)
+
 (use-package zenburn-theme
-  :ensure t)
+  :defer t)
 ;; (load-theme 'doneburn t)
+
+(use-package nova-theme
+  :ensure t)
+(load-theme 'nova t)
 #+end_src
 
 **** Some customization
