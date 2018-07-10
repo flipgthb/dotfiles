@@ -65,9 +65,9 @@ This is annoying, remove this line if you like being visually reminded of events
 #+end_src
 
 **** Highligh current line
-=hl-line= is awesome! It's not very awesome in the terminal version of emacs though, so we don't use that.
-Besides, it's only used for programming.
-#+begin_src emacs-lisp
+=global-hl-line-mode= is useful with some themes.
+<2018-06-12 ter> But not with the =nova-theme=
+#+begin_src emacs-lisp :tangle no
   ;; (when window-system (add-hook 'prog-mode-hook 'hl-line-mode))
 (global-hl-line-mode t)
 #+end_src
@@ -691,8 +691,8 @@ Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org]
 
 *** Modeline
 **** Spaceline 
-<2018-01-23 ter> disabled to try other
-#+begin_src emacs-lisp
+<2018-07-10 ter> disabled to try other
+#+begin_src emacs-lisp :tangle no
 (use-package spaceline
   :ensure t)
 
@@ -707,7 +707,7 @@ Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org]
 ;; (spaceline-emacs-theme)
 #+end_src
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package spaceline-all-the-icons
   :ensure t
   :after spaceline
@@ -1462,6 +1462,14 @@ Following the instructions from [[https://github.com/hlissner/doom-emacs/tree/ma
 
 
 (+doom-modeline|init)
+#+end_src
+
+<2018-07-10 ter> Now there is a package!
+#+begin_src emacs-lisp
+(use-package doom-modeline
+      :ensure t
+      :defer t
+      :hook (after-init . doom-modeline-init))
 #+end_src
 
 To get info on active minor modes
