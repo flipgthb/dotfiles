@@ -3653,6 +3653,13 @@ There is also Hugo.
 (use-package nix-mode
   :defer t)
 #+end_src
+
+** ML
+#+begin_src emacs-lisp
+(use-package sml-mode
+  :ensure t)
+#+end_src
+
 * Minor conveniences
 <2018-03-28 qua> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
 Emacs is at it's best when it just does things for you, shows you the way, guides you so to speak.
