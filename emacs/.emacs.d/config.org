@@ -3662,9 +3662,6 @@ There is also Hugo.
 #+begin_src emacs-lisp
 (use-package sml-mode
   :ensure t)
-
-;; (setenv "PATH" (concat "/usr/bin/smlnj/bin:" (getenv "PATH")))
-;; (setq exec-path (cons "/usr/bin/smlnj/bin"  exec-path))
 #+end_src
 
 * Minor conveniences
