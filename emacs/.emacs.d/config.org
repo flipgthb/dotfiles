@@ -584,8 +584,12 @@ Font to use fancy symbols in buffers and modeline
 ;; (load-theme 'doneburn t)
 
 (use-package nova-theme
+  :defer t)
+;; (load-theme 'nova t)
+
+(use-package lab-themes
   :ensure t)
-(load-theme 'nova t)
+(lab-themes-load-style 'dark)
 #+end_src
 
 **** Some customization
@@ -3653,6 +3657,15 @@ There is also Hugo.
 (use-package nix-mode
   :defer t)
 #+end_src
+** ML
+#+begin_src emacs-lisp
+(use-package sml-mode
+  :ensure t)
+
+;; (setenv "PATH" (concat "/usr/bin/smlnj/bin:" (getenv "PATH")))
+;; (setq exec-path (cons "/usr/bin/smlnj/bin"  exec-path))
+#+end_src
+
 * Minor conveniences
 <2018-03-28 qua> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
 Emacs is at it's best when it just does things for you, shows you the way, guides you so to speak.
