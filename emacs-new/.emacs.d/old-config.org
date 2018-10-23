@@ -1,0 +1,3911 @@
+#+title: EMACS Configuration
+#+author: Felippe Alves
+#+startup: overview
+
+* Personal Keymap
+I'm gonna define "C-." as my "leader" key
+#+begin_src emacs-lisp
+(define-prefix-command 'f-map)
+(global-set-key (kbd "C-.") 'f-map)
+#+end_src
+
+** key-chord
+Also, I'm gonna try to use key chords with ",," as an chord for "C-."
+#+begin_src emacs-lisp
+(use-package key-chord
+  :ensure t
+  :config
+  (key-chord-mode t))
+(key-chord-define-global ",," 'f-map)
+#+end_src
+
+* User Interface
+** Emacs Internals
+*** Dash
+#+begin_src emacs-lisp
+  (use-package dash
+    :ensure t)
+#+end_src
+
+*** f
+#+begin_src emacs-lisp
+(use-package f
+  :ensure t)
+#+end_src
+
+** Genearal UI elements
+*** Looks
+**** Remove lame startup screen
+We use an actual replacement for it, keep reading or head directly to =dashboard=.
+#+begin_src emacs-lisp
+(setq inhibit-startup-message t)
+#+end_src
+
+**** Disable menus and scrollbars
+If you like using any of those, change =-1= to =1=.
+#+begin_src emacs-lisp
+(tool-bar-mode -1)
+(menu-bar-mode -1)
+(scroll-bar-mode -1)
+#+end_src
+
+**** Disable bell
+This is annoying, remove this line if you like being visually reminded of events.
+#+begin_src emacs-lisp
+(setq ring-bell-function 'ignore)
+#+end_src
+
+**** Set UTF-8 encoding
+#+begin_src emacs-lisp 
+  (setq locale-coding-system 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (set-selection-coding-system 'utf-8)
+  (prefer-coding-system 'utf-8)
+#+end_src
+
+**** Highligh current line
+=global-hl-line-mode= is useful with some themes.
+<2018-06-12 ter> But not with the =nova-theme=
+#+begin_src emacs-lisp :tangle no
+  ;; (when window-system (add-hook 'prog-mode-hook 'hl-line-mode))
+(global-hl-line-mode t)
+#+end_src
+
+**** Pretty symbols
+Changes =lambda= to an actual symbol and a few others as well, only in the GUI version though.
+#+begin_src emacs-lisp :tangle no
+  (when window-system
+        (use-package pretty-mode
+        :ensure t
+        :config
+        (global-pretty-mode t)))
+#+end_src
+
+**** Fringes
+#+begin_src emacs-lisp
+(fringe-mode '(10 . 1))             ;; 10 pixel window fringes
+#+end_src
+
+**** Empity lines indicators
+#+begin_src emacs-lisp
+(toggle-indicate-empty-lines t)     ;; display dashes on left border end of buffer
+#+end_src
+
+*** Functionality
+**** Disable backups and auto-saves
+I don't use either, you might want to turn those from =nil= to =t= if you do.
+#+begin_src emacs-lisp :tangle no
+(setq make-backup-files nil)
+(setq auto-save-default nil)
+#+end_src
+
+**** Change yes-or-no questions into y-or-n questions
+#+begin_src emacs-lisp
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+**** Async
+Lets us use asynchronous processes wherever possible, pretty useful.
+#+begin_src emacs-lisp
+  (use-package async
+    :ensure t
+    :init (dired-async-mode 1))
+#+end_src
+
+**** Apropos
+More options on apropos search
+#+begin_src emacs-lisp
+(setq apropos-do-all t)
+#+end_src
+
+**** Buffer refresh and auto revert
+Hit =F5= to refresh the buffer
+#+begin_src emacs-lisp
+(global-set-key (kbd "<f5>") 'revert-buffer)
+#+end_src
+
+Allow for automatic refresh when file in buffer is changed on disk
+#+begin_src emacs-lisp
+(global-auto-revert-mode 1)  ;; revert buffers when file is changed on disk
+(setq auto-revert-verbose t) ;; but alert me
+#+end_src
+
+**** Pasting
+#+begin_src emacs-lisp
+(setq save-interprogram-paste-before-kill t)
+#+end_src
+
+**** Tabs
+Never use hard tabs
+#+begin_src emacs-lisp
+    (setq-default indent-tabs-mode nil)
+#+end_src
+
+**** Paren Mode
+Turn of highlighting of matching delimiters and immediatly show matching delimiter
+#+begin_src emacs-lisp
+(show-paren-mode t)
+(setq show-paren-delay 0)
+#+end_src
+
+**** Column number and fill column
+Show column number in mode line and set the number of characters before line wrap
+#+begin_src emacs-lisp
+(column-number-mode 1)
+(setq-default fill-column 80)
+#+end_src
+
+**** Tooltip uses echo area 
+#+begin_src emacs-lisp
+(tooltip-mode -1)
+(setq tooltip-use-echo-area t)
+#+end_src
+
+**** Redisplay dont pause
+#+begin_src emacs-lisp
+(setq redisplay-dont-pause t)
+#+end_src
+
+** Dashboard
+This is your new startup screen, together with projectile it works in unison and
+provides you with a quick look into your latest projects and files.
+Change the welcome message to whatever string you want and
+change the numbers to suit your liking, I find 5 to be enough.
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config
+      (dashboard-setup-startup-hook)
+      (setq dashboard-startup-banner "~/.emacs.d/img/dashLogo.png")
+      (setq dashboard-items '((recents  . 5)
+                              (projects . 5)))
+      (setq dashboard-banner-logo-title ""))
+#+end_src
+
+** Key bindings discovery and other discoverability related stuff
+*** which-key
+#+begin_src emacs-lisp
+(use-package which-key
+  :ensure t 
+  :config
+  (which-key-mode))
+#+end_src
+
+*** Helpful
+#+begin_src emacs-lisp
+(use-package helpful
+  :ensure t
+  :bind (("C-h f" . helpful-callable)
+         ("C-h v" . helpful-variable)
+         ("C-h k" . helpful-key)
+         ("C-h SPC" . helpful-at-point)
+         ("C-h F" . helpful-function)
+         ("C-h C" . helpful-command)))
+#+end_src
+
+*** TODO Suggest
+*** try
+    #+begin_src emacs-lisp
+      (use-package try
+      :ensure t)
+    #+end_src
+*** TODO cheat-sh
+*** TODO cheatsheet
+*** tldr
+#+begin_src emacs-lisp
+(use-package tldr
+  :ensure t)
+#+end_src
+
+** Hydra
+#+begin_src emacs-lisp
+(use-package hydra 
+  :ensure t)
+
+;; Hydra for modes that toggle on and off
+(define-key f-map 
+ (kbd "t")
+ (defhydra toggle (:color blue)
+   "toggle"
+   ("a" abbrev-mode "abbrev")
+   ("s" flyspell-mode "flyspell")
+   ("d" toggle-debug-on-error "debug")
+   ("c" fci-mode "fCi")
+   ("f" auto-fill-mode "fill")
+   ("t" toggle-truncate-lines "truncate")
+   ("w" whitespace-mode "whitespace")
+   ("q" nil "cancel")))
+
+;; Hydra for navigation
+(define-key f-map
+ (kbd "n")
+ (defhydra gotoline 
+   (:pre (linum-mode 1)
+	:post (linum-mode -1))
+   "goto"
+   ("t" (lambda () (interactive)(move-to-window-line-top-bottom 0)) "top")
+   ("b" (lambda () (interactive)(move-to-window-line-top-bottom -1)) "bottom")
+   ("m" (lambda () (interactive)(move-to-window-line-top-bottom)) "middle")
+   ("e" (lambda () (interactive)(end-of-buffer)) "end")
+   ("c" recenter-top-bottom "recenter")
+   ("n" next-line "down")
+   ("p" (lambda () (interactive) (forward-line -1))  "up")
+   ("g" goto-line "goto-line")
+   ))
+
+;; Hydra for some org-mode stuff
+(define-key f-map
+ (kbd "o")
+ (defhydra hydra-global-org (:color blue)
+   "Org"
+   ("t" org-timer-start "Start Timer")
+   ("s" org-timer-stop "Stop Timer")
+   ("r" org-timer-set-timer "Set Timer") ; This one requires you be in an orgmode doc, as it sets the timer for the header
+   ("p" org-timer "Print Timer") ; output timer value to buffer
+   ("w" (org-clock-in '(4)) "Clock-In") ; used with (org-clock-persistence-insinuate) (setq org-clock-persist t)
+   ("o" org-clock-out "Clock-Out") ; you might also want (setq org-log-note-clock-out t)
+   ("j" org-clock-goto "Clock Goto") ; global visit the clocked task
+   ("c" org-capture "Capture") ; Don't forget to define the captures you want http://orgmode.org/manual/Capture.html
+   ("l" (or )rg-capture-goto-last-stored "Last Capture")))
+#+end_src
+
+** Projectile
+#+begin_src emacs-lisp
+;; projectile
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-global-mode)
+(setq projectile-completion-system 'ivy))
+
+(use-package counsel-projectile
+  :ensure t
+  :config
+  (counsel-projectile-mode))
+#+end_src
+
+*** Let projectile call make
+#+begin_src emacs-lisp :tangle no
+  (global-set-key (kbd "<f6>") 'projectile-compile-project)
+#+end_src
+
+** Navigation
+*** Ivy/Counsel/Swiper - Search and completion framework (or emacs elements navigation)
+    #+begin_src emacs-lisp
+      (use-package counsel
+        :ensure t
+        :bind
+        (("M-y" . counsel-yank-pop)
+         :map ivy-minibuffer-map
+         ("M-y" . ivy-next-line)))
+
+      (use-package ivy
+        :ensure t
+        :diminish (ivy-mode)
+        :bind (("C-x b" . ivy-switch-buffer))
+        :config
+        (ivy-mode 1)
+        (setq ivy-use-virtual-buffers t)
+        (setq ivy-display-style 'fancy))
+
+      (use-package swiper
+        :ensure t
+        :bind (("C-s" . swiper)
+               ("C-r" . swiper)
+               ("C-c C-r" . ivy-resume)
+               ("M-x" . counsel-M-x)
+               ("C-x C-f" . counsel-find-file))
+        :config
+        (progn
+          (ivy-mode 1)
+          (setq ivy-use-virtual-buffers t)
+          (setq ivy-display-style 'fancy)
+          (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+          ;; (global-set-key "\C-s" 'swiper)
+          ;; (global-set-key (kbd "C-c C-r") 'ivy-resume)
+          ;; (global-set-key (kbd "<f6>") 'ivy-resume)
+          ;; (global-set-key (kbd "M-x") 'counsel-M-x)
+          ;; (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+          ;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+          ;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+          ;; (global-set-key (kbd "<f1> l") 'counsel-load-library)
+          ;; (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+          ;; (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+          ;; (global-set-key (kbd "C-c g") 'counsel-git)
+          ;; (global-set-key (kbd "C-c j") 'counsel-git-grep)
+          ;; (global-set-key (kbd "C-c k") 'counsel-ag)
+          ;; (global-set-key (kbd "C-x l") 'counsel-locate)
+          ;; (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+          ))
+
+(use-package ivy-hydra
+  :ensure t)
+     #+end_src
+
+*** Avy - Text navigation
+    #+begin_src emacs-lisp
+      (use-package avy
+	:ensure t
+	:bind ("M-s" . avy-goto-char))
+      ;; (use-package avy
+      ;;   :ensure t
+      ;;   :config
+      ;;   (avy-setup-default))
+    #+end_src
+
+*** Anzu
+#+begin_src emacs-lisp
+(use-package anzu
+  :ensure t
+  :config
+  (anzu-mode +1)
+  (global-set-key [remap query-replace] 'anzu-query-replace)
+  (global-set-key [remap query-replace-regexp] 'anzu-query-replace-regexp))
+#+end_src
+*** smex
+#+begin_src emacs-lisp 
+(use-package smex
+  :ensure t)
+#+end_src
+
+*** Ace-window and winner - Window and workspace navigation 
+#+begin_src emacs-lisp
+;; ace-window
+(use-package ace-window
+  :ensure t
+  :init
+  (progn
+    (global-set-key [remap other-window] 'ace-window)
+    (custom-set-faces
+     '(aw-leading-char-face
+       ((t (:inherit ace-jump-face-foreground :height 3.0))))) 
+    ))
+
+;; preserve and navigate through window configurations with C-c <- or C-c ->
+(winner-mode 1)
+#+end_src
+
+Copied this bit from Zamansky's tutorial
+#+begin_src emacs-lisp
+(defun f/swap-windows ()
+  ""
+  (interactive)
+  (ace-swap-window)
+  (aw-flip-window))
+
+(define-key f-map 
+ (kbd "w")
+ (defhydra window (:color red)
+   "window"
+   ("+" enlarge-window "v-enlarge")
+   ("-" shrink-window "v-shrink")
+   (">" enlarge-window-horizontally "h-enlarge")
+   ("<" shrink-window-horizontally "h-shrink")
+   ("s" f/swap-windows "swap windows")
+   ("q" nil "quit")))
+#+end_src
+
+**** TODO persp or eyebrowse
+*** Buffers
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+(setq ibuffer-saved-filter-groups
+      (quote (("default"
+	       ("dired" (mode . dired-mode))
+	       ("org" (name . "^.*org$"))
+
+	       ("web" (or (mode . web-mode) (mode . js2-mode)))
+	       ("shell" (or (mode . eshell-mode) (mode . shell-mode)))
+	       ("mu4e" (name . "\*mu4e\*"))
+	       ("programming" (or
+			       (mode . python-mode)
+			       (mode . c++-mode)))
+	       ("emacs" (or
+			 (name . "^\\*scratch\\*$")
+			 (name . "^\\*Messages\\*$")))
+	       ))))
+(add-hook 'ibuffer-mode-hook
+	  (lambda ()
+	    (ibuffer-auto-mode 1)
+	    (ibuffer-switch-to-saved-filter-groups "default")))
+
+;; don't show these
+;(add-to-list 'ibuffer-never-show-predicates "zowie")
+
+;; Don't show filter groups if there are no buffers in that group
+(setq ibuffer-show-empty-filter-groups nil)
+
+;; Don't ask for confirmation to delete marked buffers
+(setq ibuffer-expert t)
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+;; (defalias 'list-buffers 'ibuffer) ; make ibuffer default
+;; (defalias 'list-buffers 'ibuffer-other-window) ; make ibuffer default
+#+end_src
+
+*** Dumb-jump
+#+begin_src emacs-lisp
+(use-package dumb-jump
+  :ensure t
+  :bind (("M-g o" . dumb-jump-go-other-window)
+         ("M-g j" . dumb-jump-go)
+	       ("M-g x" . dumb-jump-go-prefer-external)
+	       ("M-g z" . dumb-jump-go-prefer-external-other-window))
+  :config (setq dumb-jump-selector 'ivy) ;; (setq dumb-jump-selector 'helm)
+  ;; (setq dumb-jump-selector 'ivy) ;; (setq dumb-jump-selector 'helm)
+  :init
+  (dumb-jump-mode))
+#+end_src
+
+*** Dired
+Basic dired commands 
+- Enter vs a
+- f to visit, v to view
+- o and C-o
+- + to make a directory
+- m to mark
+- C copy, R rename/move, D delete
+- C-x C-q dired-inline-mode
+#+begin_src emacs-lisp :tangle no
+(use-package dired+
+  :ensure t
+  :config (require 'dired+)
+  )
+#+end_src
+
+*** File manager
++I abandoned treemacs, looking for an alternative as we speak+
+I found an alternative, Sunrise Commander!
+I'm not changing much, just disabling the mouse and adding buttons.
+#+begin_src emacs-lisp tangle no
+  ;; (use-package sunrise-commander
+  ;;   :ensure t
+  ;;   :init
+  ;;     (use-package sunrise-x-buttons :ensure t)
+  ;;     (use-package sunrise-x-modeline :ensure t)
+  ;;     (setq sr-cursor-follows-mouse nil)
+  ;;     (define-key sr-mode-map [mouse-1] nil)
+  ;;     (define-key sr-mode-map [mouse-movement] nil)
+  ;;   :bind ("s-t" . sunrise))
+#+end_src
+
+** Appearance
+*** Fonts
+#+begin_src emacs-lisp
+(require 'cl)
+;; function to test fonts installed before setting some as default
+(defun font-candidate (&rest fonts)
+  "Return existing font which first match."
+  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+
+;; try to set some fonts as default
+(set-face-attribute 'default nil :font (font-candidate
+                                        "Hack-15:weight=normal"
+                                        "Source Code Pro-15:weight=normal"
+                                        "Droid Sans Mono-15:weight=normal"
+                                        "DejaVu Sans Mono-15:weight=normal"))
+#+end_src
+
+**** All the icons font
+Font to use fancy symbols in buffers and modeline
+#+begin_src emacs-lisp
+(use-package all-the-icons
+  :ensure t)
+
+(setq inhibit-compacting-font-caches t)
+#+end_src
+
+*** Theme
+#+begin_src emacs-lisp :tangle no
+(use-package doom-themes
+  :ensure t
+  :config
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+;;   (load-theme 'doom-spacegrey t)
+  (doom-themes-visual-bell-config)
+;;   ;; (doom-themes-neotree-config)
+  (doom-themes-org-config)
+  )
+(use-package solarized-theme
+  :ensure t)
+;; (use-package spacemacs-theme
+;;   :ensure t)
+;; (use-package goose-theme
+;;   :ensure t
+;;   :init (load-theme 'goose t))
+(use-package github-modern-theme
+  :ensure t)
+(use-package zenburn-theme
+  :ensure t)
+(use-package arjen-grey-theme
+  :ensure t)
+(use-package zerodark-theme
+  :ensure t)
+
+(setq my-theme-list '(zerodark
+                      arjen-grey
+                      zenburn
+                      github-modern
+                      solarized-dark
+                      solarized-light
+                      ;; spacemacs-dark
+                      ;; spacemacs-light
+                      doom-spacegrey
+                      doom-nova
+                      doom-tomorrow
+                      doom-one
+                      doom-solarized-light))
+
+(load-theme (car my-theme-list) t)
+
+(defun cycle-themes ()
+  "Cycle between theme in my-theme-list"
+  (interactive)
+  (disable-theme (car my-theme-list))
+  (setq my-theme-list (-rotate 1 my-theme-list))
+  (load-theme (car my-theme-list) t))
+
+(global-set-key (kbd "C-c m") 'cycle-themes)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package doom-themes
+    :defer t)
+;; (load-theme 'doom-one t)
+
+(use-package doneburn-theme
+  :defer t)
+
+(use-package zenburn-theme
+  :defer t)
+;; (load-theme 'doneburn t)
+
+(use-package nova-theme
+  :defer t)
+;; (load-theme 'nova t)
+
+(use-package lab-themes
+  :ensure t)
+(lab-themes-load-style 'dark)
+#+end_src
+
+**** Some customization
+Taken from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
+#+begin_src emacs-lisp :tangle no
+(let ((class '((class color) (min-colors 89)))
+        (default (if (true-color-p) "#abb2bf" "#afafaf"))
+        (light (if (true-color-p) "#ccd4e3" "#d7d7d7"))
+        (background (if (true-color-p) "#282c34" "#333333"))
+        (background-dark (if (true-color-p) "#24282f" "#222222"))
+        (background-darker (if (true-color-p) "#22252c" "#222222"))
+        (mode-line-inactive (if "#1c2129" "#222222"))
+        (mode-line-active (if (true-color-p) "#6f337e" "#875f87"))
+        (background-lighter (if (true-color-p) "#3a3f4b" "#5f5f5f"))
+        (background-red (if (true-color-p) "#4c3840" "#5f5f5f"))
+        (bright-background-red (if (true-color-p) "#744a5b" "#744a5b"))
+        (background-purple (if (true-color-p) "#48384c" "#5f5f5f"))
+        (background-blue (if (true-color-p) "#38394c" "#444444"))
+        (bright-background-blue (if (true-color-p) "#4e5079" "#4e5079"))
+        (background-green (if (true-color-p) "#3d4a41" "#5f5f5f"))
+        (bright-background-green (if (true-color-p) "#3f6d54" "#3f6d54"))
+        (background-orange (if (true-color-p) "#4a473d" "#5f5f5f"))
+        (hl-line (if (true-color-p) "#2c323b" "#333333"))
+        (grey (if (true-color-p) "#cccccc" "#cccccc"))
+        (grey-dark (if (true-color-p) "#666666" "#666666"))
+        (highlight (if (true-color-p) "#3e4451" "#5f5f5f"))
+        (comment (if (true-color-p) "#687080" "#707070"))
+        (orange (if (true-color-p) "#da8548" "#d7875f"))
+        (orange-light (if (true-color-p) "#ddbd78" "#d7af87"))
+        (red (if (true-color-p) "#ff6c6b" "#ff5f5f"))
+        (purple (if (true-color-p) "#c678dd" "#d787d7"))
+        (purple-dark (if (true-color-p) "#64446d" "#5f5f5f"))
+        (blue (if (true-color-p) "#61afef" "#5fafff"))
+        (blue-dark (if (true-color-p) "#1f5582" "#005f87"))
+        (green (if (true-color-p) "#98be65" "#87af5f"))
+        (green-light (if (true-color-p) "#9eac8c" "#afaf87"))
+        (peach "PeachPuff3")
+        (diff-added-background (if (true-color-p) "#284437" "#284437"))
+        (diff-added-refined-background (if (true-color-p) "#1e8967" "#1e8967"))
+        (diff-removed-background (if (true-color-p) "#583333" "#580000"))
+        (diff-removed-refined-background (if (true-color-p) "#b33c49" "#b33c49"))
+        (diff-current-background (if (true-color-p) "#29457b" "#29457b"))
+        (diff-current-refined-background (if (true-color-p) "#4174ae" "#4174ae")))
+
+    (custom-theme-set-faces
+     'zerodark
+
+     `(fancy-battery-charging ((,class (:background ,background-blue :height 1.0 :bold t))))
+     `(fancy-battery-discharging ((,class (:background ,background-blue :height 1.0))))
+     `(fancy-battery-critical ((,class (:background ,background-blue :height 1.0))))
+     
+     ;; mode line stuff
+     `(mode-line ((,class (:background ,background-blue :height 1.0 :foreground ,blue
+                                       :distant-foreground ,background-blue
+                                       :box ,(when zerodark-use-paddings-in-mode-line
+                                               (list :line-width 6 :color background-blue))))))
+     
+     `(mode-line-inactive ((,class (:background ,background-blue :height 1.0 :foreground ,default
+                                                :distant-foreground ,background-blue
+                                                :box ,(when zerodark-use-paddings-in-mode-line
+                                                        (list :line-width 6 :color background-blue))))))
+
+     `(header-line ((,class (:inherit mode-line-inactive))))
+
+     `(powerline-active0 ((,class (:height 1.0 :foreground ,blue :background ,background-blue
+                                           :distant-foreground ,background-blue))))
+     `(powerline-active1 ((,class (:height 1.0 :foreground ,blue :background ,background-blue
+                                           :distant-foreground ,background-blue))))
+     `(powerline-active2 ((,class (:height 1.0 :foreground ,blue :background ,background-blue
+                                           :distant-foreground ,background-blue))))
+     `(powerline-inactive0 ((,class (:height 1.0 :foreground ,blue :background ,background-blue
+                                             :distant-foreground ,background-blue))))
+     `(powerline-inactive1 ((,class (:height 1.0 :foreground ,blue :background ,background-blue
+                                             distant-foreground ,background-blue))))
+     `(powerline-inactive2 ((,class (:height 1.0 :foreground ,blue :background ,background-blue
+                                             :distant-foreground ,background-blue))))
+
+     `(dashboard-heading-face ((,class (:background ,background :foreground ,blue
+                                                    :bold t :height 1.2))))
+     `(dashboard-banner-logo-title-face ((,class (:background ,background :foreground ,blue
+                                                              :bold t :height 1.2))))
+     `(widget-button ((,class (:background ,background :foreground ,default :bold nil
+                                           :underline t :height 0.9))))
+     
+     ;; ;; erc stuff
+     ;; `(erc-nick-default-face ((,class :foreground ,blue :background ,background :weight bold)))
+
+     ;; org stuff
+     `(outline-1 ((,class (:foreground ,blue :weight bold :height 1.2 :bold nil))))
+     `(outline-2 ((,class (:foreground ,purple :weight bold :height 1.1 :bold nil))))
+     `(outline-3 ((,class (:foreground ,peach :weight bold :height 1.1 :bold nil))))
+     `(outline-4 ((,class (:foreground ,green-light :weight bold :height 1.0 :bold nil))))
+     `(outline-5 ((,class (:foreground ,blue :weight bold :height 1.0 :bold nil))))
+     `(outline-6 ((,class (:foreground ,purple :weight bold :height 1.0 :bold nil))))
+     `(outline-7 ((,class (:foreground ,peach :weight bold :height 1.0 :bold nil))))
+     `(outline-8 ((,class (:foreground ,green-light :weight bold :height 1.0 :bold nil))))
+     
+     `(org-block-begin-line ((,class (:background ,background-blue :foreground ,blue
+                                                  :bold t :height 1.0))))
+     `(org-block-end-line ((,class (:background ,background-blue :foreground ,blue
+                                                :bold t :height 1.0))))))
+#+end_src
+
+*** Modeline
+**** Spaceline 
+<2018-07-10 ter> disabled to try other
+#+begin_src emacs-lisp :tangle no
+(use-package spaceline
+  :ensure t)
+
+(require 'spaceline-config)
+;; (spaceline-helm-mode)
+(setq spaceline-buffer-encoding-abbrev-p nil)
+(setq spaceline-line-column-p nil)
+(setq spaceline-line-p nil)
+(setq powerline-default-separator (quote arrow))
+(setq anzu-cons-mode-line-p nil)
+;; (spaceline-spacemacs-theme)
+;; (spaceline-emacs-theme)
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+(use-package spaceline-all-the-icons
+  :ensure t
+  :after spaceline
+  :config
+  (spaceline-all-the-icons-theme)
+  (spaceline-all-the-icons--setup-anzu)            ;; Enable anzu searching
+  (spaceline-all-the-icons--setup-package-updates) ;; Enable package update indicator
+  (spaceline-all-the-icons--setup-git-ahead)       ;; Enable # of commits ahead of upstream in git
+  (setq spaceline-all-the-icons-separator-type 'none))
+#+end_src
+
+**** Doom-Emacs Modeline
+Following the instructions from [[https://github.com/hlissner/doom-emacs/tree/master/modules/ui/doom-modeline][Doom-Emacs]]
+#+begin_src emacs-lisp :tangle no
+  (defmacro add-hook! (&rest args)
+    "A convenience macro for `add-hook'. Takes, in order:
+    1. Optional properties :local and/or :append, which will make the hook
+       buffer-local or append to the list of hooks (respectively),
+    2. The hooks: either an unquoted major mode, an unquoted list of major-modes,
+       a quoted hook variable or a quoted list of hook variables. If unquoted, the
+       hooks will be resolved by appending -hook to each symbol.
+    3. A function, list of functions, or body forms to be wrapped in a lambda.
+  Examples:
+      (add-hook! 'some-mode-hook 'enable-something)
+      (add-hook! some-mode '(enable-something and-another))
+      (add-hook! '(one-mode-hook second-mode-hook) 'enable-something)
+      (add-hook! (one-mode second-mode) 'enable-something)
+      (add-hook! :append (one-mode second-mode) 'enable-something)
+      (add-hook! :local (one-mode second-mode) 'enable-something)
+      (add-hook! (one-mode second-mode) (setq v 5) (setq a 2))
+      (add-hook! :append :local (one-mode second-mode) (setq v 5) (setq a 2))
+  Body forms can access the hook's arguments through the let-bound variable
+  `args'."
+    (declare (indent defun) (debug t))
+    (let ((hook-fn 'add-hook)
+          append-p local-p)
+      (while (keywordp (car args))
+        (pcase (pop args)
+          (:append (setq append-p t))
+          (:local  (setq local-p t))
+          (:remove (setq hook-fn 'remove-hook))))
+      (let ((hooks (doom--resolve-hook-forms (pop args)))
+            (funcs
+             (let ((val (car args)))
+               (if (memq (car-safe val) '(quote function))
+                   (if (cdr-safe (cadr val))
+                       (cadr val)
+                     (list (cadr val)))
+                 (list args))))
+            forms)
+        (dolist (fn funcs)
+          (setq fn (if (symbolp fn)
+                       `(function ,fn)
+                     `(lambda (&rest _) ,@args)))
+          (dolist (hook hooks)
+            (push (if (eq hook-fn 'remove-hook)
+                      `(remove-hook ',hook ,fn ,local-p)
+                    `(add-hook ',hook ,fn ,append-p ,local-p))
+                  forms)))
+        `(progn ,@(nreverse forms)))))
+
+  (defmacro def-modeline-segment! (name &rest forms)
+    "Defines a modeline segment and byte compiles it."
+    (declare (indent defun) (doc-string 2))
+    (let ((sym (intern (format "doom-modeline-segment--%s" name))))
+      `(progn
+         (defun ,sym () ,@forms)
+         ,(unless (bound-and-true-p byte-compile-current-file)
+            `(let (byte-compile-warnings)
+               (byte-compile #',sym))))))
+
+  (defmacro def-modeline! (name lhs &optional rhs)
+    "Defines a modeline format and byte-compiles it. NAME is a symbol to identify
+  it (used by `doom-modeline' for retrieval). LHS and RHS are lists of symbols of
+  modeline segments defined with `def-modeline-segment!'.
+  Example:
+    (def-modeline! minimal
+      (bar matches \" \" buffer-info)
+      (media-info major-mode))
+    (doom-set-modeline 'minimal t)"
+    (let ((sym (intern (format "doom-modeline-format--%s" name)))
+          (lhs-forms (doom--prepare-modeline-segments lhs))
+          (rhs-forms (doom--prepare-modeline-segments rhs)))
+      `(progn
+         (defun ,sym ()
+           (let ((lhs (list ,@lhs-forms))
+                 (rhs (list ,@rhs-forms)))
+             (let ((rhs-str (format-mode-line rhs)))
+               (list lhs
+                     (propertize
+                      " " 'display
+                      `((space :align-to (- (+ right right-fringe right-margin)
+                                            ,(+ 1 (string-width rhs-str))))))
+                     rhs-str))))
+         ,(unless (bound-and-true-p byte-compile-current-file)
+            `(let (byte-compile-warnings)
+               (byte-compile #',sym))))))
+
+  (defsubst doom--prepare-modeline-segments (segments)
+    (cl-loop for seg in segments
+             if (stringp seg)
+              collect seg
+             else
+              collect (list (intern (format "doom-modeline-segment--%s" (symbol-name seg))))))
+
+  (defun doom-modeline (key)
+    "Returns a mode-line configuration associated with KEY (a symbol). Throws an
+  error if it doesn't exist."
+    (let ((fn (intern (format "doom-modeline-format--%s" key))))
+      (when (functionp fn)
+        `(:eval (,fn)))))
+
+  (defun doom-set-modeline (key &optional default)
+    "Set the modeline format. Does nothing if the modeline KEY doesn't exist. If
+  DEFAULT is non-nil, set the default mode-line for all buffers."
+    (when-let ((modeline (doom-modeline key)))
+      (setf (if default
+                (default-value 'mode-line-format)
+              (buffer-local-value 'mode-line-format (current-buffer)))
+            modeline)))
+
+
+  (use-package eldoc-eval
+    :ensure t
+    :config
+    (defun +doom-modeline-eldoc (text)
+      (concat (when (display-graphic-p)
+                (+doom-modeline--make-xpm
+                 (face-background 'doom-modeline-eldoc-bar nil t)
+                 +doom-modeline-height
+                 +doom-modeline-bar-width))
+              text))
+
+    ;; Show eldoc in the mode-line with `eval-expression'
+    (defun +doom-modeline--show-eldoc (input)
+      "Display string STR in the mode-line next to minibuffer."
+      (with-current-buffer (eldoc-current-buffer)
+        (let* ((str              (and (stringp input) input))
+               (mode-line-format (or (and str (or (+doom-modeline-eldoc str) str))
+                                     mode-line-format))
+               mode-line-in-non-selected-windows)
+          (force-mode-line-update)
+          (sit-for eldoc-show-in-mode-line-delay))))
+    (setq eldoc-in-minibuffer-show-fn #'+doom-modeline--show-eldoc)
+
+    (eldoc-in-minibuffer-mode +1))
+
+  ;; anzu and evil-anzu expose current/total state that can be displayed in the
+  ;; mode-line.
+  ;; (use-package evil-anzu
+  ;;   :requires evil
+  ;;   :init
+  ;;   (add-transient-hook! #'evil-ex-start-search (require 'evil-anzu))
+  ;;   (add-transient-hook! #'evil-ex-start-word-search (require 'evil-anzu))
+  ;;   :config
+  ;;   (setq anzu-cons-mode-line-p nil
+  ;;         anzu-minimum-input-length 1
+  ;;         anzu-search-threshold 250)
+  ;;   ;; Avoid anzu conflicts across buffers
+  ;;   (mapc #'make-variable-buffer-local
+  ;;         '(anzu--total-matched anzu--current-position anzu--state
+  ;;           anzu--cached-count anzu--cached-positions anzu--last-command
+  ;;           anzu--last-isearch-string anzu--overflow-p))
+  ;;   ;; Ensure anzu state is cleared when searches & iedit are done
+  ;;   (add-hook 'isearch-mode-end-hook #'anzu--reset-status t)
+  ;;   (add-hook '+evil-esc-hook #'anzu--reset-status t)
+  ;;   (add-hook 'iedit-mode-end-hook #'anzu--reset-status))
+
+
+  ;; Keep `+doom-modeline-current-window' up-to-date
+  (defvar +doom-modeline-current-window (frame-selected-window))
+  (defun +doom-modeline|set-selected-window (&rest _)
+    "Sets `+doom-modeline-current-window' appropriately"
+    (when-let ((win (frame-selected-window)))
+      (unless (minibuffer-window-active-p win)
+        (setq +doom-modeline-current-window win))))
+
+  (add-hook 'window-configuration-change-hook #'+doom-modeline|set-selected-window)
+  (add-hook 'focus-in-hook #'+doom-modeline|set-selected-window)
+  (advice-add #'handle-switch-frame :after #'+doom-modeline|set-selected-window)
+  (advice-add #'select-window :after #'+doom-modeline|set-selected-window)
+
+  ;; fish-style modeline
+(use-package shrink-path
+    :ensure t
+    :commands (shrink-path-prompt shrink-path-file-mixed))
+
+
+  ;;
+  ;; Variables
+  ;;
+
+  (defvar +doom-modeline-height 29
+    "How tall the mode-line should be (only respected in GUI emacs).")
+
+  (defvar +doom-modeline-bar-width 3
+    "How wide the mode-line bar should be (only respected in GUI emacs).")
+
+  (defvar +doom-modeline-vspc
+    (propertize " " 'face 'variable-pitch)
+    "TODO")
+
+  (defvar +doom-modeline-buffer-file-name-style 'truncate-upto-project
+    "Determines the style used by `+doom-modeline-buffer-file-name'.
+
+  Given ~/Projects/FOSS/emacs/lisp/comint.el
+  truncate-upto-project => ~/P/F/emacs/lisp/comint.el
+  truncate-upto-root => ~/P/F/e/lisp/comint.el
+  truncate-all => ~/P/F/e/l/comint.el
+  relative-from-project => emacs/lisp/comint.el
+  relative-to-project => lisp/comint.el
+  file-name => comint.el")
+
+  ;; externs
+  (defvar anzu--state nil)
+  ;; (defvar evil-mode nil)
+  ;; (defvar evil-state nil)
+  ;; (defvar evil-visual-selection nil)
+  (defvar iedit-mode nil)
+  (defvar all-the-icons-scale-factor)
+  (defvar all-the-icons-default-adjust)
+
+
+  ;;
+  ;; Custom faces
+  ;;
+
+  (defgroup +doom-modeline nil
+    ""
+    :group 'doom)
+
+  (defface doom-modeline-buffer-path
+    '((t (:inherit (mode-line-emphasis bold))))
+    "Face used for the dirname part of the buffer path."
+    :group '+doom-modeline)
+
+  (defface doom-modeline-buffer-file
+    '((t (:inherit (mode-line-buffer-id bold))))
+    "Face used for the filename part of the mode-line buffer path."
+    :group '+doom-modeline)
+
+  (defface doom-modeline-buffer-modified
+    '((t (:inherit (error bold) :background nil)))
+    "Face used for the 'unsaved' symbol in the mode-line."
+    :group '+doom-modeline)
+
+  (defface doom-modeline-buffer-major-mode
+    '((t (:inherit (mode-line-emphasis bold))))
+    "Face used for the major-mode segment in the mode-line."
+    :group '+doom-modeline)
+
+  (defface doom-modeline-highlight
+    '((t (:inherit mode-line-emphasis)))
+    "Face for bright segments of the mode-line."
+    :group '+doom-modeline)
+
+  (defface doom-modeline-panel
+    '((t (:inherit mode-line-highlight)))
+    "Face for 'X out of Y' segments, such as `+doom-modeline--anzu', `+doom-modeline--evil-substitute' and
+  `iedit'"
+    :group '+doom-modeline)
+
+  (defface doom-modeline-info
+    `((t (:inherit (success bold))))
+    "Face for info-level messages in the modeline. Used by `*vc'."
+    :group '+doom-modeline)
+
+  (defface doom-modeline-warning
+    `((t (:inherit (warning bold))))
+    "Face for warnings in the modeline. Used by `*flycheck'"
+    :group '+doom-modeline)
+
+  (defface doom-modeline-urgent
+    `((t (:inherit (error bold))))
+    "Face for errors in the modeline. Used by `*flycheck'"
+    :group '+doom-modeline)
+
+  ;; Bar
+  (defface doom-modeline-bar '((t (:inherit highlight)))
+    "The face used for the left-most bar on the mode-line of an active window."
+    :group '+doom-modeline)
+
+  (defface doom-modeline-eldoc-bar '((t (:inherit shadow)))
+    "The face used for the left-most bar on the mode-line when eldoc-eval is
+  active."
+    :group '+doom-modeline)
+
+  (defface doom-modeline-inactive-bar '((t (:inherit warning :inverse-video t)))
+    "The face used for the left-most bar on the mode-line of an inactive window."
+    :group '+doom-modeline)
+
+
+  ;;
+  ;; Modeline helpers
+  ;;
+
+  (defsubst active ()
+    (eq (selected-window) +doom-modeline-current-window))
+
+  ;; Inspired from `powerline's `pl/make-xpm'.
+  (defun +doom-modeline--make-xpm (color height width)
+    "Create an XPM bitmap."
+    (propertize
+     " " 'display
+     (let ((data (make-list height (make-list width 1)))
+           (color (or color "None")))
+       (create-image
+        (concat
+         (format "/* XPM */\nstatic char * percent[] = {\n\"%i %i 2 1\",\n\". c %s\",\n\"  c %s\","
+                 (length (car data))
+                 (length data)
+                 color
+                 color)
+         (apply #'concat
+                (cl-loop with idx = 0
+                         with len = (length data)
+                         for dl in data
+                         do (cl-incf idx)
+                         collect
+                         (concat "\""
+                                 (cl-loop for d in dl
+                                          if (= d 0) collect (string-to-char " ")
+                                          else collect (string-to-char "."))
+                                 (if (eq idx len) "\"};" "\",\n")))))
+        'xpm t :ascent 'center))))
+
+  (defun +doom-modeline-buffer-file-name ()
+    "Propertized `buffer-file-name' based on `+doom-modeline-buffer-file-name-style'."
+    (propertize
+     (pcase +doom-modeline-buffer-file-name-style
+       ('truncate-upto-project (+doom-modeline--buffer-file-name 'shrink))
+       ('truncate-upto-root (+doom-modeline--buffer-file-name-truncate))
+       ('truncate-all (+doom-modeline--buffer-file-name-truncate t))
+       ('relative-to-project (+doom-modeline--buffer-file-name-relative))
+       ('relative-from-project (+doom-modeline--buffer-file-name-relative 'include-project))
+       ('file-name (propertize (file-name-nondirectory buffer-file-name)
+                               'face
+                               (let ((face (or (and (buffer-modified-p)
+                                                    'doom-modeline-buffer-modified)
+                                               (and (active)
+                                                    'doom-modeline-buffer-file))))
+                                 (when face `(:inherit ,face))))))
+     'help-echo buffer-file-truename))
+
+  (defun +doom-modeline--buffer-file-name-truncate (&optional truncate-tail)
+    "Propertized `buffer-file-name' that truncates every dir along path.
+  If TRUNCATE-TAIL is t also truncate the parent directory of the file."
+    (let ((dirs (shrink-path-prompt (file-name-directory buffer-file-truename)))
+          (active (active)))
+      (if (null dirs)
+          (propertize "%b" 'face (if active 'doom-modeline-buffer-file))
+        (let ((modified-faces (if (buffer-modified-p) 'doom-modeline-buffer-modified)))
+          (let ((dirname (car dirs))
+                (basename (cdr dirs))
+                (dir-faces (or modified-faces (if active 'doom-modeline-project-root-dir)))
+                (file-faces (or modified-faces (if active 'doom-modeline-buffer-file))))
+            (concat (propertize (concat dirname
+                                        (if truncate-tail (substring basename 0 1) basename)
+                                        "/")
+                                'face (if dir-faces `(:inherit ,dir-faces)))
+                    (propertize (file-name-nondirectory buffer-file-name)
+                                'face (if file-faces `(:inherit ,file-faces)))))))))
+
+  (defun +doom-modeline--buffer-file-name-relative (&optional include-project)
+    "Propertized `buffer-file-name' showing directories relative to project's root only."
+    (let ((root (projectile-project-root))
+          (active (active)))
+      (if (null root)
+          (propertize "%b" 'face (if active 'doom-modeline-buffer-file))
+        (let* ((modified-faces (if (buffer-modified-p) 'doom-modeline-buffer-modified))
+               (relative-dirs (file-relative-name (file-name-directory buffer-file-truename)
+                                                  (if include-project (concat root "../") root)))
+               (relative-faces (or modified-faces (if active 'doom-modeline-buffer-path)))
+               (file-faces (or modified-faces (if active 'doom-modeline-buffer-file))))
+          (if (equal "./" relative-dirs) (setq relative-dirs ""))
+          (concat (propertize relative-dirs 'face (if relative-faces `(:inherit ,relative-faces)))
+                  (propertize (file-name-nondirectory buffer-file-truename)
+                              'face (if file-faces `(:inherit ,file-faces))))))))
+
+  (defun +doom-modeline--buffer-file-name (truncate-project-root-parent)
+    "Propertized `buffer-file-name'.
+  If TRUNCATE-PROJECT-ROOT-PARENT is t space will be saved by truncating it down
+  fish-shell style.
+
+  Example:
+  ~/Projects/FOSS/emacs/lisp/comint.el => ~/P/F/emacs/lisp/comint.el"
+    (let* ((project-root (projectile-project-root))
+           (file-name-split (shrink-path-file-mixed project-root
+                                                    (file-name-directory buffer-file-truename)
+                                                    buffer-file-truename))
+           (active (active)))
+      (if (null file-name-split)
+          (propertize "%b" 'face (if active 'doom-modeline-buffer-file))
+        (pcase-let ((`(,root-path-parent ,project ,relative-path ,filename) file-name-split))
+          (let ((modified-faces (if (buffer-modified-p) 'doom-modeline-buffer-modified)))
+            (let ((sp-faces       (or modified-faces (if active 'font-lock-comment-face)))
+                  (project-faces  (or modified-faces (if active 'font-lock-string-face)))
+                  (relative-faces (or modified-faces (if active 'doom-modeline-buffer-path)))
+                  (file-faces     (or modified-faces (if active 'doom-modeline-buffer-file))))
+              (let ((sp-props       `(,@(if sp-faces       `(:inherit ,sp-faces))      ,@(if active '(:weight bold))))
+                    (project-props  `(,@(if project-faces  `(:inherit ,project-faces)) ,@(if active '(:weight bold))))
+                    (relative-props `(,@(if relative-faces `(:inherit ,relative-faces))))
+                    (file-props     `(,@(if file-faces     `(:inherit ,file-faces)))))
+                (concat (propertize (if truncate-project-root-parent
+                                        root-path-parent
+                                      (abbreviate-file-name project-root))
+                                    'face sp-props)
+                        (propertize (concat project "/") 'face project-props)
+                        (if relative-path (propertize relative-path 'face relative-props))
+                        (propertize filename 'face file-props)))))))))
+
+
+  ;;
+  ;; Segments
+  ;;
+
+  (def-modeline-segment! buffer-default-directory
+    "Displays `default-directory'. This is for special buffers like the scratch
+  buffer where knowing the current project directory is important."
+    (let ((face (if (active) 'doom-modeline-buffer-path)))
+      (concat (if (display-graphic-p) " ")
+              (all-the-icons-octicon
+               "file-directory"
+               :face face
+               :v-adjust -0.05
+               :height 1.25)
+              (propertize (concat " " (abbreviate-file-name default-directory))
+                          'face face))))
+
+  ;;
+  (def-modeline-segment! buffer-info
+    "Combined information about the current buffer, including the current working
+  directory, the file name, and its state (modified, read-only or non-existent)."
+    (concat (cond (buffer-read-only
+                   (concat (all-the-icons-octicon
+                            "lock"
+                            :face 'doom-modeline-warning
+                            :v-adjust -0.05)
+                           " "))
+                  ((buffer-modified-p)
+                   (concat (all-the-icons-faicon
+                            "floppy-o"
+                            :face 'doom-modeline-buffer-modified
+                            :v-adjust -0.0575)
+                           " "))
+                  ((and buffer-file-name
+                        (not (file-exists-p buffer-file-name)))
+                   (concat (all-the-icons-octicon
+                            "circle-slash"
+                            :face 'doom-modeline-urgent
+                            :v-adjust -0.05)
+                           " "))
+                  ((buffer-narrowed-p)
+                   (concat (all-the-icons-octicon
+                            "fold"
+                            :face 'doom-modeline-warning
+                            :v-adjust -0.05)
+                           " ")))
+            (if buffer-file-name
+                (+doom-modeline-buffer-file-name)
+              "%b")))
+
+  ;;
+  (def-modeline-segment! buffer-info-simple
+    "Display only the current buffer's name, but with fontification."
+    (propertize
+     "%b"
+     'face (cond ((and buffer-file-name (buffer-modified-p))
+                  'doom-modeline-buffer-modified)
+                 ((active) 'doom-modeline-buffer-file))))
+
+  ;;
+  (def-modeline-segment! buffer-encoding
+    "Displays the encoding and eol style of the buffer the same way Atom does."
+    (concat (pcase (coding-system-eol-type buffer-file-coding-system)
+              (0 "LF  ")
+              (1 "CRLF  ")
+              (2 "CR  "))
+            (let ((sys (coding-system-plist buffer-file-coding-system)))
+              (cond ((memq (plist-get sys :category) '(coding-category-undecided coding-category-utf-8))
+                     "UTF-8")
+                    (t (upcase (symbol-name (plist-get sys :name))))))
+            "  "))
+
+  ;;
+  (def-modeline-segment! major-mode
+    "The major mode, including process, environment and text-scale info."
+    (propertize
+     (concat (format-mode-line mode-name)
+             (when (stringp mode-line-process)
+               mode-line-process)
+             (and (featurep 'face-remap)
+                  (/= text-scale-mode-amount 0)
+                  (format " (%+d)" text-scale-mode-amount)))
+     'face (if (active) 'doom-modeline-buffer-major-mode)))
+
+  ;;
+  (def-modeline-segment! vcs
+    "Displays the current branch, colored based on its state."
+    (when (and vc-mode buffer-file-name)
+      (let* ((backend (vc-backend buffer-file-name))
+             (state   (vc-state buffer-file-name backend)))
+        (let ((face    'mode-line-inactive)
+              (active  (active))
+              (all-the-icons-default-adjust -0.1))
+          (concat "  "
+                  (cond ((memq state '(edited added))
+                         (if active (setq face 'doom-modeline-info))
+                         (all-the-icons-octicon
+                          "git-compare"
+                          :face face
+                          :v-adjust -0.05))
+                        ((eq state 'needs-merge)
+                         (if active (setq face 'doom-modeline-info))
+                         (all-the-icons-octicon "git-merge" :face face))
+                        ((eq state 'needs-update)
+                         (if active (setq face 'doom-modeline-warning))
+                         (all-the-icons-octicon "arrow-down" :face face))
+                        ((memq state '(removed conflict unregistered))
+                         (if active (setq face 'doom-modeline-urgent))
+                         (all-the-icons-octicon "alert" :face face))
+                        (t
+                         (if active (setq face 'font-lock-doc-face))
+                         (all-the-icons-octicon
+                          "git-compare"
+                          :face face
+                          :v-adjust -0.05)))
+                  " "
+                  (propertize (substring vc-mode (+ (if (eq backend 'Hg) 2 3) 2))
+                              'face (if active face))
+                  " ")))))
+
+  ;;
+  (defun +doom-ml-icon (icon &optional text face voffset)
+    "Displays an octicon ICON with FACE, followed by TEXT. Uses
+  `all-the-icons-octicon' to fetch the icon."
+    (concat (if vc-mode " " "  ")
+            (when icon
+              (concat
+               (all-the-icons-material icon :face face :height 1.1 :v-adjust (or voffset -0.2))
+               (if text +doom-modeline-vspc)))
+            (when text
+              (propertize text 'face face))
+            (if vc-mode "  " " ")))
+
+  (def-modeline-segment! flycheck
+    "Displays color-coded flycheck error status in the current buffer with pretty
+  icons."
+    (when (boundp 'flycheck-last-status-change)
+      (pcase flycheck-last-status-change
+        ('finished (if flycheck-current-errors
+                       (let-alist (flycheck-count-errors flycheck-current-errors)
+                         (let ((sum (+ (or .error 0) (or .warning 0))))
+                           (+doom-ml-icon "do_not_disturb_alt"
+                                          (number-to-string sum)
+                                          (if .error 'doom-modeline-urgent 'doom-modeline-warning)
+                                          -0.25)))
+                     (+doom-ml-icon "check" nil 'doom-modeline-info)))
+        ('running     (+doom-ml-icon "access_time" nil 'font-lock-doc-face -0.25))
+        ('no-checker  (+doom-ml-icon "sim_card_alert" "-" 'font-lock-doc-face))
+        ('errored     (+doom-ml-icon "sim_card_alert" "Error" 'doom-modeline-urgent))
+        ('interrupted (+doom-ml-icon "pause" "Interrupted" 'font-lock-doc-face)))))
+        ;; ('interrupted (+doom-ml-icon "x" "Interrupted" 'font-lock-doc-face)))))
+
+  ;;
+  (defsubst doom-column (pos)
+    (save-excursion (goto-char pos)
+                    (current-column)))
+
+  (def-modeline-segment! selection-info
+    "Information about the current selection, such as how many characters and
+  lines are selected, or the NxM dimensions of a block selection."
+    (when (and (active) mark-active)
+      (let ((reg-beg (region-beginning))
+            (reg-end (region-end)))
+        (propertize
+         (let ((lines (count-lines reg-beg (min (1+ reg-end) (point-max)))))
+           (cond ((bound-and-true-p rectangle-mark-mode)
+                  (let ((cols (abs (- (doom-column reg-end)
+                                      (doom-column reg-beg)))))
+                    (format "%dx%dB" lines cols)))
+                 ((> lines 1)
+                  (format "%dC %dL" (- (1+ reg-end) reg-beg) lines))
+                 (t
+                  (format "%dC" (- (1+ reg-end) reg-beg)))))
+         'face 'doom-modeline-highlight))))
+
+
+  ;;
+  (defun +doom-modeline--macro-recording ()
+    "Display current Emacs or evil macro being recorded."
+    (when (and (active) (or defining-kbd-macro executing-kbd-macro))
+      (let ((sep (propertize " " 'face 'doom-modeline-panel)))
+        (concat sep
+                (propertize ;(if (bound-and-true-p evil-this-macro)
+                            ;    (char-to-string evil-this-macro)
+                              "Macro";)
+                            'face 'doom-modeline-panel)
+                sep
+                (all-the-icons-octicon "triangle-right"
+                                       :face 'doom-modeline-panel
+                                       :v-adjust -0.05)
+                sep))))
+
+  (defsubst +doom-modeline--anzu ()
+    "Show the match index and total number thereof. Requires `anzu', also
+  `evil-anzu' if using `evil-mode' for compatibility with `evil-search'."
+    (when (and anzu--state (not iedit-mode))
+      (propertize
+       (let ((here anzu--current-position)
+             (total anzu--total-matched))
+         (cond ((eq anzu--state 'replace-query)
+                (format " %d replace " total))
+               ((eq anzu--state 'replace)
+                (format " %d/%d " here total))
+               (anzu--overflow-p
+                (format " %s+ " total))
+               (t
+                (format " %s/%d " here total))))
+       'face (if (active) 'doom-modeline-panel))))
+
+  ;; (defsubst +doom-modeline--evil-substitute ()
+  ;;   "Show number of matches for evil-ex substitutions and highlights in real time."
+  ;;   (when (and evil-mode
+  ;;              (or (assq 'evil-ex-substitute evil-ex-active-highlights-alist)
+  ;;                  (assq 'evil-ex-global-match evil-ex-active-highlights-alist)
+  ;;                  (assq 'evil-ex-buffer-match evil-ex-active-highlights-alist)))
+  ;;     (propertize
+  ;;      (let ((range (if evil-ex-range
+  ;;                       (cons (car evil-ex-range) (cadr evil-ex-range))
+  ;;                     (cons (line-beginning-position) (line-end-position))))
+  ;;            (pattern (car-safe (evil-delimited-arguments evil-ex-argument 2))))
+  ;;        (if pattern
+  ;;            (format " %s matches " (how-many pattern (car range) (cdr range)))
+  ;;          " - "))
+  ;;      'face (if (active) 'doom-modeline-panel))))
+
+  (defun doom-themes--overlay-sort (a b)
+    (< (overlay-start a) (overlay-start b)))
+
+  (defsubst +doom-modeline--iedit ()
+    "Show the number of iedit regions matches + what match you're on."
+    (when (and iedit-mode iedit-occurrences-overlays)
+      (propertize
+       (let ((this-oc (or (let ((inhibit-message t))
+                            (iedit-find-current-occurrence-overlay))
+                          (progn (iedit-prev-occurrence)
+                                 (iedit-find-current-occurrence-overlay))))
+             (length (length iedit-occurrences-overlays)))
+         (format " %s/%d "
+                 (if this-oc
+                     (- length
+                        (length (memq this-oc (sort (append iedit-occurrences-overlays nil)
+                                                    #'doom-themes--overlay-sort)))
+                        -1)
+                   "-")
+                 length))
+       'face (if (active) 'doom-modeline-panel))))
+
+  (def-modeline-segment! matches
+    "Displays: 1. the currently recording macro, 2. A current/total for the
+  current search term (with anzu), 3. The number of substitutions being conducted
+  with `evil-ex-substitute', and/or 4. The number of active `iedit' regions."
+    (let ((meta (concat (+doom-modeline--macro-recording)
+                        ;; (+doom-modeline--anzu)
+                        ;; (+doom-modeline--evil-substitute)
+                        (+doom-modeline--iedit))))
+       (or (and (not (equal meta "")) meta)
+           (if buffer-file-name " %I "))))
+
+  ;; TODO Include other information
+  (def-modeline-segment! media-info
+    "Metadata regarding the current file, such as dimensions for images."
+    (cond ((eq major-mode 'image-mode)
+           (cl-destructuring-bind (width . height)
+               (image-size (image-get-display-property) :pixels)
+             (format "  %dx%d  " width height)))))
+
+  (def-modeline-segment! bar
+    "The bar regulates the height of the mode-line in GUI Emacs.
+  Returns \"\" to not break --no-window-system."
+    (if (display-graphic-p)
+        (+doom-modeline--make-xpm
+         (face-background (if (active)
+                              'doom-modeline-bar
+                            'doom-modeline-inactive-bar)
+                          nil t)
+         +doom-modeline-height
+         +doom-modeline-bar-width)
+      ""))
+
+
+  ;;
+  ;; Mode lines
+  ;;
+
+  (def-modeline! main
+    (bar matches " " buffer-info "  %l:%c %p  " selection-info)
+    (buffer-encoding major-mode vcs flycheck))
+
+  (def-modeline! minimal
+    (bar matches " " buffer-info)
+    (media-info major-mode))
+
+  (def-modeline! special
+    (bar matches " " buffer-info-simple "  %l:%c %p  " selection-info)
+    (buffer-encoding major-mode flycheck))
+
+  (def-modeline! project
+    (bar buffer-default-directory)
+    (major-mode))
+
+  (def-modeline! media
+    (bar " %b  ")
+    (media-info major-mode))
+
+
+  ;;
+  ;; Hooks
+  ;;
+
+  (defun +doom-modeline|init ()
+    "Set the default modeline."
+    (doom-set-modeline 'main t)
+
+    ;; This scratch buffer is already created and doesn't get a modeline. For the
+    ;; love of Emacs, someone give the man a modeline!
+    (with-current-buffer "*scratch*"
+      (doom-set-modeline 'main)))
+
+  (defun +doom-modeline|set-special-modeline ()
+    (doom-set-modeline 'special))
+
+  (defun +doom-modeline|set-media-modeline ()
+    (doom-set-modeline 'media))
+
+  (defun +doom-modeline|set-project-modeline ()
+    (doom-set-modeline 'project))
+
+
+  ;;
+  ;; Bootstrap
+  ;;
+
+  (add-hook 'doom-init-ui-hook #'+doom-modeline|init)
+  (add-hook 'doom-scratch-buffer-hook #'+doom-modeline|set-special-modeline)
+  (add-hook '+doom-dashboard-mode-hook #'+doom-modeline|set-project-modeline)
+
+  (add-hook 'image-mode-hook   #'+doom-modeline|set-media-modeline)
+  (add-hook 'org-src-mode-hook #'+doom-modeline|set-special-modeline)
+  (add-hook 'circe-mode-hook   #'+doom-modeline|set-special-modeline)
+
+
+(+doom-modeline|init)
+#+end_src
+
+<2018-07-10 ter> Now there is a package!
+#+begin_src emacs-lisp
+(use-package doom-modeline
+      :ensure t
+      :defer t
+      :hook (after-init . doom-modeline-init))
+#+end_src
+
+To get info on active minor modes
+#+begin_src emacs-lisp :tangle no
+(defun active-minor-modes ()
+  "Get a list of active minor-mode symbols."
+  (cl-loop for mode in minor-mode-list
+           unless (and (boundp mode) (symbol-value mode))
+           collect mode))
+
+(defun what-minor-mode (mode)
+  "Get information on an active minor mode. Use `describe-minor-mode' for a
+selection of all minor-modes, active or not."
+  (interactive
+   (list (completing-read "Minor mode: "
+                          (active-minor-modes))))
+  (describe-minor-mode-from-symbol
+   (cl-typecase mode
+     (string (intern mode))
+     (symbol mode)
+(t (error "Expected a symbol/string, got a %s" (type-of mode))))))
+#+end_src
+
+**** UncleDave modeline
+<2018-03-29 qui>Disabled to try the doom-emacs modeline
+<2018-03-29 qui> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
+The modeline is the heart of emacs, it offers information at all times, it's persistent
+and verbose enough to gain a full understanding of modes and states you are in.
+
+
+Due to the fact that we attempt to use emacs as a desktop environment replacement,
+and external bar showing the time, the battery percentage and more system info would be great to have.
+I have however abandoned polybar in favor of a heavily modified modeline, this offers me more space
+on the screen and better integration.
+
+
+One modeline-related setting that is missing and is instead placed at the bottom is =diminish=.
+***** Spaceline!
+I may not use spacemacs, since I do not like evil-mode and find spacemacs incredibly bloated and slow,
+however it would be stupid not to acknowledge the best parts about it, the theme and their modified powerline setup.
+
+This enables spaceline, it looks better and works very well with my theme of choice.
+#+begin_src emacs-lisp :tangle no
+  (use-package spaceline
+    :ensure t
+    :config
+    (require 'spaceline-config)
+    (setq spaceline-buffer-encoding-abbrev-p nil)
+    (setq spaceline-line-column-p nil)
+    (setq spaceline-line-p nil)
+    (setq powerline-default-separator (quote arrow))
+    (spaceline-spacemacs-theme))
+#+end_src
+
+***** No separator!
+#+begin_src emacs-lisp :tangle no
+  (setq powerline-default-separator nil)
+#+end_src
+
+***** Cursor position
+Show the current line and column for your cursor.
+We are not going to have =relative-linum-mode= in every major mode, so this is useful.
+#+begin_src emacs-lisp :tangle no
+  (setq line-number-mode t)
+  (setq column-number-mode t)
+#+end_src
+
+***** Clock
+If you prefer the 12hr-format, change the variable to =nil= instead of =t=.
+
+****** Time format
+#+begin_src emacs-lisp :tangle no
+  (setq display-time-24hr-format t)
+  (setq display-time-format "%H:%M - %d %B %Y")
+#+end_src
+
+****** Enabling the mode
+This turns on the clock globally.
+#+begin_src emacs-lisp :tangle no
+  (display-time-mode 1)
+#+end_src
+
+***** Battery indicator
+A package called =fancy-battery= will be used if we are in GUI emacs, otherwise the built in battery-mode will be used.
+Fancy battery has very odd colors if used in the tty, hence us disabling it.
+#+begin_src emacs-lisp :tangle no
+  (use-package fancy-battery
+    :ensure t
+    :config
+      (setq fancy-battery-show-percentage t)
+      (setq battery-update-interval 15)
+      (if window-system
+        (fancy-battery-mode)
+        (display-battery-mode)))
+#+end_src
+
+***** System monitor
+A teeny-tiny system monitor that can be enabled or disabled at runtime, useful for checking performance
+with power-hungry processes in ansi-term
+
+symon can be toggled on and off with =Super + h=.
+#+begin_src emacs-lisp :tangle no
+  (use-package symon
+    :ensure t
+    :bind
+    ("s-h" . symon-mode))
+#+end_src
+
+**** My Old Modeline configs
+<2018-03-29 qui> Disabling all to copy the config from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
+***** zerodark-theme modeline
+#+begin_src emacs-lisp :tangle no
+(zerodark-setup-modeline-format)
+#+end_src
+
+***** Minibuffer line
+<2018-01-23 ter> disabled to try other
+#+begin_src emacs-lisp :tangle no
+(use-package minibuffer-line
+  :ensure t
+  :config (minibuffer-line-mode t))
+#+end_src
+
+***** Old Doom emacs line
+#+begin_src emacs-lisp :tangle no
+;; (use-package mode-icons
+;;   :ensure t
+;;   :config
+;;   (mode-icons-mode t)
+;; )
+
+  ;; Reference: https://github.com/hlissner/.emacs.d/blob/master/core/core-modeline.el
+
+  ;; (use-package projectile
+  ;;   :ensure t
+  ;;   :config
+  ;;   (add-hook 'prog-mode-hook 'projectile-mode))
+
+  (use-package powerline
+    :ensure t
+    :config
+    (defvar mode-line-height 30 "A little bit taller, a little bit baller.")
+
+    (defvar mode-line-bar          (eval-when-compile (pl/percent-xpm mode-line-height 100 0 100 0 3 "#909fab" nil)))
+    (defvar mode-line-eldoc-bar    (eval-when-compile (pl/percent-xpm mode-line-height 100 0 100 0 3 "#B3EF00" nil)))
+    (defvar mode-line-inactive-bar (eval-when-compile (pl/percent-xpm mode-line-height 100 0 100 0 3 "#9091AB" nil)))
+
+    ;; Custom faces
+    (defface mode-line-is-modified nil
+      "Face for mode-line modified symbol")
+
+    (defface mode-line-2 nil
+      "The alternate color for mode-line text.")
+
+    (defface mode-line-highlight nil
+      "Face for bright segments of the mode-line.")
+
+    (defface mode-line-count-face nil
+      "Face for anzu/evil-substitute/evil-search number-of-matches display.")
+
+    ;; Git/VCS segment faces
+    (defface mode-line-vcs-info '((t (:inherit warning)))
+      "")
+    (defface mode-line-vcs-warning '((t (:inherit warning)))
+      "")
+
+    ;; Flycheck segment faces
+    (defface doom-flycheck-error '((t (:inherit error)))
+      "Face for flycheck error feedback in the modeline.")
+    (defface doom-flycheck-warning '((t (:inherit warning)))
+      "Face for flycheck warning feedback in the modeline.")
+
+
+    (defun doom-ml-flycheck-count (state)
+      "Return flycheck information for the given error type STATE."
+      (when (flycheck-has-current-errors-p state)
+        (if (eq 'running flycheck-last-status-change)
+            "?"
+          (cdr-safe (assq state (flycheck-count-errors flycheck-current-errors))))))
+
+    (defun doom-fix-unicode (font &rest chars)
+      "Display certain unicode characters in a specific font.
+  e.g. (doom-fix-unicode \"DejaVu Sans\" ?⚠ ?★ ?λ)"
+      (declare (indent 1))
+      (mapc (lambda (x) (set-fontset-font
+                    t (cons x x)
+                    (cond ((fontp font)
+                           font)
+                          ((listp font)
+                           (font-spec :family (car font) :size (nth 1 font)))
+                          ((stringp font)
+                           (font-spec :family font))
+                          (t (error "FONT is an invalid type: %s" font)))))
+            chars))
+
+    ;; Make certain unicode glyphs bigger for the mode-line.
+    ;; FIXME Replace with all-the-icons?
+    (doom-fix-unicode '("DejaVu Sans Mono" 15) ?✱) ;; modified symbol
+    (let ((font "DejaVu Sans Mono for Powerline")) ;;
+      (doom-fix-unicode (list font 12) ?)  ;; git symbol
+      (doom-fix-unicode (list font 16) ?∄)  ;; non-existent-file symbol
+      (doom-fix-unicode (list font 15) ?)) ;; read-only symbol
+
+    ;; So the mode-line can keep track of "the current window"
+    (defvar mode-line-selected-window nil)
+    (defun doom|set-selected-window (&rest _)
+      (let ((window (frame-selected-window)))
+        (when (and (windowp window)
+                   (not (minibuffer-window-active-p window)))
+          (setq mode-line-selected-window window))))
+    (add-hook 'window-configuration-change-hook #'doom|set-selected-window)
+    (add-hook 'focus-in-hook #'doom|set-selected-window)
+    (advice-add 'select-window :after 'doom|set-selected-window)
+    (advice-add 'select-frame  :after 'doom|set-selected-window)
+
+    (defun doom/project-root (&optional strict-p)
+      "Get the path to the root of your project."
+      (let (projectile-require-project-root strict-p)
+        (projectile-project-root)))
+
+    (defun *buffer-path ()
+      "Displays the buffer's full path relative to the project root (includes the
+  project root). Excludes the file basename. See `*buffer-name' for that."
+      (when buffer-file-name
+        (propertize
+         (f-dirname
+          (let ((buffer-path (file-relative-name buffer-file-name (doom/project-root)))
+                (max-length (truncate (/ (window-body-width) 1.75))))
+            (concat (projectile-project-name) "/"
+                    (if (> (length buffer-path) max-length)
+                        (let ((path (reverse (split-string buffer-path "/" t)))
+                              (output ""))
+                          (when (and path (equal "" (car path)))
+                            (setq path (cdr path)))
+                          (while (and path (<= (length output) (- max-length 4)))
+                            (setq output (concat (car path) "/" output))
+                            (setq path (cdr path)))
+                          (when path
+                            (setq output (concat "../" output)))
+                          (when (string-suffix-p "/" output)
+                            (setq output (substring output 0 -1)))
+                          output)
+                      buffer-path))))
+         'face (if active 'mode-line-2))))
+
+    (defun *buffer-name ()
+      "The buffer's base name or id."
+      ;; FIXME Don't show uniquify tags
+      (s-trim-left (format-mode-line "%b")))
+
+    (defun *buffer-pwd ()
+      "Displays `default-directory', for special buffers like the scratch buffer."
+      (propertize
+       (concat "[" (abbreviate-file-name default-directory) "]")
+       'face 'mode-line-2))
+
+    (defun *buffer-state ()
+      "Displays symbols representing the buffer's state (non-existent/modified/read-only)"
+      (when buffer-file-name
+        (propertize
+         (concat (if (not (file-exists-p buffer-file-name))
+                     "∄"
+                   (if (buffer-modified-p) "✱"))
+                 (if buffer-read-only ""))
+         'face 'mode-line-is-modified)))
+
+    (defun *buffer-encoding-abbrev ()
+      "The line ending convention used in the buffer."
+      (if (memq buffer-file-coding-system '(utf-8 utf-8-unix))
+          ""
+        (symbol-name buffer-file-coding-system)))
+
+    (defun *major-mode ()
+      "The major mode, including process, environment and text-scale info."
+      (concat (format-mode-line mode-name)
+              (if (stringp mode-line-process) mode-line-process)
+              (and (featurep 'face-remap)
+                   (/= text-scale-mode-amount 0)
+                   (format " (%+d)" text-scale-mode-amount))))
+
+    (defun *vc ()
+      "Displays the current branch, colored based on its state."
+      (when vc-mode
+        (let ((backend (concat " " (substring vc-mode (+ 2 (length (symbol-name (vc-backend buffer-file-name)))))))
+              (face (let ((state (vc-state buffer-file-name)))
+                      (cond ((memq state '(edited added))
+                             'mode-line-vcs-info)
+                            ((memq state '(removed needs-merge needs-update conflict removed unregistered))
+                             'mode-line-vcs-warning)))))
+          (if active
+              (propertize backend 'face face)
+            backend))))
+
+    (defvar-local doom--flycheck-err-cache nil "")
+    (defvar-local doom--flycheck-cache nil "")
+    (defun *flycheck ()
+      "Persistent and cached flycheck indicators in the mode-line."
+      (when (and (featurep 'flycheck)
+                 flycheck-mode
+                 (or flycheck-current-errors
+                     (eq 'running flycheck-last-status-change)))
+        (or (and (or (eq doom--flycheck-err-cache doom--flycheck-cache)
+                     (memq flycheck-last-status-change '(running not-checked)))
+                 doom--flycheck-cache)
+            (and (setq doom--flycheck-err-cache flycheck-current-errors)
+                 (setq doom--flycheck-cache
+                       (let ((fe (doom-ml-flycheck-count 'error))
+                             (fw (doom-ml-flycheck-count 'warning)))
+                         (concat
+                          (if fe (propertize (format " •%d " fe)
+                                             'face (if active
+                                                       'doom-flycheck-error
+                                                     'mode-line)))
+                          (if fw (propertize (format " •%d " fw)
+                                             'face (if active
+                                                       'doom-flycheck-warning
+                                                     'mode-line))))))))))
+
+    (defun *buffer-position ()
+      "A more vim-like buffer position."
+      (let ((start (window-start))
+            (end (window-end))
+            (pend (point-max)))
+        (if (and (= start 1)
+                 (= end pend))
+            ":All"
+          (cond ((= start 1) ":Top")
+                ((= end pend) ":Bot")
+                (t (format ":%d%%%%" (/ end 0.01 pend)))))))
+
+    (defun my-mode-line (&optional id)
+      `(:eval
+        (let* ((active (eq (selected-window) mode-line-selected-window))
+               (lhs (list (propertize " " 'display (if active mode-line-bar mode-line-inactive-bar))
+                          (*flycheck)
+                          " "
+                          (*buffer-path)
+                          (*buffer-name)
+                          " "
+                          (*buffer-state)
+                          ,(if (eq id 'scratch) '(*buffer-pwd))))
+               (rhs (list (*buffer-encoding-abbrev) "  "
+                          (*vc)
+;;                          " "
+;;                          (when persp-curr persp-modestring)
+                          " " (*major-mode) "  "
+                          (propertize
+                           (concat "(%l,%c) " (*buffer-position))
+                           'face (if active 'mode-line-2))))
+               (middle (propertize
+                        " " 'display `((space :align-to (- (+ right right-fringe right-margin)
+                                                           ,(1+ (string-width (format-mode-line rhs)))))))))
+          (list lhs middle rhs))))
+
+    (setq-default mode-line-format (my-mode-line)))
+#+end_src
+
+***** Doom emacs line
+Reference: [[https://github.com/hlissner/doom-emacs/tree/master/modules/ui/doom-modeline][doom-emacs/modeules/ui/doom-modeline]]
+<2018-01-23 ter> disabled because I can't make it work :c
+#+begin_src emacs-lisp :tangle no
+    (defmacro add-hook! (&rest args)
+      "A convenience macro for `add-hook'. Takes, in order:
+      1. Optional properties :local and/or :append, which will make the hook
+         buffer-local or append to the list of hooks (respectively),
+      2. The hooks: either an unquoted major mode, an unquoted list of major-modes,
+         a quoted hook variable or a quoted list of hook variables. If unquoted, the
+         hooks will be resolved by appending -hook to each symbol.
+      3. A function, list of functions, or body forms to be wrapped in a lambda.
+    Examples:
+        (add-hook! 'some-mode-hook 'enable-something)
+        (add-hook! some-mode '(enable-something and-another))
+        (add-hook! '(one-mode-hook second-mode-hook) 'enable-something)
+        (add-hook! (one-mode second-mode) 'enable-something)
+        (add-hook! :append (one-mode second-mode) 'enable-something)
+        (add-hook! :local (one-mode second-mode) 'enable-something)
+        (add-hook! (one-mode second-mode) (setq v 5) (setq a 2))
+        (add-hook! :append :local (one-mode second-mode) (setq v 5) (setq a 2))
+    Body forms can access the hook's arguments through the let-bound variable
+    `args'."
+      (declare (indent defun) (debug t))
+      (let ((hook-fn 'add-hook)
+            append-p local-p)
+        (while (keywordp (car args))
+          (pcase (pop args)
+            (:append (setq append-p t))
+            (:local  (setq local-p t))
+            (:remove (setq hook-fn 'remove-hook))))
+        (let ((hooks (doom--resolve-hook-forms (pop args)))
+              (funcs
+               (let ((val (car args)))
+                 (if (memq (car-safe val) '(quote function))
+                     (if (cdr-safe (cadr val))
+                         (cadr val)
+                       (list (cadr val)))
+                   (list args))))
+              forms)
+          (dolist (fn funcs)
+            (setq fn (if (symbolp fn)
+                         `(function ,fn)
+                       `(lambda (&rest _) ,@args)))
+            (dolist (hook hooks)
+              (push (if (eq hook-fn 'remove-hook)
+                        `(remove-hook ',hook ,fn ,local-p)
+                      `(add-hook ',hook ,fn ,append-p ,local-p))
+                    forms)))
+          `(progn ,@(nreverse forms)))))
+
+
+    (defmacro def-modeline-segment! (name &rest forms)
+      "Defines a modeline segment and byte compiles it."
+      (declare (indent defun) (doc-string 2))
+      (let ((sym (intern (format "doom-modeline-segment--%s" name))))
+        `(progn
+           (defun ,sym () ,@forms)
+           ,(unless (bound-and-true-p byte-compile-current-file)
+              `(let (byte-compile-warnings)
+                 (byte-compile #',sym))))))
+
+    (defmacro def-modeline! (name lhs &optional rhs)
+      "Defines a modeline format and byte-compiles it. NAME is a symbol to identify
+    it (used by `doom-modeline' for retrieval). LHS and RHS are lists of symbols of
+    modeline segments defined with `def-modeline-segment!'.
+    Example:
+      (def-modeline! minimal
+        (bar matches \" \" buffer-info)
+        (media-info major-mode))
+      (doom-set-modeline 'minimal t)"
+      (let ((sym (intern (format "doom-modeline-format--%s" name)))
+            (lhs-forms (doom--prepare-modeline-segments lhs))
+            (rhs-forms (doom--prepare-modeline-segments rhs)))
+        `(progn
+           (defun ,sym ()
+             (let ((lhs (list ,@lhs-forms))
+                   (rhs (list ,@rhs-forms)))
+               (let ((rhs-str (format-mode-line rhs)))
+                 (list lhs
+                       (propertize
+                        " " 'display
+                        `((space :align-to (- (+ right right-fringe right-margin)
+                                              ,(+ 1 (string-width rhs-str))))))
+                       rhs-str))))
+           ,(unless (bound-and-true-p byte-compile-current-file)
+              `(let (byte-compile-warnings)
+    (byte-compile #',sym))))))
+
+    (defsubst doom--prepare-modeline-segments (segments)
+      (cl-loop for seg in segments
+               if (stringp seg)
+                collect seg
+               else
+               collect (list (intern (format "doom-modeline-segment--%s" (symbol-name seg))))))
+
+    (defun doom-modeline (key)
+      "Returns a mode-line configuration associated with KEY (a symbol). Throws an
+    error if it doesn't exist."
+      (let ((fn (intern (format "doom-modeline-format--%s" key))))
+        (when (functionp fn)
+          `(:eval (,fn)))))
+
+    (defun doom-set-modeline (key &optional default)
+      "Set the modeline format. Does nothing if the modeline KEY doesn't exist. If
+    DEFAULT is non-nil, set the default mode-line for all buffers."
+      (-when-let ((modeline (doom-modeline key)))
+        (setf (if default
+                  (default-value 'mode-line-format)
+                (buffer-local-value 'mode-line-format (current-buffer)))
+    modeline)))
+
+    (use-package eldoc-eval
+      :ensure t
+      :config
+      (defun +doom-modeline-eldoc (text)
+        (concat (when (display-graphic-p)
+                  (+doom-modeline--make-xpm
+                   (face-background 'doom-modeline-eldoc-bar nil t)
+                   +doom-modeline-height
+                   +doom-modeline-bar-width))
+                text))
+
+      ;; Show eldoc in the mode-line with `eval-expression'
+      (defun +doom-modeline--show-eldoc (input)
+        "Display string STR in the mode-line next to minibuffer."
+        (with-current-buffer (eldoc-current-buffer)
+          (let* ((str              (and (stringp input) input))
+                 (mode-line-format (or (and str (or (+doom-modeline-eldoc str) str))
+                                       mode-line-format))
+                 mode-line-in-non-selected-windows)
+            (force-mode-line-update)
+            (sit-for eldoc-show-in-mode-line-delay))))
+      (setq eldoc-in-minibuffer-show-fn #'+doom-modeline--show-eldoc)
+
+      (eldoc-in-minibuffer-mode +1))
+
+    ;; anzu and evil-anzu expose current/total state that can be displayed in the
+    ;; mode-line.
+    (use-package evil-anzu
+      :requires evil
+      :init
+      (add-transient-hook! #'evil-ex-start-search (require 'evil-anzu))
+      (add-transient-hook! #'evil-ex-start-word-search (require 'evil-anzu))
+      :config
+      (setq anzu-cons-mode-line-p nil
+            anzu-minimum-input-length 1
+            anzu-search-threshold 250)
+      ;; Avoid anzu conflicts across buffers
+      (mapc #'make-variable-buffer-local
+            '(anzu--total-matched anzu--current-position anzu--state
+              anzu--cached-count anzu--cached-positions anzu--last-command
+              anzu--last-isearch-string anzu--overflow-p))
+      ;; Ensure anzu state is cleared when searches & iedit are done
+      (add-hook 'isearch-mode-end-hook #'anzu--reset-status t)
+      (add-hook '+evil-esc-hook #'anzu--reset-status t)
+      (add-hook 'iedit-mode-end-hook #'anzu--reset-status))
+
+
+    ;; Keep `+doom-modeline-current-window' up-to-date
+    (defvar +doom-modeline-current-window (frame-selected-window))
+    (defun +doom-modeline|set-selected-window (&rest _)
+      "Sets `+doom-modeline-current-window' appropriately"
+      (-when-let ((win (frame-selected-window)))
+        (unless (minibuffer-window-active-p win)
+          (setq +doom-modeline-current-window win))))
+
+    (add-hook 'window-configuration-change-hook #'+doom-modeline|set-selected-window)
+    (add-hook 'focus-in-hook #'+doom-modeline|set-selected-window)
+    (advice-add #'handle-switch-frame :after #'+doom-modeline|set-selected-window)
+    (advice-add #'select-window :after #'+doom-modeline|set-selected-window)
+
+    ;; fish-style modeline
+    (use-package shrink-path
+      :commands (shrink-path-prompt shrink-path-file-mixed))
+
+
+    ;;
+    ;; Variables
+    ;;
+
+    (defvar +doom-modeline-height 29
+      "How tall the mode-line should be (only respected in GUI emacs).")
+
+    (defvar +doom-modeline-bar-width 3
+      "How wide the mode-line bar should be (only respected in GUI emacs).")
+
+    (defvar +doom-modeline-vspc
+      (propertize " " 'face 'variable-pitch)
+      "TODO")
+
+    (defvar +doom-modeline-buffer-file-name-style 'truncate-upto-project
+      "Determines the style used by `+doom-modeline-buffer-file-name'.
+    Given ~/Projects/FOSS/emacs/lisp/comint.el
+    truncate-upto-project => ~/P/F/emacs/lisp/comint.el
+    truncate-upto-root => ~/P/F/e/lisp/comint.el
+    truncate-all => ~/P/F/e/l/comint.el
+    relative-from-project => emacs/lisp/comint.el
+    relative-to-project => lisp/comint.el
+    file-name => comint.el")
+
+    ;; externs
+    (defvar anzu--state nil)
+    (defvar evil-mode nil)
+    (defvar evil-state nil)
+    (defvar evil-visual-selection nil)
+    (defvar iedit-mode nil)
+    (defvar all-the-icons-scale-factor)
+    (defvar all-the-icons-default-adjust)
+
+
+    ;;
+    ;; Custom faces
+    ;;
+
+    ;; (defgroup +doom-modeline nil
+    ;;   ""
+    ;;   :group 'doom)
+
+    (defface doom-modeline-buffer-path
+      '((t (:inherit (mode-line-emphasis bold))))
+      "Face used for the dirname part of the buffer path."
+      :group '+doom-modeline)
+
+    (defface doom-modeline-buffer-file
+      '((t (:inherit (mode-line-buffer-id bold))))
+      "Face used for the filename part of the mode-line buffer path."
+      :group '+doom-modeline)
+
+    (defface doom-modeline-buffer-modified
+      '((t (:inherit (error bold) :background nil)))
+      "Face used for the 'unsaved' symbol in the mode-line."
+      :group '+doom-modeline)
+
+    (defface doom-modeline-buffer-major-mode
+      '((t (:inherit (mode-line-emphasis bold))))
+      "Face used for the major-mode segment in the mode-line."
+      :group '+doom-modeline)
+
+    (defface doom-modeline-highlight
+      '((t (:inherit mode-line-emphasis)))
+      "Face for bright segments of the mode-line."
+      :group '+doom-modeline)
+
+    (defface doom-modeline-panel
+      '((t (:inherit mode-line-highlight)))
+      "Face for 'X out of Y' segments, such as `+doom-modeline--anzu', `+doom-modeline--evil-substitute' and
+    `iedit'"
+      :group '+doom-modeline)
+
+    (defface doom-modeline-info
+      `((t (:inherit (success bold))))
+      "Face for info-level messages in the modeline. Used by `*vc'."
+      :group '+doom-modeline)
+
+    (defface doom-modeline-warning
+      `((t (:inherit (warning bold))))
+      "Face for warnings in the modeline. Used by `*flycheck'"
+      :group '+doom-modeline)
+
+    (defface doom-modeline-urgent
+      `((t (:inherit (error bold))))
+      "Face for errors in the modeline. Used by `*flycheck'"
+      :group '+doom-modeline)
+
+    ;; Bar
+    (defface doom-modeline-bar '((t (:inherit highlight)))
+      "The face used for the left-most bar on the mode-line of an active window."
+      :group '+doom-modeline)
+
+    (defface doom-modeline-eldoc-bar '((t (:inherit shadow)))
+      "The face used for the left-most bar on the mode-line when eldoc-eval is
+    active."
+      :group '+doom-modeline)
+
+    (defface doom-modeline-inactive-bar '((t (:inherit warning :inverse-video t)))
+      "The face used for the left-most bar on the mode-line of an inactive window."
+      :group '+doom-modeline)
+
+
+    ;;
+    ;; Modeline helpers
+    ;;
+
+    (defsubst active ()
+      (eq (selected-window) +doom-modeline-current-window))
+
+    ;; Inspired from `powerline's `pl/make-xpm'.
+    (defun +doom-modeline--make-xpm (color height width)
+      "Create an XPM bitmap."
+      (propertize
+       " " 'display
+       (let ((data (make-list height (make-list width 1)))
+             (color (or color "None")))
+         (create-image
+          (concat
+           (format "/* XPM */\nstatic char * percent[] = {\n\"%i %i 2 1\",\n\". c %s\",\n\"  c %s\","
+                   (length (car data))
+                   (length data)
+                   color
+                   color)
+           (apply #'concat
+                  (cl-loop with idx = 0
+                           with len = (length data)
+                           for dl in data
+                           do (cl-incf idx)
+                           collect
+                           (concat "\""
+                                   (cl-loop for d in dl
+                                            if (= d 0) collect (string-to-char " ")
+                                            else collect (string-to-char "."))
+                                   (if (eq idx len) "\"};" "\",\n")))))
+          'xpm t :ascent 'center))))
+
+    (defun +doom-modeline-buffer-file-name ()
+      "Propertized `buffer-file-name' based on `+doom-modeline-buffer-file-name-style'."
+      (propertize
+       (pcase +doom-modeline-buffer-file-name-style
+         ('truncate-upto-project (+doom-modeline--buffer-file-name 'shrink))
+         ('truncate-upto-root (+doom-modeline--buffer-file-name-truncate))
+         ('truncate-all (+doom-modeline--buffer-file-name-truncate t))
+         ('relative-to-project (+doom-modeline--buffer-file-name-relative))
+         ('relative-from-project (+doom-modeline--buffer-file-name-relative 'include-project))
+         ('file-name (propertize (file-name-nondirectory buffer-file-name)
+                                 'face
+                                 (let ((face (or (and (buffer-modified-p)
+                                                      'doom-modeline-buffer-modified)
+                                                 (and (active)
+                                                      'doom-modeline-buffer-file))))
+                                   (when face `(:inherit ,face))))))
+       'help-echo buffer-file-truename))
+
+    (defun +doom-modeline--buffer-file-name-truncate (&optional truncate-tail)
+      "Propertized `buffer-file-name' that truncates every dir along path.
+    If TRUNCATE-TAIL is t also truncate the parent directory of the file."
+      (let ((dirs (shrink-path-prompt (file-name-directory buffer-file-truename)))
+            (active (active)))
+        (if (null dirs)
+            (propertize "%b" 'face (if active 'doom-modeline-buffer-file))
+          (let ((modified-faces (if (buffer-modified-p) 'doom-modeline-buffer-modified)))
+            (let ((dirname (car dirs))
+                  (basename (cdr dirs))
+                  (dir-faces (or modified-faces (if active 'doom-modeline-project-root-dir)))
+                  (file-faces (or modified-faces (if active 'doom-modeline-buffer-file))))
+              (concat (propertize (concat dirname
+                                          (if truncate-tail (substring basename 0 1) basename)
+                                          "/")
+                                  'face (if dir-faces `(:inherit ,dir-faces)))
+                      (propertize (file-name-nondirectory buffer-file-name)
+                                  'face (if file-faces `(:inherit ,file-faces)))))))))
+
+    (defun +doom-modeline--buffer-file-name-relative (&optional include-project)
+      "Propertized `buffer-file-name' showing directories relative to project's root only."
+      (let ((root (projectile-project-root))
+            (active (active)))
+        (if (null root)
+            (propertize "%b" 'face (if active 'doom-modeline-buffer-file))
+          (let* ((modified-faces (if (buffer-modified-p) 'doom-modeline-buffer-modified))
+                 (relative-dirs (file-relative-name (file-name-directory buffer-file-truename)
+                                                    (if include-project (concat root "../") root)))
+                 (relative-faces (or modified-faces (if active 'doom-modeline-buffer-path)))
+                 (file-faces (or modified-faces (if active 'doom-modeline-buffer-file))))
+            (if (equal "./" relative-dirs) (setq relative-dirs ""))
+            (concat (propertize relative-dirs 'face (if relative-faces `(:inherit ,relative-faces)))
+                    (propertize (file-name-nondirectory buffer-file-truename)
+                                'face (if file-faces `(:inherit ,file-faces))))))))
+
+    (defun +doom-modeline--buffer-file-name (truncate-project-root-parent)
+      "Propertized `buffer-file-name'.
+    If TRUNCATE-PROJECT-ROOT-PARENT is t space will be saved by truncating it down
+    fish-shell style.
+    Example:
+    ~/Projects/FOSS/emacs/lisp/comint.el => ~/P/F/emacs/lisp/comint.el"
+      (let* ((project-root (projectile-project-root))
+             (file-name-split (shrink-path-file-mixed project-root
+                                                      (file-name-directory buffer-file-truename)
+                                                      buffer-file-truename))
+             (active (active)))
+        (if (null file-name-split)
+            (propertize "%b" 'face (if active 'doom-modeline-buffer-file))
+          (pcase-let ((`(,root-path-parent ,project ,relative-path ,filename) file-name-split))
+            (let ((modified-faces (if (buffer-modified-p) 'doom-modeline-buffer-modified)))
+              (let ((sp-faces       (or modified-faces (if active 'font-lock-comment-face)))
+                    (project-faces  (or modified-faces (if active 'font-lock-string-face)))
+                    (relative-faces (or modified-faces (if active 'doom-modeline-buffer-path)))
+                    (file-faces     (or modified-faces (if active 'doom-modeline-buffer-file))))
+                (let ((sp-props       `(,@(if sp-faces       `(:inherit ,sp-faces))      ,@(if active '(:weight bold))))
+                      (project-props  `(,@(if project-faces  `(:inherit ,project-faces)) ,@(if active '(:weight bold))))
+                      (relative-props `(,@(if relative-faces `(:inherit ,relative-faces))))
+                      (file-props     `(,@(if file-faces     `(:inherit ,file-faces)))))
+                  (concat (propertize (if truncate-project-root-parent
+                                          root-path-parent
+                                        (abbreviate-file-name project-root))
+                                      'face sp-props)
+                          (propertize (concat project "/") 'face project-props)
+                          (if relative-path (propertize relative-path 'face relative-props))
+                          (propertize filename 'face file-props)))))))))
+
+
+    ;;
+    ;; Segments
+    ;;
+
+    (def-modeline-segment! buffer-default-directory
+      "Displays `default-directory'. This is for special buffers like the scratch
+    buffer where knowing the current project directory is important."
+      (let ((face (if (active) 'doom-modeline-buffer-path)))
+        (concat (if (display-graphic-p) " ")
+                (all-the-icons-octicon
+                 "file-directory"
+                 :face face
+                 :v-adjust -0.05
+                 :height 1.25)
+                (propertize (concat " " (abbreviate-file-name default-directory))
+                            'face face))))
+
+    ;;
+    (def-modeline-segment! buffer-info
+      "Combined information about the current buffer, including the current working
+    directory, the file name, and its state (modified, read-only or non-existent)."
+      (concat (cond (buffer-read-only
+                     (concat (all-the-icons-octicon
+                              "lock"
+                              :face 'doom-modeline-warning
+                              :v-adjust -0.05)
+                             " "))
+                    ((buffer-modified-p)
+                     (concat (all-the-icons-faicon
+                              "floppy-o"
+                              :face 'doom-modeline-buffer-modified
+                              :v-adjust -0.0575)
+                             " "))
+                    ((and buffer-file-name
+                          (not (file-exists-p buffer-file-name)))
+                     (concat (all-the-icons-octicon
+                              "circle-slash"
+                              :face 'doom-modeline-urgent
+                              :v-adjust -0.05)
+                             " "))
+                    ((buffer-narrowed-p)
+                     (concat (all-the-icons-octicon
+                              "fold"
+                              :face 'doom-modeline-warning
+                              :v-adjust -0.05)
+                             " ")))
+              (if buffer-file-name
+                  (+doom-modeline-buffer-file-name)
+                "%b")))
+
+    ;;
+    (def-modeline-segment! buffer-info-simple
+      "Display only the current buffer's name, but with fontification."
+      (propertize
+       "%b"
+       'face (cond ((and buffer-file-name (buffer-modified-p))
+                    'doom-modeline-buffer-modified)
+                   ((active) 'doom-modeline-buffer-file))))
+
+    ;;
+    (def-modeline-segment! buffer-encoding
+      "Displays the encoding and eol style of the buffer the same way Atom does."
+      (concat (pcase (coding-system-eol-type buffer-file-coding-system)
+                (0 "LF  ")
+                (1 "CRLF  ")
+                (2 "CR  "))
+              (let ((sys (coding-system-plist buffer-file-coding-system)))
+                (cond ((memq (plist-get sys :category) '(coding-category-undecided coding-category-utf-8))
+                       "UTF-8")
+                      (t (upcase (symbol-name (plist-get sys :name))))))
+              "  "))
+
+    ;;
+    (def-modeline-segment! major-mode
+      "The major mode, including process, environment and text-scale info."
+      (propertize
+       (concat (format-mode-line mode-name)
+               (when (stringp mode-line-process)
+                 mode-line-process)
+               (and (featurep 'face-remap)
+                    (/= text-scale-mode-amount 0)
+                    (format " (%+d)" text-scale-mode-amount)))
+       'face (if (active) 'doom-modeline-buffer-major-mode)))
+
+    ;;
+    (def-modeline-segment! vcs
+      "Displays the current branch, colored based on its state."
+      (when (and vc-mode buffer-file-name)
+        (let* ((backend (vc-backend buffer-file-name))
+               (state   (vc-state buffer-file-name backend)))
+          (let ((face    'mode-line-inactive)
+                (active  (active))
+                (all-the-icons-default-adjust -0.1))
+            (concat "  "
+                    (cond ((memq state '(edited added))
+                           (if active (setq face 'doom-modeline-info))
+                           (all-the-icons-octicon
+                            "git-compare"
+                            :face face
+                            :v-adjust -0.05))
+                          ((eq state 'needs-merge)
+                           (if active (setq face 'doom-modeline-info))
+                           (all-the-icons-octicon "git-merge" :face face))
+                          ((eq state 'needs-update)
+                           (if active (setq face 'doom-modeline-warning))
+                           (all-the-icons-octicon "arrow-down" :face face))
+                          ((memq state '(removed conflict unregistered))
+                           (if active (setq face 'doom-modeline-urgent))
+                           (all-the-icons-octicon "alert" :face face))
+                          (t
+                           (if active (setq face 'font-lock-doc-face))
+                           (all-the-icons-octicon
+                            "git-compare"
+                            :face face
+                            :v-adjust -0.05)))
+                    " "
+                    (propertize (substring vc-mode (+ (if (eq backend 'Hg) 2 3) 2))
+                                'face (if active face))
+                    " ")))))
+
+    ;;
+    (defun +doom-ml-icon (icon &optional text face voffset)
+      "Displays an octicon ICON with FACE, followed by TEXT. Uses
+    `all-the-icons-octicon' to fetch the icon."
+      (concat (if vc-mode " " "  ")
+              (when icon
+                (concat
+                 (all-the-icons-material icon :face face :height 1.1 :v-adjust (or voffset -0.2))
+                 (if text +doom-modeline-vspc)))
+              (when text
+                (propertize text 'face face))
+              (if vc-mode "  " " ")))
+
+    (def-modeline-segment! flycheck
+      "Displays color-coded flycheck error status in the current buffer with pretty
+    icons."
+      (when (boundp 'flycheck-last-status-change)
+        (pcase flycheck-last-status-change
+          ('finished (if flycheck-current-errors
+                         (let-alist (flycheck-count-errors flycheck-current-errors)
+                           (let ((sum (+ (or .error 0) (or .warning 0))))
+                             (+doom-ml-icon "do_not_disturb_alt"
+                                            (number-to-string sum)
+                                            (if .error 'doom-modeline-urgent 'doom-modeline-warning)
+                                            -0.25)))
+                       (+doom-ml-icon "check" nil 'doom-modeline-info)))
+          ('running     (+doom-ml-icon "access_time" nil 'font-lock-doc-face -0.25))
+          ('no-checker  (+doom-ml-icon "sim_card_alert" "-" 'font-lock-doc-face))
+          ('errored     (+doom-ml-icon "sim_card_alert" "Error" 'doom-modeline-urgent))
+          ('interrupted (+doom-ml-icon "pause" "Interrupted" 'font-lock-doc-face)))))
+          ;; ('interrupted (+doom-ml-icon "x" "Interrupted" 'font-lock-doc-face)))))
+
+    ;;
+    (defsubst doom-column (pos)
+      (save-excursion (goto-char pos)
+                      (current-column)))
+
+    (def-modeline-segment! selection-info
+      "Information about the current selection, such as how many characters and
+    lines are selected, or the NxM dimensions of a block selection."
+      (when (and (active) (or mark-active (eq evil-state 'visual)))
+        (let ((reg-beg (region-beginning))
+              (reg-end (region-end)))
+          (propertize
+           (let ((lines (count-lines reg-beg (min (1+ reg-end) (point-max)))))
+             (cond ((or (bound-and-true-p rectangle-mark-mode)
+                        (eq 'block evil-visual-selection))
+                    (let ((cols (abs (- (doom-column reg-end)
+                                        (doom-column reg-beg)))))
+                      (format "%dx%dB" lines cols)))
+                   ((eq 'line evil-visual-selection)
+                    (format "%dL" lines))
+                   ((> lines 1)
+                    (format "%dC %dL" (- (1+ reg-end) reg-beg) lines))
+                   (t
+                    (format "%dC" (- (1+ reg-end) reg-beg)))))
+           'face 'doom-modeline-highlight))))
+
+
+    ;;
+    (defun +doom-modeline--macro-recording ()
+      "Display current Emacs or evil macro being recorded."
+      (when (and (active) (or defining-kbd-macro executing-kbd-macro))
+        (let ((sep (propertize " " 'face 'doom-modeline-panel)))
+          (concat sep
+                  (propertize (if (bound-and-true-p evil-this-macro)
+                                  (char-to-string evil-this-macro)
+                                "Macro")
+                              'face 'doom-modeline-panel)
+                  sep
+                  (all-the-icons-octicon "triangle-right"
+                                         :face 'doom-modeline-panel
+                                         :v-adjust -0.05)
+                  sep))))
+
+    (defsubst +doom-modeline--anzu ()
+      "Show the match index and total number thereof. Requires `anzu', also
+    `evil-anzu' if using `evil-mode' for compatibility with `evil-search'."
+      (when (and anzu--state (not iedit-mode))
+        (propertize
+         (let ((here anzu--current-position)
+               (total anzu--total-matched))
+           (cond ((eq anzu--state 'replace-query)
+                  (format " %d replace " total))
+                 ((eq anzu--state 'replace)
+                  (format " %d/%d " here total))
+                 (anzu--overflow-p
+                  (format " %s+ " total))
+                 (t
+                  (format " %s/%d " here total))))
+         'face (if (active) 'doom-modeline-panel))))
+
+    (defsubst +doom-modeline--evil-substitute ()
+      "Show number of matches for evil-ex substitutions and highlights in real time."
+      (when (and evil-mode
+                 (or (assq 'evil-ex-substitute evil-ex-active-highlights-alist)
+                     (assq 'evil-ex-global-match evil-ex-active-highlights-alist)
+                     (assq 'evil-ex-buffer-match evil-ex-active-highlights-alist)))
+        (propertize
+         (let ((range (if evil-ex-range
+                          (cons (car evil-ex-range) (cadr evil-ex-range))
+                        (cons (line-beginning-position) (line-end-position))))
+               (pattern (car-safe (evil-delimited-arguments evil-ex-argument 2))))
+           (if pattern
+               (format " %s matches " (how-many pattern (car range) (cdr range)))
+             " - "))
+         'face (if (active) 'doom-modeline-panel))))
+
+    (defun doom-themes--overlay-sort (a b)
+      (< (overlay-start a) (overlay-start b)))
+
+    (defsubst +doom-modeline--iedit ()
+      "Show the number of iedit regions matches + what match you're on."
+      (when (and iedit-mode iedit-occurrences-overlays)
+        (propertize
+         (let ((this-oc (or (let ((inhibit-message t))
+                              (iedit-find-current-occurrence-overlay))
+                            (progn (iedit-prev-occurrence)
+                                   (iedit-find-current-occurrence-overlay))))
+               (length (length iedit-occurrences-overlays)))
+           (format " %s/%d "
+                   (if this-oc
+                       (- length
+                          (length (memq this-oc (sort (append iedit-occurrences-overlays nil)
+                                                      #'doom-themes--overlay-sort)))
+                          -1)
+                     "-")
+                   length))
+         'face (if (active) 'doom-modeline-panel))))
+
+    (def-modeline-segment! matches
+      "Displays: 1. the currently recording macro, 2. A current/total for the
+    current search term (with anzu), 3. The number of substitutions being conducted
+    with `evil-ex-substitute', and/or 4. The number of active `iedit' regions."
+      (let ((meta (concat (+doom-modeline--macro-recording)
+                          (+doom-modeline--anzu)
+                          (+doom-modeline--evil-substitute)
+                          (+doom-modeline--iedit))))
+         (or (and (not (equal meta "")) meta)
+             (if buffer-file-name " %I "))))
+
+    ;; TODO Include other information
+    (def-modeline-segment! media-info
+      "Metadata regarding the current file, such as dimensions for images."
+      (cond ((eq major-mode 'image-mode)
+             (cl-destructuring-bind (width . height)
+                 (image-size (image-get-display-property) :pixels)
+               (format "  %dx%d  " width height)))))
+
+    (def-modeline-segment! bar
+      "The bar regulates the height of the mode-line in GUI Emacs.
+    Returns \"\" to not break --no-window-system."
+      (if (display-graphic-p)
+          (+doom-modeline--make-xpm
+           (face-background (if (active)
+                                'doom-modeline-bar
+                              'doom-modeline-inactive-bar)
+                            nil t)
+           +doom-modeline-height
+           +doom-modeline-bar-width)
+        ""))
+
+
+    ;;
+    ;; Mode lines
+    ;;
+
+    (def-modeline! main
+      (bar matches " " buffer-info "  %l:%c %p  " selection-info)
+      (buffer-encoding major-mode vcs flycheck))
+
+    (def-modeline! minimal
+      (bar matches " " buffer-info)
+      (media-info major-mode))
+
+    (def-modeline! special
+      (bar matches " " buffer-info-simple "  %l:%c %p  " selection-info)
+      (buffer-encoding major-mode flycheck))
+
+    (def-modeline! project
+      (bar buffer-default-directory)
+      (major-mode))
+
+    (def-modeline! media
+      (bar " %b  ")
+      (media-info major-mode))
+
+
+    ;;
+    ;; Hooks
+    ;;
+
+    (defun +doom-modeline|init ()
+      "Set the default modeline."
+      (doom-set-modeline 'main t)
+
+      ;; This scratch buffer is already created and doesn't get a modeline. For the
+      ;; love of Emacs, someone give the man a modeline!
+      (with-current-buffer "*scratch*"
+        (doom-set-modeline 'main)))
+
+    (defun +doom-modeline|set-special-modeline ()
+      (doom-set-modeline 'special))
+
+    (defun +doom-modeline|set-media-modeline ()
+      (doom-set-modeline 'media))
+
+    (defun +doom-modeline|set-project-modeline ()
+      (doom-set-modeline 'project))
+
+
+    ;;
+    ;; Bootstrap
+    ;;
+
+    (add-hook 'doom-init-ui-hook #'+doom-modeline|init)
+    (add-hook 'doom-scratch-buffer-hook #'+doom-modeline|set-special-modeline)
+    (add-hook '+doom-dashboard-mode-hook #'+doom-modeline|set-project-modeline)
+
+    (add-hook 'image-mode-hook   #'+doom-modeline|set-media-modeline)
+    (add-hook 'org-src-mode-hook #'+doom-modeline|set-special-modeline)
+    (add-hook 'circe-mode-hook #'+doom-modeline|set-special-modeline)
+
+  (setq-default mode-line-format (doom-modeline)))
+#+end_src
+
+*** Beacon
+While changing buffers or workspaces, the first thing you do is look for your cursor.
+Unless you know its position, you can not move it efficiently. Every time you change
+buffers, the current position of your cursor will be briefly highlighted now.
+#+begin_src emacs-lisp
+  (use-package beacon
+    :ensure t
+    :config
+      (beacon-mode 1))
+#+end_src
+
+*** Rainbow
+Mostly useful if you are into web development or game development.
+Every time emacs encounters a hexadecimal code that resembles a color, it will automatically highlight
+it in the appropriate color. This is a lot cooler than you may think.
+#+begin_src emacs-lisp
+  (use-package rainbow-mode
+    :ensure t
+    :init
+      (add-hook 'prog-mode-hook 'rainbow-mode))
+#+end_src
+
+*** Rainbow delimiters
+Colors parentheses and other delimiters depending on their depth, useful for any language using them,
+especially lisp.
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :init
+      (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+#+end_src
+** Diminishing modes
+Your modeline is sacred, and if you have a lot of modes enabled, as you will if you use this config,
+you might end up with a lot of clutter there, the package =diminish= disables modes on the mode line but keeps
+them running, it just prevents them from showing up and taking up space.
+
+*THIS WILL BE REMOVED SOON AS USE-PACKAGE HAS THE FUNCTIONALITY BUILT IN*
+
+Edit this list as you see fit!
+#+begin_src emacs-lisp
+  (use-package diminish
+    :ensure t
+    :init
+    (diminish 'which-key-mode)
+    (diminish 'linum-relative-mode)
+    (diminish 'hungry-delete-mode)
+    (diminish 'visual-line-mode)
+    (diminish 'subword-mode)
+    (diminish 'beacon-mode)
+    (diminish 'irony-mode)
+    (diminish 'page-break-lines-mode)
+    (diminish 'auto-revert-mode)
+    (diminish 'rainbow-delimiters-mode)
+    (diminish 'rainbow-mode))
+#+end_src
+
+** The terminal
+<2018-03-29 qui> Addapted from UncleDave
+I have used urxvt for years, and I miss it sometimes, but ansi-term is enough for most of my tasks.
+
+*** Default shell should be fish
+I don't know why this is a thing, but asking me what shell to launch every single
+time I open a terminal makes me want to slap babies, this gets rid of it.
+This goes without saying but you can replace bash with your shell of choice.
+#+begin_src emacs-lisp
+  (defvar my-term-shell "/usr/bin/fish")
+  (defadvice ansi-term (before force-bash)
+    (interactive (list my-term-shell)))
+  (ad-activate 'ansi-term)
+#+end_src
+
+*** Easy to remember keybinding
+In loving memory of bspwm, Super + Enter opens a new terminal, old habits die hard.
+#+begin_src emacs-lisp
+(global-set-key (kbd "<s-return>") 'ansi-term)
+#+end_src
+
+*** TODO fish-completion
+
+** Toggle linum mode
+#+begin_src emacs-lisp
+     (setq linum-format " %3d ")      ;; linum format to keep line numbers 2 spaces from border and text
+     (global-linum-mode 0)            ;; don't display lateral line numbers
+     (global-set-key
+      (kbd "C-c n") 'global-linum-mode) ;; toggle lateral line numbers
+   #+end_src
+
+** mode-line-bell
+#+begin_src emacs-lisp :tangle no
+  (use-package mode-line-bell
+    :ensure t
+    :config (mode-line-bell-mode))
+#+end_src
+
+** shell and eshell
+#+begin_src emacs-lisp
+(use-package better-shell
+    :ensure t
+    :bind (("C-'" . better-shell-shell)
+	   ("C-c C-;" . better-shell-remote-open)))
+#+end_src
+
+** Treemacs
+I didn't like it so much. Maybe neotree is better...
+#+begin_src emacs-lisp :tangle no
+(use-package treemacs
+  :ensure t
+  :defer t
+  :config
+  (progn
+    ;; (use-package treemacs-evil
+    ;;   :ensure t
+    ;;   :demand t)
+    (setq treemacs-change-root-without-asking nil
+          treemacs-collapse-dirs              (if (executable-find "python") 3 0)
+          treemacs-file-event-delay           5000
+          treemacs-follow-after-init          t
+          treemacs-goto-tag-strategy          'refetch-index
+          treemacs-indentation                2
+          treemacs-indentation-string         " "
+          treemacs-is-never-other-window      nil
+          treemacs-never-persist              nil
+          treemacs-no-png-images              nil
+          treemacs-recenter-after-file-follow nil
+          treemacs-recenter-after-tag-follow  nil
+          treemacs-show-hidden-files          t
+          treemacs-silent-filewatch           nil
+          treemacs-silent-refresh             nil
+          treemacs-sorting                    'alphabetic-desc
+          treemacs-tag-follow-cleanup         t
+          treemacs-tag-follow-delay           1.5
+          treemacs-winum-number               10
+          treemacs-width                      35)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null (executable-find "python3"))))
+      (`(t . t)
+       (treemacs-git-mode 'extended))
+      (`(t . _)
+       (treemacs-git-mode 'simple))))
+  :bind
+  (:map global-map
+        ([f8]         . treemacs-toggle)
+        ;; ("M-0"        . treemacs-select-window)
+        ;; ("C-c 1"      . treemacs-delete-other-windows)
+        ;; ("M-m ft"     . treemacs-toggle)
+        ;; ("M-m fT"     . treemacs)
+        ;; ("M-m fB"     . treemacs-bookmark)
+        ;; ("M-m f C-t"  . treemacs-find-file)
+        ;; ("M-m f M-t"  . treemacs-find-tag)
+        )
+)
+
+(use-package treemacs-projectile
+  :defer t
+  :ensure t
+  :config
+  (setq treemacs-header-function #'treemacs-projectile-create-header)
+  ;; :bind (:map global-map
+  ;;             ("M-m fP" . treemacs-projectile)
+  ;;             ("M-m fp" . treemacs-projectile-toggle))
+  )
+#+end_src
+
+** Prodigy
+#+begin_src emacs-lisp :tangle no
+(use-package prodigy
+  :ensure t
+  :config
+  (prodigy-define-service
+   :name "nikola"
+   :command "nikola"
+   :args '("auto")
+   :cwd (expand-file-name "~/Dropbox/placeholdeblogname")
+   :tags '(blog nikola)
+   :stop-signal 'sigint
+   :kill-process-buffer-on-stop t)
+   )
+#+end_src
+
+** Load External Files
+#+begin_src emacs-lisp
+  (defun load-if-exists (f)
+    "Load a file only when it exists and is readable,"
+    (if (file-readable-p (expand-file-name f))
+        (load-file f)))
+
+  (-map 'load-if-exists '("~/Dropbox/shared/mu4e-config.el"
+                          "~/Dropbox/shared/tempstuff.el"
+                          "~/Dropbox/shared/not-for-github.el"))
+#+end_src
+
+* Window Manager
+<2018-03-29 qui> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
+Everything regarding the WM or DE-like functionality is bundled here, remove the entire section if you do not wish to use =exwm=.
+<2018-03-29 qui> Disabled until I can make it work
+
+** exwm
+   The only time I actually had to use comments, this is for ease of removal if youu happen to not like exwm.
+*** Installation
+#+begin_src emacs-lisp :tangle no
+  (use-package exwm
+    :ensure t
+    :config
+
+      ;; necessary to configure exwm manually
+      (require 'exwm-config)
+
+      ;; fringe size, most people prefer 1 
+      (fringe-mode 3)
+      
+      ;; emacs as a daemon, use "emacsclient <filename>" to seamlessly edit files from the terminal directly in the exwm instance
+      (server-start)
+
+      ;; this fixes issues with ido mode, if you use helm, get rid of it
+      (exwm-config-ido)
+
+      ;; a number between 1 and 9, exwm creates workspaces dynamically so I like starting out with 1
+      (setq exwm-workspace-number 1)
+
+      ;; this is a way to declare truly global/always working keybindings
+      ;; this is a nifty way to go back from char mode to line mode without using the mouse
+      (exwm-input-set-key (kbd "s-r") #'exwm-reset)
+      (exwm-input-set-key (kbd "s-k") #'exwm-workspace-delete)
+      (exwm-input-set-key (kbd "s-w") #'exwm-workspace-swap)
+
+      ;; the next loop will bind s-<number> to switch to the corresponding workspace
+      (dotimes (i 10)
+        (exwm-input-set-key (kbd (format "s-%d" i))
+                            `(lambda ()
+                               (interactive)
+                               (exwm-workspace-switch-create ,i))))
+
+      ;; the simplest launcher, I keep it in only if dmenu eventually stopped working or something
+      (exwm-input-set-key (kbd "s-&")
+                          (lambda (command)
+                            (interactive (list (read-shell-command "$ ")))
+                            (start-process-shell-command command nil command)))
+
+      ;; an easy way to make keybindings work *only* in line mode
+      (push ?\C-q exwm-input-prefix-keys)
+      (define-key exwm-mode-map [?\C-q] #'exwm-input-send-next-key)
+
+      ;; simulation keys are keys that exwm will send to the exwm buffer upon inputting a key combination
+      (exwm-input-set-simulation-keys
+       '(
+         ;; movement
+         ([?\C-b] . left)
+         ([?\M-b] . C-left)
+         ([?\C-f] . right)
+         ([?\M-f] . C-right)
+         ([?\C-p] . up)
+         ([?\C-n] . down)
+         ([?\C-a] . home)
+         ([?\C-e] . end)
+         ([?\M-v] . prior)
+         ([?\C-v] . next)
+         ([?\C-d] . delete)
+         ([?\C-k] . (S-end delete))
+         ;; cut/paste
+         ([?\C-w] . ?\C-x)
+         ([?\M-w] . ?\C-c)
+         ([?\C-y] . ?\C-v)
+         ;; search
+         ([?\C-s] . ?\C-f)))
+
+      ;; this little bit will make sure that XF86 keys work in exwm buffers as well
+      (dolist (k '(XF86AudioLowerVolume
+                 XF86AudioRaiseVolume
+                 XF86PowerOff
+                 XF86AudioMute
+                 XF86AudioPlay
+                 XF86AudioStop
+                 XF86AudioPrev
+                 XF86AudioNext
+                 XF86ScreenSaver
+                 XF68Back
+                 XF86Forward
+                 Scroll_Lock
+                 print))
+      (cl-pushnew k exwm-input-prefix-keys))
+      
+      ;; this just enables exwm, it started automatically once everything is ready
+      (exwm-enable))
+#+end_src
+
+** Launchers
+Since I do not use a GUI launcher and do not have an external one like dmenu or rofi,
+I figured the best way to launch my most used applications would be direct emacsy
+keybindings.
+
+*** dmenu for emacs
+Who would've thought this was available, together with ido-vertical it's a nice large menu
+with its own cache for most launched applications.
+#+begin_src emacs-lisp :tangle no
+  (use-package dmenu
+    :ensure t
+    :bind
+      ("s-SPC" . 'dmenu))
+#+end_src
+
+*** Functions to start processes
+I guess this goes without saying but you absolutely have to change the arguments
+to suit the software that you are using. What good is a launcher for discord if you don't use it at all.
+#+begin_src emacs-lisp :tangle no
+  (defun exwm-async-run (name)
+    (interactive)
+    (start-process name nil name))
+
+  (defun daedreth/launch-discord ()
+    (interactive)
+    (exwm-async-run "discord"))
+
+  (defun daedreth/launch-browser ()
+    (interactive)
+    (exwm-async-run "qutebrowser"))
+
+  (defun daedreth/lock-screen ()
+    (interactive)
+    (exwm-async-run "slock"))
+
+  (defun daedreth/shutdown ()
+    (interactive)
+    (start-process "halt" nil "sudo" "halt"))
+#+end_src
+
+*** Keybindings to start processes
+These can be modified as well, suit yourself.
+#+begin_src emacs-lisp :tangle no
+  (global-set-key (kbd "s-d") 'daedreth/launch-discord)
+  (global-set-key (kbd "<s-tab>") 'daedreth/launch-browser)
+  (global-set-key (kbd "<XF86ScreenSaver>") 'daedreth/lock-screen)
+  (global-set-key (kbd "<XF86PowerOff>") 'daedreth/shutdown)
+#+end_src
+
+** Audio controls
+This is a set of bindings to my XF86 keys that invokes pulsemixer with the correct parameters
+
+*** Volume modifier
+It goes without saying that you are free to modify the modifier as you see fit, 4 is good enough for me though.
+#+begin_src emacs-lisp :tangle no
+(defconst volumeModifier "4")
+#+end_src
+
+*** Functions to start processes
+#+begin_src emacs-lisp :tangle no
+  (defun audio/mute ()
+    (interactive)
+    (start-process "audio-mute" nil "pulsemixer" "--toggle-mute"))
+
+  (defun audio/raise-volume ()
+    (interactive)
+    (start-process "raise-volume" nil "pulsemixer" "--change-volume" (concat "+" volumeModifier)))
+
+  (defun audio/lower-volume ()
+    (interactive)
+    (start-process "lower-volume" nil "pulsemixer" "--change-volume" (concat "-" volumeModifier)))
+#+end_src
+
+*** Keybindings to start processes
+You can also change those if you'd like, but I highly recommend keeping 'em the same, chances are, they will just work.
+#+begin_src emacs-lisp :tangle no
+(global-set-key (kbd "<XF86AudioMute>") 'audio/mute)
+(global-set-key (kbd "<XF86AudioRaiseVolume>") 'audio/raise-volume)
+(global-set-key (kbd "<XF86AudioLowerVolume>") 'audio/lower-volume)
+#+end_src
+
+** Screenshots
+I don't need scrot to take screenshots, or shutter or whatever tools you might have. This is enough.
+These won't work in the terminal version or the virtual console, obvious reasons.
+
+*** Screenshotting the entire screen
+#+begin_src emacs-lisp :tangle no
+  (defun daedreth/take-screenshot ()
+    "Takes a fullscreen screenshot of the current workspace"
+    (interactive)
+    (when window-system
+    (loop for i downfrom 3 to 1 do
+          (progn
+            (message (concat (number-to-string i) "..."))
+            (sit-for 1)))
+    (message "Cheese!")
+    (sit-for 1)
+    (start-process "screenshot" nil "import" "-window" "root" 
+               (concat (getenv "HOME") "/" (subseq (number-to-string (float-time)) 0 10) ".png"))
+    (message "Screenshot taken!")))
+  (global-set-key (kbd "<print>") 'daedreth/take-screenshot)
+#+end_src
+
+*** Screenshotting a region
+#+begin_src emacs-lisp :tangle no
+  (defun daedreth/take-screenshot-region ()
+    "Takes a screenshot of a region selected by the user."
+    (interactive)
+    (when window-system
+    (call-process "import" nil nil nil ".newScreen.png")
+    (call-process "convert" nil nil nil ".newScreen.png" "-shave" "1x1"
+                  (concat (getenv "HOME") "/" (subseq (number-to-string (float-time)) 0 10) ".png"))
+    (call-process "rm" nil nil nil ".newScreen.png")))
+  (global-set-key (kbd "<Scroll_Lock>") 'daedreth/take-screenshot-region)
+#+end_src
+
+** Default browser
+I use qutebrowser, so that's what I'll set up.
+#+begin_src emacs-lisp :tangle no
+  (setq browse-url-browser-function 'browse-url-generic
+        browse-url-generic-program "qutebrowser")
+#+end_src
+
+* Editing
+** Text manipulation
+<2018-03-29 qui> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
+Here I shall collect self-made functions that make editing text easier.
+
+*** Mark-Multiple
+I can barely contain my joy. This extension allows you to quickly mark the next occurence of a region and edit them all at once. Wow!
+#+begin_src emacs-lisp
+  (use-package mark-multiple
+    :ensure t
+    :bind ("C-c q" . 'mark-next-like-this))
+#+end_src
+
+*** Improved kill-word
+Why on earth does a function called =kill-word= not .. kill a word.
+It instead deletes characters from your cursors position to the end of the word,
+let's make a quick fix and bind it properly.
+#+begin_src emacs-lisp
+  (defun daedreth/kill-inner-word ()
+    "Kills the entire word your cursor is in. Equivalent to 'ciw' in vim."
+    (interactive)
+    (forward-char 1)
+    (backward-word)
+    (kill-word 1))
+  (global-set-key (kbd "C-c w k") 'daedreth/kill-inner-word)
+#+end_src
+
+*** Improved copy-word
+And again, the same as above but we make sure to not delete the source word.
+#+begin_src emacs-lisp
+  (defun daedreth/copy-whole-word ()
+    (interactive)
+    (save-excursion
+      (forward-char 1)
+      (backward-word)
+      (kill-word 1)
+      (yank)))
+  (global-set-key (kbd "C-c w c") 'daedreth/copy-whole-word)
+#+end_src
+
+*** Copy a line
+Regardless of where your cursor is, this quickly copies a line.
+#+begin_src emacs-lisp
+  (defun daedreth/copy-whole-line ()
+    "Copies a line without regard for cursor position."
+    (interactive)
+    (save-excursion
+      (kill-new
+       (buffer-substring
+        (point-at-bol)
+        (point-at-eol)))))
+  (global-set-key (kbd "C-c l c") 'daedreth/copy-whole-line)
+#+end_src
+
+*** Kill a line
+And this quickly deletes a line.
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-c l k") 'kill-whole-line)
+#+end_src
+
+** No text selection with shift key
+#+begin_src emacs-lisp
+(setq shift-select-mode nil)
+#+end_src
+
+** Regex
+pcre2el lets me use the perl syntax for regexes
+#+begin_src emacs-lisp
+(use-package pcre2el
+  :ensure t
+  :config 
+  (pcre-mode)
+)
+
+(use-package wgrep
+    :ensure t
+    )
+
+(setq counsel-fzf-cmd "/home/felippe/.fzf/bin/fzf -f %s")
+#+end_src
+
+** Comment line or region
+   function to comment line or selected region
+   #+begin_src emacs-lisp
+     (defun comment-line-or-region (n)
+       "Comment or uncomment current line and leave point after it.
+     With positive prefix, apply to N lines including current one.
+     With negative prefix, apply to -N lines above.
+     If region is active, apply to active region instead."
+       (interactive "p")
+       (if (use-region-p)
+           (comment-or-uncomment-region
+            (region-beginning) (region-end))
+         (let ((range
+                (list (line-beginning-position)
+                      (goto-char (line-end-position n)))))
+           (comment-or-uncomment-region
+            (apply #'min range)
+            (apply #'max range)))
+         (forward-line 1)
+         (back-to-indentation)))
+
+
+     (global-set-key (kbd "C-;")
+                     'comment-line-or-region)
+   #+end_src
+
+** Expand region
+   #+begin_src emacs-lisp
+     ; expand the marked region in semantic increments (negative prefix to reduce region)
+     (use-package expand-region
+       :ensure t
+       :config 
+       (global-set-key (kbd "C-=") 'er/expand-region))
+   #+end_src
+
+** TODO Text Wrappers
+Copying from [[https://github.com/howardabrams/dot-files/blob/master/emacs.org#block-wrappers][Howard Abrams]] again
+#+begin_src emacs-lisp :tangle no
+(use-package wrap-region
+  :ensure   t
+  :config
+  (wrap-region-global-mode t)
+  (wrap-region-add-wrappers
+   '(("(" ")")
+     ("[" "]")
+     ("{" "}")
+     ("<" ">")
+     ("'" "'")
+     ("\"" "\"")
+     ("‘" "’"   "q")
+     ("“" "”"   "Q")
+     ("*" "*"   "b"   org-mode)                 ; bolden
+     ("*" "*"   "*"   org-mode)                 ; bolden
+     ("/" "/"   "i"   org-mode)                 ; italics
+     ("/" "/"   "/"   org-mode)                 ; italics
+     ("~" "~"   "c"   org-mode)                 ; code
+     ("~" "~"   "~"   org-mode)                 ; code
+     ("=" "="   "v"   org-mode)                 ; verbatim
+     ("=" "="   "="   org-mode)                 ; verbatim
+     ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
+     ("**" "**" "b"   markdown-mode)            ; bolden
+     ("*" "*"   "i"   markdown-mode)            ; italics
+     ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
+     ("`" "'"   "c"   lisp-mode)                ; code
+     ))
+  :diminish wrap-region-mode)
+#+end_src
+He also does something that seems useful for org mode blocks, but I try just as it is now for a while.
+
+** Hungry delete
+   #+begin_src emacs-lisp
+     ; deletes all the whitespace when you hit backspace or delete
+     (use-package hungry-delete
+       :ensure t
+       :config
+       (global-hungry-delete-mode))
+   #+end_src
+
+** Undo-tree
+   #+begin_src emacs-lisp
+     (use-package undo-tree
+     :ensure t
+       :init
+	 (global-undo-tree-mode))
+   #+end_src
+
+** Iedit
+   #+begin_src emacs-lisp
+     (use-package iedit
+       :ensure t
+       :bind (("C-:" . iedit-mode)))
+   #+end_src
+
+** TODO Multiple cursors
+** Auto-complete
+   #+begin_src emacs-lisp
+     ;; auto-complete
+     (use-package auto-complete
+       :ensure t
+       :init
+       (progn
+	 (ac-config-default)
+	 (global-auto-complete-mode t)))
+   #+end_src
+
+** Flycheck
+   #+begin_src emacs-lisp
+     (use-package flycheck
+       :ensure t
+       :init
+       (global-flycheck-mode t))
+   #+end_src
+
+** Yasnippet
+<2018-01-10 qua> Apparently the snippets are not loading
+<2018-01-11 qui> I can load manually by calling `yas-load-directory` and choosing the yasnippet directory
+<2018-01-11 qui> I ""solved with `ln -s ~/.emacs.d/elpa/yasnippets*/snippets ~/.emacs.d/snippets`
+#+begin_src emacs-lisp
+    (use-package yasnippet
+      :ensure t
+      :config
+        (use-package yasnippet-snippets
+          :ensure t)
+        (yas-reload-all))
+#+end_src
+
+*** auto-yasnippet
+
+
+#+begin_src emacs-lisp
+(use-package auto-yasnippet
+  :ensure t)
+(define-key f-map (kbd "y") 'aya-create)
+(define-key f-map (kbd "e") 'aya-expand)
+#+end_src
+
+** TODO Smartparens
+#+begin_src emacs-lisp
+(use-package smartparens
+  :ensure t
+  :config
+  (require 'smartparens-config)
+  (require 'smartparens-html)
+  (require 'smartparens-python)
+  (require 'smartparens-latex)
+  (smartparens-global-mode t)
+  (show-smartparens-global-mode t)
+  :bind
+  (("C-<down>" . sp-down-sexp)
+   ("C-<up>"   . sp-up-sexp)
+   ("M-<down>" . sp-backward-down-sexp)
+   ("M-<up>"   . sp-backward-up-sexp)
+   ("C-M-a" . sp-beginning-of-sexp)
+   ("C-M-e" . sp-end-of-sexp)
+
+   ("C-M-f" . sp-forward-sexp)
+   ("C-M-b" . sp-backward-sexp)
+   
+   ("C-M-n" . sp-next-sexp)
+   ("C-M-p" . sp-previous-sexp)
+    
+   ("C-S-f" . sp-forward-symbol)
+   ("C-S-b" . sp-backward-symbol)
+    
+   ("C-<right>" . sp-forward-slurp-sexp)
+   ("M-<right>" . sp-forward-barf-sexp)
+   ("C-<left>"  . sp-backward-slurp-sexp)
+   ("M-<left>"  . sp-backward-barf-sexp)
+    
+   ("C-M-t" . sp-transpose-sexp)
+   ("C-M-k" . sp-kill-sexp)
+   ("C-k"   . sp-kill-hybrid-sexp)
+   ("M-k"   . sp-backward-kill-sexp)
+   ("C-M-w" . sp-copy-sexp)
+    
+   ("C-M-d" . delete-sexp)
+    
+   ("M-<backspace>" . backward-kill-word)
+   ("C-<backspace>" . sp-backward-kill-word)
+   ([remap sp-backward-kill-word] . backward-kill-word)
+    
+   ("M-[" . sp-backward-unwrap-sexp)
+   ("M-]" . sp-unwrap-sexp)
+    
+   ("C-x C-t" . sp-transpose-hybrid-sexp)
+    
+   ("C-c ("  . wrap-with-parens)
+   ("C-c ["  . wrap-with-brackets)
+   ("C-c {"  . wrap-with-braces)
+   ("C-c '"  . wrap-with-single-quotes)
+   ("C-c \"" . wrap-with-double-quotes)
+   ("C-c _"  . wrap-with-underscores)
+   ("C-c `"  . wrap-with-back-quotes)))
+#+end_src
+
+** Subwords
+Emacs treats camelCase strings as a single word by default, this changes said behaviour.
+#+begin_src emacs-lisp
+  (global-subword-mode 1)
+#+end_src
+
+** Electric
+If you write any code, you may enjoy this.
+Typing the first character in a set of 2, completes the second one after your cursor.
+Opening a bracket? It's closed for you already. Quoting something? It's closed for you already.
+
+You can easily add and remove pairs yourself, have a look.
+#+begin_src emacs-lisp
+(setq electric-pair-pairs '(
+                           (?\{ . ?\})
+                           (?\( . ?\))
+                           (?\[ . ?\])
+                           (?\" . ?\")
+                           ))
+#+end_src
+
+And now to enable it
+#+begin_src emacs-lisp
+(electric-pair-mode t)
+#+end_src
+** Editing with sudo
+Pretty self-explanatory, useful as hell if you use exwm.
+#+begin_src emacs-lisp
+  (use-package sudo-edit
+    :ensure t
+    :bind
+      ("s-e" . sudo-edit))
+#+end_src
+
+* Magit
+#+begin_src emacs-lisp
+(use-package magit
+  :ensure t
+  :bind ("C-x g" . magit-status))
+#+end_src
+
+* Org
+** Common settings
+
+#+begin_src emacs-lisp
+  (setq org-ellipsis " ")
+  (setq org-src-fontify-natively t)
+  (setq org-src-tab-acts-natively t)
+  (setq org-confirm-babel-evaluate nil)
+  (setq org-export-with-smart-quotes t)
+  (setq org-src-window-setup 'current-window)
+  (add-hook 'org-mode-hook 'org-indent-mode)
+#+end_src
+
+** Syntax highlighting for documents exported to HTML
+#+begin_src emacs-lisp
+  (use-package htmlize
+    :ensure t)
+#+end_src
+
+** Easy-to-add emacs-lisp template
+Hitting tab after an "<el" in an org-mode file will create a template for elisp insertion.
+#+begin_src emacs-lisp
+  (add-to-list 'org-structure-template-alist
+	       '("el" "#+begin_src emacs-lisp\n?\n#+end_src"))
+#+end_src
+
+** Org-bullets, source code highlight
+    #+begin_src emacs-lisp
+      ;; org mode stuff
+      (use-package org-bullets
+        :ensure t
+        :config
+        (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+
+      (setq org-src-fontify-natively t
+            org-src-preserve-indentation t
+            org-list-allow-alphabetical t
+            org-completion-use-ido t)
+    #+end_src
+
+** Org and org-plus-contrib from org elpa
+<2018-01-11 qui> Don't no why `org-plus-contrib` can't be loaded
+#+begin_src emacs-lisp :tangle no
+(use-package org
+  :ensure t)
+
+(use-package org-plus-contrib
+  :ensure t)
+#+end_src
+
+** Org behavior
+#+begin_src emacs-lisp 
+(custom-set-variables
+ '(org-directory "~/Dropbox/orgfiles")
+ '(org-default-notes-file (concat org-directory "notes.org"))
+ '(org-export-html-postamble nil)
+ '(org-hide-leading-stars t)
+ '(org-startup-folded 'contents)
+ '(org-startup-indented t)
+ )
+
+(setq org-file-apps
+      (append '(
+                ("\\.pdf\\'" . "okular %s")
+                ) org-file-apps ))
+
+(global-set-key "\C-ca" 'org-agenda)
+#+end_src
+
+** Org-ac
+#+begin_src emacs-lisp
+  (use-package org-ac
+    :ensure t
+    :init (progn
+            (require 'org-ac)
+            (org-ac/config-default)))
+#+end_src
+
+** Capture
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-c c")
+                  'org-capture)
+
+  (setq org-capture-templates
+        '(("a" "Appointment" entry (file  "~/Dropbox/orgfiles/gcal.org" "Appointments")
+           "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
+          ("n" "Note" entry (file+headline "~/Dropbox/orgfiles/notes.org" "Notes")
+           "* Note %?\n%T")
+          ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
+           "* %? %^L %^g \n%T" :prepend t)
+          ("b" "Blog idea" entry (file+headline "~/Dropbox/orgfiles/i.org" "Blog Topics:")
+           "* %?\n%T" :prepend t)
+          ("t" "To Do Item" entry (file+headline "~/Dropbox/orgfiles/i.org" "To Do Items")
+           "* %?\n%T" :prepend t)
+          ("j" "Journal" entry (file+datetree "~/Dropbox/journal.org")
+           "* %?\nEntered on %U\n  %i\n  %a")
+          ("s" "Screencast" entry (file "~/Dropbox/orgfiles/screencastnotes.org")
+           "* %?\n%i\n")))
+
+(defadvice org-capture-finalize 
+    (after delete-capture-frame activate)  
+  "Advise capture-finalize to close the frame"  
+  (if (equal "capture" (frame-parameter nil 'name))  
+    (delete-frame)))
+
+(defadvice org-capture-destroy 
+    (after delete-capture-frame activate)  
+  "Advise capture-destroy to close the frame"  
+  (if (equal "capture" (frame-parameter nil 'name))  
+    (delete-frame)))  
+
+(use-package noflet
+  :ensure t )
+(defun make-capture-frame ()
+  "Create a new frame and run org-capture."
+  (interactive)
+  (make-frame '((name . "capture")))
+  (select-frame-by-name "capture")
+  (delete-other-windows)
+  (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
+    (org-capture)))
+#+end_src
+
+** Google Calendar and org agenda
+Follow the instructions from [[http://cestlaz.github.io/posts/using-emacs-26-gcal/][Episode 26]] of Zamansky's series
+<2018-01-10 qua> Disabled until being able to instal org-gcal
+#+begin_src emacs-lisp :tangle no
+(setq package-check-signature nil)
+
+(use-package org-gcal
+  :ensure t
+  :config
+  (setq org-gcal-client-id my-gcal-client-id
+	org-gcal-client-secret my-gcal-client-secret
+	org-gcal-file-alist '(("flipgm@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
+
+(add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
+(add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
+
+(setq org-agenda-custom-commands
+      '(("c" "Simple agenda view"
+	 ((agenda "")
+	  (alltodo "")))))
+#+end_src
+
+Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, but I'm not sure how to use it
+#+begin_src emacs-lisp :tangle no
+(use-package calfw
+  :ensure t ;TODO: 
+  :config
+  (require 'calfw) 
+  (require 'calfw-org)
+  (setq cfw:org-overwrite-default-keybinding t)
+  (require 'calfw-ical)
+
+  (defun mycalendar ()
+    (interactive)
+    (cfw:open-calendar-buffer
+     :contents-sources
+     (list
+      ;; (cfw:org-create-source "Green")  ; orgmode source
+      (cfw:ical-create-source "gcal" "https://somecalnedaraddress" "IndianRed") ; devorah calender
+      (cfw:ical-create-source "gcal" "https://anothercalendaraddress" "IndianRed") ; google calendar ICS
+      ))) 
+  (setq cfw:org-overwrite-default-keybinding t))
+
+(use-package calfw-gcal
+	:ensure t
+	:config
+	(require 'calfw-gcal))
+#+end_src
+
+** Reveal.js and Org-reveal
+<2018-01-10 qua> Disabled until compatibility issue ie resolved
+   #+begin_src emacs-lisp
+     (use-package ox-reveal
+     :ensure t)
+
+     (setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
+     (setq org-reveal-mathjax t)
+
+     (use-package htmlize
+     :ensure t)
+   #+end_src
+
+* Publishing
+** LaTeX and PDF
+Still need to configure the packages
+** TODO AucTeX
+
+#+begin_src emacs-lisp
+(use-package auctex
+  :defer t)
+
+(use-package auctex-latexmk
+  :defer t)
+
+(use-package auto-complete-auctex
+  :defer t)
+#+end_src
+
+*** TODO reftex
+
+*** TODO bratex
+
+** TODO org-ref
+#+begin_src emacs-lisp
+(use-package org-ref
+  :ensure t)
+#+end_src
+
+** TODO pdf-tools
+#+begin_src emacs-lisp
+(use-package pdf-tools
+  :ensure t)
+#+end_src
+
+** TODO instant preview of latex fragments
+   #+begin_src emacs-lisp :tangle no
+     ;; (org-inside-LaTeX-fragment-p)
+     (require 'xwidget)
+     (defvar katex-url "file:///PATH/TO/katex.html?")
+     (defvar katex-buffer nil)
+     (defvar katex-xw nil)
+     (setq katex-buffer (get-buffer-create "*xwidget webkit: Katex *"))
+
+     (defun org-katex-latex-fragment-maybe (&optional arg)
+       "TODO"
+       (if (org-inside-LaTeX-fragment-p)
+           (call-interactively #'org-katex-latex-fragment)))
+
+     (add-hook 'post-self-insert-hook #'org-katex-latex-fragment-maybe)
+     (add-hook! 'evil-insert-state-exit-hook (posframe-hide katex-buffer))
+
+     (defun org-katex-latex-fragment (&optional arg)
+       "TODO"
+       (interactive "P")
+       (let (beg end)
+         (let ((datum (org-element-context)))
+           (when (memq (org-element-type datum)
+                       '(latex-environment latex-fragment))
+             (setq beg (org-element-property :begin datum))
+             (setq end (org-element-property :end datum)))
+           (org-format-katex beg end))))
+
+     (defun org-format-katex (beg end)
+       "TODO"
+       (save-excursion
+         (goto-char beg)
+         (let* ((context (org-element-context))
+                (type (org-element-type context)))
+           (when (memq type '(latex-environment latex-fragment))
+             (let ((value (org-element-property :value context))
+                   (beg (org-element-property :begin context))
+                   (end (save-excursion
+                          (goto-char (org-element-property :end context))
+                          (skip-chars-backward " \r\t\n")
+                          (point))))
+               (goto-char end)
+               ;; (concat katex-url (url-hexify-string value))
+               (if (eq type 'latex-fragment)
+                   (setq value (substring value 2 -2)))
+               (if (eq type 'latex-environment)
+                   (progn
+                     (setq value (replace-regexp-in-string "begin{equation}\\|begin{align}\\|begin{align\\*}" "begin{aligned}" value))
+                     (setq value (replace-regexp-in-string "end{equation}\\|end{align}\\|end{align\\*}" "end{aligned}" value))))
+               (posframe-show
+                katex-buffer
+                :position (point)
+                :width 40
+                :height 10
+                :min-width 40
+                :min-height 10)
+               ;; (if (string-match ""))
+               (with-current-buffer katex-buffer
+                 (let ((url (concat katex-url (url-hexify-string value))))
+                   (if katex-xw
+                       (xwidget-webkit-goto-uri katex-xw url)
+                     (insert url)
+                     (put-text-property 1 (+ 1 (length url)) 'invisible t)
+                     (setq katex-xw (xwidget-insert 1 'webkit "katex" 1 1))
+                     (xwidget-put katex-xw 'callback 'xwidget-webkit-callback)
+                     (setq cursor-type nil)
+                     (xwidget-webkit-goto-uri katex-xw url)))))))))
+   #+end_src
+** TODO Blogging
+Zamansky uses [[https://getnikola.com/blog/index.html][Nikola]] to produce the blog posts, but he don't show how to setup it.
+I'm thinking about starting to blog my work, so maybe I should look at it.
+There is also Hugo.
+* Programming
+** Python
+*** Jedi
+   #+begin_src emacs-lisp
+     (use-package jedi
+       :ensure t
+       :init
+       (add-hook 'python-mode-hook 'jedi:setup)
+       (add-hook 'python-mode-hook 'jedi:ac-setup))
+   #+end_src
+
+*** Elpy
+   #+begin_src emacs-lisp
+     (use-package elpy
+     :ensure t
+     :config 
+     (elpy-enable))
+   #+end_src
+
+** Julia
+#+begin_src emacs-lisp
+(use-package julia-mode
+  :ensure t)
+
+(use-package julia-repl
+  :ensure t
+  :config
+  (add-hook 'julia-mode-hook 'julia-repl-mode))
+#+end_src
+
+** Web Stuff
+*** Web mode
+#+begin_src emacs-lisp
+  (use-package web-mode
+      :ensure t
+      :config
+           (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+           (setq web-mode-engines-alist
+                 '(("django"    . "\\.html\\'")))
+           (setq web-mode-ac-sources-alist
+                 '(("css" . (ac-source-css-property))
+                   ("html" . (ac-source-words-in-buffer ac-source-abbrev))))
+
+  (setq web-mode-enable-auto-closing t)
+  (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
+#+end_src
+
+*** Emmet
+#+begin_src emacs-lisp
+(use-package emmet-mode
+  :ensure t
+  :config
+  (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+  (add-hook 'web-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+  (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
+)
+#+end_src
+
+** Nix
+#+begin_src emacs-lisp
+(use-package nix-mode
+  :defer t)
+#+end_src
+
+** ML
+#+begin_src emacs-lisp
+(use-package sml-mode
+  :ensure t)
+#+end_src
+
+* Minor conveniences
+<2018-03-28 qua> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
+Emacs is at it's best when it just does things for you, shows you the way, guides you so to speak.
+This can be best achieved using a number of small extensions. While on their own they might not be particularly
+impressive. Together they create a nice environment for you to work in.
+
+** Visiting the configuration
+Quickly edit =~/.emacs.d/config.org=
+#+begin_src emacs-lisp
+(defun config-visit ()
+  (interactive)
+  (find-file "~/.emacs.d/config.org"))
+(define-key f-map (kbd "v") 'config-visit)
+
+#+end_src
+
+** Reloading the configuration
+   
+Simply pressing =Control-c r= will reload this file, very handy.
+You can also manually invoke =config-reload=.
+#+begin_src emacs-lisp
+(defun config-reload ()
+  "Reloads ~/.emacs.d/config.org at runtime"
+  (interactive)
+  (org-babel-load-file (expand-file-name "~/.emacs.d/config.org")))
+(define-key f-map (kbd "r") 'config-reload)
+#+end_src
+
+* Extras
+** Elfeed
+*** Elfeed, elfeed-org and elfeed-goodies
+#+begin_src emacs-lisp 
+(use-package elfeed
+  :ensure t
+  :bind (("C-c e" . elfeed)
+         :map elfeed-search-mode-map
+	      ("q" . bjm/elfeed-save-db-and-bury)
+	      ("Q" . bjm/elfeed-save-db-and-bury)
+	      ("m" . elfeed-toggle-star)
+	      ("M" . elfeed-toggle-star)
+              ("j" . mz/make-and-run-elfeed-hydra)
+              ("J" . mz/make-and-run-elfeed-hydra)
+;	      ("j" . mz/hydra-elfeed/body)
+;	      ("J" . mz/hydra-elfeed/body))
+              ))
+
+(setq elfeed-db-directory "~/Dropbox/shared/elfeeddb")
+
+
+(defun elfeed-mark-all-as-read ()
+      (interactive)
+      (mark-whole-buffer)
+      (elfeed-search-untag-all-unread))
+
+      ;;functions to support syncing .elfeed between machines
+;;makes sure elfeed reads index from disk before launching
+(defun bjm/elfeed-load-db-and-open ()
+  "Wrapper to load the elfeed db from disk before opening"
+  (interactive)
+  (elfeed-db-load)
+  (elfeed)
+  (elfeed-search-update--force))
+
+;;write to disk when quiting
+(defun bjm/elfeed-save-db-and-bury ()
+  "Wrapper to save the elfeed db to disk before burying buffer"
+  (interactive)
+  (elfeed-db-save)
+  (quit-window))
+
+;; (defalias 'elfeed-toggle-star
+;;   (elfeed-expose #'elfeed-search-toggle-all 'star))
+
+(use-package elfeed
+  :ensure t
+  :bind (:map elfeed-search-mode-map
+	      ("q" . bjm/elfeed-save-db-and-bury)
+	      ("Q" . bjm/elfeed-save-db-and-bury)
+	      ("m" . elfeed-toggle-star)
+	      ("M" . elfeed-toggle-star)
+	      )
+  )
+
+(use-package elfeed-goodies
+  :ensure t
+  :config
+  (elfeed-goodies/setup))
+
+(use-package elfeed-org
+  :ensure t
+  :config
+  (elfeed-org)
+  (setq rmh-elfeed-org-files (list "~/Dropbox/shared/elfeed.org")))
+#+end_src
+
+*** Elfeed hydra
+#+begin_src emacs-lisp :
+;; (defhydra mz/hydra-elfeed ()
+;;    "filte - take 1"
+;;    ("c" (elfeed-search-set-filter "@6-months-ago +cs") "cs")
+;;    ("e" (elfeed-search-set-filter "@6-months-ago +emacs") "emacs")
+;;    ("d" (elfeed-search-set-filter "@6-months-ago +education") "education")
+;;    ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
+;;    ("M" elfeed-toggle-star "Mark")
+;;    ("A" (elfeed-search-set-filter "@6-months-ago") "All")
+;;    ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
+;;    ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
+;;    ("q" nil "quit" :color blue)
+;;    )
+
+
+(defun z/hasCap (s) ""
+       (let ((case-fold-search nil))
+       (string-match-p "[[:upper:]]" s)
+       ))
+
+(defun z/get-hydra-option-key (s)
+  "returns single upper case letter (converted to lower) or first"
+  (interactive)
+  (let ( (loc (z/hasCap s)))
+    (if loc
+	(downcase (substring s loc (+ loc 1)))
+      (substring s 0 1)
+    )))
+
+(defun mz/make-elfeed-cats (tags)
+  "Returns a list of lists. Each one is line for the hydra configuratio in the form
+     (c function hint)"
+  (interactive)
+  (mapcar (lambda (tag)
+	    (let* (
+		   (tagstring (symbol-name tag))
+		   (c (z/get-hydra-option-key tagstring))
+		   )
+	      (list c (append '(elfeed-search-set-filter) (list (format "@6-months-ago +%s" tagstring) ))tagstring  )))
+	  tags))
+
+(defmacro mz/make-elfeed-hydra ()
+  `(defhydra mz/hydra-elfeed ()
+     "filter"
+     ,@(mz/make-elfeed-cats (elfeed-db-get-all-tags))
+     ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
+     ("M" elfeed-toggle-star "Mark")
+     ("A" (elfeed-search-set-filter "@6-months-ago") "All")
+     ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
+     ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
+     ("q" nil "quit" :color blue)
+     ))
+
+(defun mz/make-and-run-elfeed-hydra ()
+  ""
+  (interactive)
+  (mz/make-elfeed-hydra)
+  (mz/hydra-elfeed/body))
+#+end_src
+
+** Browser Editing
+#+begin_src emacs-lisp :tangle no
+(use-package atomic-chrome
+  :ensure t
+  :config
+  (atomic-chrome-start-server)
+#+end_src
+
+** TODO Elbank
+** Media
+Why bother with an external media manager when emacs is a thing.
+EMMS is huge, incredibly powerful and luckily well documented.
+All I need it for is to play music and video, that's it.
+I also need it to display metadata on the modeline correctly, which it does with mpd automatically.
+
+*** EMMS with mpd
+There is many backends, many players and codecs for EMMS, we use mpd now.
+
+**** Basic setup for mpd
+The non XF86 keys are made to be somewhat logical to follow and easy to remember.
+At the bottom part of the configuration, you will notice how XF86 keys are used
+by default, so unless you keyboard is broken it should work out of the box.
+Obviously you might have to adjust /server-name/ and /server-port/ to fit your configuration.
+#+begin_src emacs-lisp
+  (use-package emms
+    :ensure t
+    :config
+      (require 'emms-setup)
+      (require 'emms-player-mpd)
+      (emms-all) ; don't change this to values you see on stackoverflow questions if you expect emms to work
+      (setq emms-seek-seconds 5)
+      (setq emms-player-list '(emms-player-mpd))
+      (setq emms-info-functions '(emms-info-mpd))
+      (setq emms-player-mpd-server-name "localhost")
+      (setq emms-player-mpd-server-port "6601")
+    :bind
+      ("s-m p" . emms)
+      ("s-m b" . emms-smart-browse)
+      ("s-m r" . emms-player-mpd-update-all-reset-cache)
+      ("<XF86AudioPrev>" . emms-previous)
+      ("<XF86AudioNext>" . emms-next)
+      ("<XF86AudioPlay>" . emms-pause)
+      ("<XF86AudioStop>" . emms-stop))
+#+end_src
+
+**** MPC Setup
+***** Setting the default port
+We use non-default settings for the socket, to use the built in =mpc= functionality we need to set up a variable.
+Adjust according to your setup.
+#+begin_src emacs-lisp
+  (setq mpc-host "localhost:6601")
+#+end_src
+
+**** Some more fun stuff
+***** Starting the daemon from within emacs
+If you have an absolutely massive music library, it might be a good idea to get rid of =mpc-update=
+and only invoke it manually when needed.
+#+begin_src emacs-lisp
+  (defun mpd/start-music-daemon ()
+    "Start MPD, connects to it and syncs the metadata cache."
+    (interactive)
+    (shell-command "mpd")
+    (mpd/update-database)
+    (emms-player-mpd-connect)
+    (emms-cache-set-from-mpd-all)
+    (message "MPD Started!"))
+  (global-set-key (kbd "s-m c") 'mpd/start-music-daemon)
+#+end_src
+
+***** Killing the daemon from within emacs
+#+begin_src emacs-lisp
+  (defun mpd/kill-music-daemon ()
+    "Stops playback and kill the music daemon."
+    (interactive)
+    (emms-stop)
+    (call-process "killall" nil nil nil "mpd")
+    (message "MPD Killed!"))
+  (global-set-key (kbd "s-m k") 'mpd/kill-music-daemon)
+#+end_src
+***** Updating the database easily.
+#+begin_src emacs-lisp
+  (defun mpd/update-database ()
+    "Updates the MPD database synchronously."
+    (interactive)
+    (call-process "mpc" nil nil nil "update")
+    (message "MPD Database Updated!"))
+  (global-set-key (kbd "s-m u") 'mpd/update-database)
+#+end_src
+** TODO Torrent
