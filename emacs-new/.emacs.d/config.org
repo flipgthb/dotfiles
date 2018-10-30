@@ -4,6 +4,23 @@
 #+todo: DISABLED | ACTIVE
 #+startup: indent
 
+* Personal Keymap
+I'm gonna define "C-." as my "leader" key
+#+begin_src emacs-lisp
+(define-prefix-command 'f-map)
+(global-set-key (kbd "C-.") 'f-map)
+#+end_src
+
+** key-chord
+Also, I'm gonna try to use key chords with ",," as an chord for "C-."
+#+begin_src emacs-lisp
+(use-package key-chord
+  :ensure t
+  :config
+  (key-chord-mode t))
+(key-chord-define-global ",," 'f-map)
+#+end_src
+
 * User Interface
 ** Emacs Internals
 **** Dash
@@ -543,24 +560,30 @@ Font to use fancy symbols in buffers and modeline
 #+end_src
 
 #+begin_src emacs-lisp
-(use-package doom-themes
+  (use-package doom-themes
+      :defer t)
+  ;; (load-theme 'doom-one t)
+
+  (use-package doneburn-theme
     :defer t)
-;; (load-theme 'doom-one t)
 
-(use-package doneburn-theme
-  :defer t)
+  (use-package zenburn-theme
+    :defer t)
+  ;; (load-theme 'doneburn t)
 
-(use-package zenburn-theme
-  :defer t)
-;; (load-theme 'doneburn t)
+  (use-package nova-theme
+    :defer t)
+  ;; (load-theme 'nova t)
 
-(use-package nova-theme
-  :defer t)
-;; (load-theme 'nova t)
+  (use-package lab-themes
+    :defer t)
+  ;; (lab-themes-load-style 'dark)
 
-(use-package lab-themes
-  :ensure t)
-(lab-themes-load-style 'dark)
+  (use-package base16-theme
+    :ensure t
+    :config
+    (load-theme 'base16-ocean t))
+
 #+end_src
 
 **** Some customization
@@ -2578,3 +2601,1142 @@ especially lisp.
     :init
       (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 #+end_src
+* Window Manager
+<2018-03-29 qui> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
+Everything regarding the WM or DE-like functionality is bundled here, remove the entire section if you do not wish to use =exwm=.
+<2018-03-29 qui> Disabled until I can make it work
+
+** exwm
+   The only time I actually had to use comments, this is for ease of removal if youu happen to not like exwm.
+*** Installation
+#+begin_src emacs-lisp :tangle no
+  (use-package exwm
+    :ensure t
+    :config
+
+      ;; necessary to configure exwm manually
+      (require 'exwm-config)
+
+      ;; fringe size, most people prefer 1 
+      (fringe-mode 3)
+      
+      ;; emacs as a daemon, use "emacsclient <filename>" to seamlessly edit files from the terminal directly in the exwm instance
+      (server-start)
+
+      ;; this fixes issues with ido mode, if you use helm, get rid of it
+      (exwm-config-ido)
+
+      ;; a number between 1 and 9, exwm creates workspaces dynamically so I like starting out with 1
+      (setq exwm-workspace-number 1)
+
+      ;; this is a way to declare truly global/always working keybindings
+      ;; this is a nifty way to go back from char mode to line mode without using the mouse
+      (exwm-input-set-key (kbd "s-r") #'exwm-reset)
+      (exwm-input-set-key (kbd "s-k") #'exwm-workspace-delete)
+      (exwm-input-set-key (kbd "s-w") #'exwm-workspace-swap)
+
+      ;; the next loop will bind s-<number> to switch to the corresponding workspace
+      (dotimes (i 10)
+        (exwm-input-set-key (kbd (format "s-%d" i))
+                            `(lambda ()
+                               (interactive)
+                               (exwm-workspace-switch-create ,i))))
+
+      ;; the simplest launcher, I keep it in only if dmenu eventually stopped working or something
+      (exwm-input-set-key (kbd "s-&")
+                          (lambda (command)
+                            (interactive (list (read-shell-command "$ ")))
+                            (start-process-shell-command command nil command)))
+
+      ;; an easy way to make keybindings work *only* in line mode
+      (push ?\C-q exwm-input-prefix-keys)
+      (define-key exwm-mode-map [?\C-q] #'exwm-input-send-next-key)
+
+      ;; simulation keys are keys that exwm will send to the exwm buffer upon inputting a key combination
+      (exwm-input-set-simulation-keys
+       '(
+         ;; movement
+         ([?\C-b] . left)
+         ([?\M-b] . C-left)
+         ([?\C-f] . right)
+         ([?\M-f] . C-right)
+         ([?\C-p] . up)
+         ([?\C-n] . down)
+         ([?\C-a] . home)
+         ([?\C-e] . end)
+         ([?\M-v] . prior)
+         ([?\C-v] . next)
+         ([?\C-d] . delete)
+         ([?\C-k] . (S-end delete))
+         ;; cut/paste
+         ([?\C-w] . ?\C-x)
+         ([?\M-w] . ?\C-c)
+         ([?\C-y] . ?\C-v)
+         ;; search
+         ([?\C-s] . ?\C-f)))
+
+      ;; this little bit will make sure that XF86 keys work in exwm buffers as well
+      (dolist (k '(XF86AudioLowerVolume
+                 XF86AudioRaiseVolume
+                 XF86PowerOff
+                 XF86AudioMute
+                 XF86AudioPlay
+                 XF86AudioStop
+                 XF86AudioPrev
+                 XF86AudioNext
+                 XF86ScreenSaver
+                 XF68Back
+                 XF86Forward
+                 Scroll_Lock
+                 print))
+      (cl-pushnew k exwm-input-prefix-keys))
+      
+      ;; this just enables exwm, it started automatically once everything is ready
+      (exwm-enable))
+#+end_src
+
+** Launchers
+Since I do not use a GUI launcher and do not have an external one like dmenu or rofi,
+I figured the best way to launch my most used applications would be direct emacsy
+keybindings.
+
+*** dmenu for emacs
+Who would've thought this was available, together with ido-vertical it's a nice large menu
+with its own cache for most launched applications.
+#+begin_src emacs-lisp :tangle no
+  (use-package dmenu
+    :ensure t
+    :bind
+      ("s-SPC" . 'dmenu))
+#+end_src
+
+*** Functions to start processes
+I guess this goes without saying but you absolutely have to change the arguments
+to suit the software that you are using. What good is a launcher for discord if you don't use it at all.
+#+begin_src emacs-lisp :tangle no
+  (defun exwm-async-run (name)
+    (interactive)
+    (start-process name nil name))
+
+  (defun daedreth/launch-discord ()
+    (interactive)
+    (exwm-async-run "discord"))
+
+  (defun daedreth/launch-browser ()
+    (interactive)
+    (exwm-async-run "qutebrowser"))
+
+  (defun daedreth/lock-screen ()
+    (interactive)
+    (exwm-async-run "slock"))
+
+  (defun daedreth/shutdown ()
+    (interactive)
+    (start-process "halt" nil "sudo" "halt"))
+#+end_src
+
+*** Keybindings to start processes
+These can be modified as well, suit yourself.
+#+begin_src emacs-lisp :tangle no
+  (global-set-key (kbd "s-d") 'daedreth/launch-discord)
+  (global-set-key (kbd "<s-tab>") 'daedreth/launch-browser)
+  (global-set-key (kbd "<XF86ScreenSaver>") 'daedreth/lock-screen)
+  (global-set-key (kbd "<XF86PowerOff>") 'daedreth/shutdown)
+#+end_src
+
+** Audio controls
+This is a set of bindings to my XF86 keys that invokes pulsemixer with the correct parameters
+
+*** Volume modifier
+It goes without saying that you are free to modify the modifier as you see fit, 4 is good enough for me though.
+#+begin_src emacs-lisp :tangle no
+(defconst volumeModifier "4")
+#+end_src
+
+*** Functions to start processes
+#+begin_src emacs-lisp :tangle no
+  (defun audio/mute ()
+    (interactive)
+    (start-process "audio-mute" nil "pulsemixer" "--toggle-mute"))
+
+  (defun audio/raise-volume ()
+    (interactive)
+    (start-process "raise-volume" nil "pulsemixer" "--change-volume" (concat "+" volumeModifier)))
+
+  (defun audio/lower-volume ()
+    (interactive)
+    (start-process "lower-volume" nil "pulsemixer" "--change-volume" (concat "-" volumeModifier)))
+#+end_src
+
+*** Keybindings to start processes
+You can also change those if you'd like, but I highly recommend keeping 'em the same, chances are, they will just work.
+#+begin_src emacs-lisp :tangle no
+(global-set-key (kbd "<XF86AudioMute>") 'audio/mute)
+(global-set-key (kbd "<XF86AudioRaiseVolume>") 'audio/raise-volume)
+(global-set-key (kbd "<XF86AudioLowerVolume>") 'audio/lower-volume)
+#+end_src
+
+** Screenshots
+I don't need scrot to take screenshots, or shutter or whatever tools you might have. This is enough.
+These won't work in the terminal version or the virtual console, obvious reasons.
+
+*** Screenshotting the entire screen
+#+begin_src emacs-lisp :tangle no
+  (defun daedreth/take-screenshot ()
+    "Takes a fullscreen screenshot of the current workspace"
+    (interactive)
+    (when window-system
+    (loop for i downfrom 3 to 1 do
+          (progn
+            (message (concat (number-to-string i) "..."))
+            (sit-for 1)))
+    (message "Cheese!")
+    (sit-for 1)
+    (start-process "screenshot" nil "import" "-window" "root" 
+               (concat (getenv "HOME") "/" (subseq (number-to-string (float-time)) 0 10) ".png"))
+    (message "Screenshot taken!")))
+  (global-set-key (kbd "<print>") 'daedreth/take-screenshot)
+#+end_src
+
+*** Screenshotting a region
+#+begin_src emacs-lisp :tangle no
+  (defun daedreth/take-screenshot-region ()
+    "Takes a screenshot of a region selected by the user."
+    (interactive)
+    (when window-system
+    (call-process "import" nil nil nil ".newScreen.png")
+    (call-process "convert" nil nil nil ".newScreen.png" "-shave" "1x1"
+                  (concat (getenv "HOME") "/" (subseq (number-to-string (float-time)) 0 10) ".png"))
+    (call-process "rm" nil nil nil ".newScreen.png")))
+  (global-set-key (kbd "<Scroll_Lock>") 'daedreth/take-screenshot-region)
+#+end_src
+
+** Default browser
+I use qutebrowser, so that's what I'll set up.
+#+begin_src emacs-lisp :tangle no
+  (setq browse-url-browser-function 'browse-url-generic
+        browse-url-generic-program "qutebrowser")
+#+end_src
+
+* Editing
+** Text manipulation
+<2018-03-29 qui> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
+Here I shall collect self-made functions that make editing text easier.
+
+*** Mark-Multiple
+I can barely contain my joy. This extension allows you to quickly mark the next occurence of a region and edit them all at once. Wow!
+#+begin_src emacs-lisp
+  (use-package mark-multiple
+    :ensure t
+    :bind ("C-c q" . 'mark-next-like-this))
+#+end_src
+
+*** Improved kill-word
+Why on earth does a function called =kill-word= not .. kill a word.
+It instead deletes characters from your cursors position to the end of the word,
+let's make a quick fix and bind it properly.
+#+begin_src emacs-lisp
+  (defun daedreth/kill-inner-word ()
+    "Kills the entire word your cursor is in. Equivalent to 'ciw' in vim."
+    (interactive)
+    (forward-char 1)
+    (backward-word)
+    (kill-word 1))
+  (global-set-key (kbd "C-c w k") 'daedreth/kill-inner-word)
+#+end_src
+
+*** Improved copy-word
+And again, the same as above but we make sure to not delete the source word.
+#+begin_src emacs-lisp
+  (defun daedreth/copy-whole-word ()
+    (interactive)
+    (save-excursion
+      (forward-char 1)
+      (backward-word)
+      (kill-word 1)
+      (yank)))
+  (global-set-key (kbd "C-c w c") 'daedreth/copy-whole-word)
+#+end_src
+
+*** Copy a line
+Regardless of where your cursor is, this quickly copies a line.
+#+begin_src emacs-lisp
+  (defun daedreth/copy-whole-line ()
+    "Copies a line without regard for cursor position."
+    (interactive)
+    (save-excursion
+      (kill-new
+       (buffer-substring
+        (point-at-bol)
+        (point-at-eol)))))
+  (global-set-key (kbd "C-c l c") 'daedreth/copy-whole-line)
+#+end_src
+
+*** Kill a line
+And this quickly deletes a line.
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-c l k") 'kill-whole-line)
+#+end_src
+
+** No text selection with shift key
+#+begin_src emacs-lisp
+(setq shift-select-mode nil)
+#+end_src
+
+** Regex
+pcre2el lets me use the perl syntax for regexes
+#+begin_src emacs-lisp
+(use-package pcre2el
+  :ensure t
+  :config 
+  (pcre-mode)
+)
+
+(use-package wgrep
+    :ensure t
+    )
+
+(setq counsel-fzf-cmd "/home/felippe/.fzf/bin/fzf -f %s")
+#+end_src
+
+** Comment line or region
+   function to comment line or selected region
+   #+begin_src emacs-lisp
+     (defun comment-line-or-region (n)
+       "Comment or uncomment current line and leave point after it.
+     With positive prefix, apply to N lines including current one.
+     With negative prefix, apply to -N lines above.
+     If region is active, apply to active region instead."
+       (interactive "p")
+       (if (use-region-p)
+           (comment-or-uncomment-region
+            (region-beginning) (region-end))
+         (let ((range
+                (list (line-beginning-position)
+                      (goto-char (line-end-position n)))))
+           (comment-or-uncomment-region
+            (apply #'min range)
+            (apply #'max range)))
+         (forward-line 1)
+         (back-to-indentation)))
+
+
+     (global-set-key (kbd "C-;")
+                     'comment-line-or-region)
+   #+end_src
+
+** Expand region
+   #+begin_src emacs-lisp
+     ; expand the marked region in semantic increments (negative prefix to reduce region)
+     (use-package expand-region
+       :ensure t
+       :config 
+       (global-set-key (kbd "C-=") 'er/expand-region))
+   #+end_src
+
+** TODO Text Wrappers
+Copying from [[https://github.com/howardabrams/dot-files/blob/master/emacs.org#block-wrappers][Howard Abrams]] again
+#+begin_src emacs-lisp :tangle no
+(use-package wrap-region
+  :ensure   t
+  :config
+  (wrap-region-global-mode t)
+  (wrap-region-add-wrappers
+   '(("(" ")")
+     ("[" "]")
+     ("{" "}")
+     ("<" ">")
+     ("'" "'")
+     ("\"" "\"")
+     ("‘" "’"   "q")
+     ("“" "”"   "Q")
+     ("*" "*"   "b"   org-mode)                 ; bolden
+     ("*" "*"   "*"   org-mode)                 ; bolden
+     ("/" "/"   "i"   org-mode)                 ; italics
+     ("/" "/"   "/"   org-mode)                 ; italics
+     ("~" "~"   "c"   org-mode)                 ; code
+     ("~" "~"   "~"   org-mode)                 ; code
+     ("=" "="   "v"   org-mode)                 ; verbatim
+     ("=" "="   "="   org-mode)                 ; verbatim
+     ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
+     ("**" "**" "b"   markdown-mode)            ; bolden
+     ("*" "*"   "i"   markdown-mode)            ; italics
+     ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
+     ("`" "'"   "c"   lisp-mode)                ; code
+     ))
+  :diminish wrap-region-mode)
+#+end_src
+He also does something that seems useful for org mode blocks, but I try just as it is now for a while.
+
+** Hungry delete
+   #+begin_src emacs-lisp
+     ; deletes all the whitespace when you hit backspace or delete
+     (use-package hungry-delete
+       :ensure t
+       :config
+       (global-hungry-delete-mode))
+   #+end_src
+
+** Undo-tree
+   #+begin_src emacs-lisp
+     (use-package undo-tree
+     :ensure t
+       :init
+	 (global-undo-tree-mode))
+   #+end_src
+
+** Iedit
+   #+begin_src emacs-lisp
+     (use-package iedit
+       :ensure t
+       :bind (("C-:" . iedit-mode)))
+   #+end_src
+
+** TODO Multiple cursors
+** Auto-complete
+   #+begin_src emacs-lisp
+     ;; auto-complete
+     (use-package auto-complete
+       :ensure t
+       :init
+       (progn
+	 (ac-config-default)
+	 (global-auto-complete-mode t)))
+   #+end_src
+
+** Flycheck
+   #+begin_src emacs-lisp
+     (use-package flycheck
+       :ensure t
+       :init
+       (global-flycheck-mode t))
+   #+end_src
+
+** Yasnippet
+<2018-01-10 qua> Apparently the snippets are not loading
+<2018-01-11 qui> I can load manually by calling `yas-load-directory` and choosing the yasnippet directory
+<2018-01-11 qui> I ""solved with `ln -s ~/.emacs.d/elpa/yasnippets*/snippets ~/.emacs.d/snippets`
+#+begin_src emacs-lisp
+    (use-package yasnippet
+      :ensure t
+      :config
+        (use-package yasnippet-snippets
+          :ensure t)
+        (yas-reload-all))
+#+end_src
+
+*** auto-yasnippet
+
+
+#+begin_src emacs-lisp
+(use-package auto-yasnippet
+  :ensure t)
+(define-key f-map (kbd "y") 'aya-create)
+(define-key f-map (kbd "e") 'aya-expand)
+#+end_src
+
+** TODO Smartparens
+#+begin_src emacs-lisp
+(use-package smartparens
+  :ensure t
+  :config
+  (require 'smartparens-config)
+  (require 'smartparens-html)
+  (require 'smartparens-python)
+  (require 'smartparens-latex)
+  (smartparens-global-mode t)
+  (show-smartparens-global-mode t)
+  :bind
+  (("C-<down>" . sp-down-sexp)
+   ("C-<up>"   . sp-up-sexp)
+   ("M-<down>" . sp-backward-down-sexp)
+   ("M-<up>"   . sp-backward-up-sexp)
+   ("C-M-a" . sp-beginning-of-sexp)
+   ("C-M-e" . sp-end-of-sexp)
+
+   ("C-M-f" . sp-forward-sexp)
+   ("C-M-b" . sp-backward-sexp)
+   
+   ("C-M-n" . sp-next-sexp)
+   ("C-M-p" . sp-previous-sexp)
+    
+   ("C-S-f" . sp-forward-symbol)
+   ("C-S-b" . sp-backward-symbol)
+    
+   ("C-<right>" . sp-forward-slurp-sexp)
+   ("M-<right>" . sp-forward-barf-sexp)
+   ("C-<left>"  . sp-backward-slurp-sexp)
+   ("M-<left>"  . sp-backward-barf-sexp)
+    
+   ("C-M-t" . sp-transpose-sexp)
+   ("C-M-k" . sp-kill-sexp)
+   ("C-k"   . sp-kill-hybrid-sexp)
+   ("M-k"   . sp-backward-kill-sexp)
+   ("C-M-w" . sp-copy-sexp)
+    
+   ("C-M-d" . delete-sexp)
+    
+   ("M-<backspace>" . backward-kill-word)
+   ("C-<backspace>" . sp-backward-kill-word)
+   ([remap sp-backward-kill-word] . backward-kill-word)
+    
+   ("M-[" . sp-backward-unwrap-sexp)
+   ("M-]" . sp-unwrap-sexp)
+    
+   ("C-x C-t" . sp-transpose-hybrid-sexp)
+    
+   ("C-c ("  . wrap-with-parens)
+   ("C-c ["  . wrap-with-brackets)
+   ("C-c {"  . wrap-with-braces)
+   ("C-c '"  . wrap-with-single-quotes)
+   ("C-c \"" . wrap-with-double-quotes)
+   ("C-c _"  . wrap-with-underscores)
+   ("C-c `"  . wrap-with-back-quotes)))
+#+end_src
+
+** Subwords
+Emacs treats camelCase strings as a single word by default, this changes said behaviour.
+#+begin_src emacs-lisp
+  (global-subword-mode 1)
+#+end_src
+
+** Electric
+If you write any code, you may enjoy this.
+Typing the first character in a set of 2, completes the second one after your cursor.
+Opening a bracket? It's closed for you already. Quoting something? It's closed for you already.
+
+You can easily add and remove pairs yourself, have a look.
+#+begin_src emacs-lisp
+(setq electric-pair-pairs '(
+                           (?\{ . ?\})
+                           (?\( . ?\))
+                           (?\[ . ?\])
+                           (?\" . ?\")
+                           ))
+#+end_src
+
+And now to enable it
+#+begin_src emacs-lisp
+(electric-pair-mode t)
+#+end_src
+** Editing with sudo
+Pretty self-explanatory, useful as hell if you use exwm.
+#+begin_src emacs-lisp
+  (use-package sudo-edit
+    :ensure t
+    :bind
+      ("s-e" . sudo-edit))
+#+end_src
+
+* Magit
+#+begin_src emacs-lisp
+(use-package magit
+  :ensure t
+  :bind ("C-x g" . magit-status))
+#+end_src
+
+* Org
+** Common settings
+
+#+begin_src emacs-lisp
+  (setq org-ellipsis " ")
+  (setq org-src-fontify-natively t)
+  (setq org-src-tab-acts-natively t)
+  (setq org-confirm-babel-evaluate nil)
+  (setq org-export-with-smart-quotes t)
+  (setq org-src-window-setup 'current-window)
+  (add-hook 'org-mode-hook 'org-indent-mode)
+#+end_src
+
+** Syntax highlighting for documents exported to HTML
+#+begin_src emacs-lisp
+  (use-package htmlize
+    :ensure t)
+#+end_src
+
+** Easy-to-add emacs-lisp template
+Hitting tab after an "<el" in an org-mode file will create a template for elisp insertion.
+#+begin_src emacs-lisp
+  (add-to-list 'org-structure-template-alist
+	       '("el" "#+begin_src emacs-lisp\n?\n#+end_src"))
+#+end_src
+
+** Org-bullets, source code highlight
+    #+begin_src emacs-lisp
+      ;; org mode stuff
+      (use-package org-bullets
+        :ensure t
+        :config
+        (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+
+      (setq org-src-fontify-natively t
+            org-src-preserve-indentation t
+            org-list-allow-alphabetical t
+            org-completion-use-ido t)
+    #+end_src
+
+** Org and org-plus-contrib from org elpa
+<2018-01-11 qui> Don't no why `org-plus-contrib` can't be loaded
+#+begin_src emacs-lisp :tangle no
+(use-package org
+  :ensure t)
+
+(use-package org-plus-contrib
+  :ensure t)
+#+end_src
+
+** Org behavior
+#+begin_src emacs-lisp 
+(custom-set-variables
+ '(org-directory "~/Dropbox/orgfiles")
+ '(org-default-notes-file (concat org-directory "notes.org"))
+ '(org-export-html-postamble nil)
+ '(org-hide-leading-stars t)
+ '(org-startup-folded 'contents)
+ '(org-startup-indented t)
+ )
+
+(setq org-file-apps
+      (append '(
+                ("\\.pdf\\'" . "okular %s")
+                ) org-file-apps ))
+
+(global-set-key "\C-ca" 'org-agenda)
+#+end_src
+
+** Org-ac
+#+begin_src emacs-lisp
+  (use-package org-ac
+    :ensure t
+    :init (progn
+            (require 'org-ac)
+            (org-ac/config-default)))
+#+end_src
+
+** Capture
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-c c")
+                  'org-capture)
+
+  (setq org-capture-templates
+        '(("a" "Appointment" entry (file  "~/Dropbox/orgfiles/gcal.org" "Appointments")
+           "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
+          ("n" "Note" entry (file+headline "~/Dropbox/orgfiles/notes.org" "Notes")
+           "* Note %?\n%T")
+          ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
+           "* %? %^L %^g \n%T" :prepend t)
+          ("b" "Blog idea" entry (file+headline "~/Dropbox/orgfiles/i.org" "Blog Topics:")
+           "* %?\n%T" :prepend t)
+          ("t" "To Do Item" entry (file+headline "~/Dropbox/orgfiles/i.org" "To Do Items")
+           "* %?\n%T" :prepend t)
+          ("j" "Journal" entry (file+datetree "~/Dropbox/journal.org")
+           "* %?\nEntered on %U\n  %i\n  %a")
+          ("s" "Screencast" entry (file "~/Dropbox/orgfiles/screencastnotes.org")
+           "* %?\n%i\n")))
+
+(defadvice org-capture-finalize 
+    (after delete-capture-frame activate)  
+  "Advise capture-finalize to close the frame"  
+  (if (equal "capture" (frame-parameter nil 'name))  
+    (delete-frame)))
+
+(defadvice org-capture-destroy 
+    (after delete-capture-frame activate)  
+  "Advise capture-destroy to close the frame"  
+  (if (equal "capture" (frame-parameter nil 'name))  
+    (delete-frame)))  
+
+(use-package noflet
+  :ensure t )
+(defun make-capture-frame ()
+  "Create a new frame and run org-capture."
+  (interactive)
+  (make-frame '((name . "capture")))
+  (select-frame-by-name "capture")
+  (delete-other-windows)
+  (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
+    (org-capture)))
+#+end_src
+
+** Google Calendar and org agenda
+Follow the instructions from [[http://cestlaz.github.io/posts/using-emacs-26-gcal/][Episode 26]] of Zamansky's series
+<2018-01-10 qua> Disabled until being able to instal org-gcal
+#+begin_src emacs-lisp :tangle no
+(setq package-check-signature nil)
+
+(use-package org-gcal
+  :ensure t
+  :config
+  (setq org-gcal-client-id my-gcal-client-id
+	org-gcal-client-secret my-gcal-client-secret
+	org-gcal-file-alist '(("flipgm@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
+
+(add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
+(add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
+
+(setq org-agenda-custom-commands
+      '(("c" "Simple agenda view"
+	 ((agenda "")
+	  (alltodo "")))))
+#+end_src
+
+Also there is the [[https://github.com/kiwanami/emacs-calfw][calfw]] package, but I'm not sure how to use it
+#+begin_src emacs-lisp :tangle no
+(use-package calfw
+  :ensure t ;TODO: 
+  :config
+  (require 'calfw) 
+  (require 'calfw-org)
+  (setq cfw:org-overwrite-default-keybinding t)
+  (require 'calfw-ical)
+
+  (defun mycalendar ()
+    (interactive)
+    (cfw:open-calendar-buffer
+     :contents-sources
+     (list
+      ;; (cfw:org-create-source "Green")  ; orgmode source
+      (cfw:ical-create-source "gcal" "https://somecalnedaraddress" "IndianRed") ; devorah calender
+      (cfw:ical-create-source "gcal" "https://anothercalendaraddress" "IndianRed") ; google calendar ICS
+      ))) 
+  (setq cfw:org-overwrite-default-keybinding t))
+
+(use-package calfw-gcal
+	:ensure t
+	:config
+	(require 'calfw-gcal))
+#+end_src
+
+** Reveal.js and Org-reveal
+<2018-01-10 qua> Disabled until compatibility issue ie resolved
+   #+begin_src emacs-lisp
+     (use-package ox-reveal
+     :ensure t)
+
+     (setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
+     (setq org-reveal-mathjax t)
+
+     (use-package htmlize
+     :ensure t)
+   #+end_src
+
+* Publishing
+** LaTeX and PDF
+Still need to configure the packages
+** TODO AucTeX
+
+#+begin_src emacs-lisp
+(use-package auctex
+  :defer t)
+
+(use-package auctex-latexmk
+  :defer t)
+
+(use-package auto-complete-auctex
+  :defer t)
+#+end_src
+
+*** TODO reftex
+
+*** TODO bratex
+
+** TODO org-ref
+#+begin_src emacs-lisp
+(use-package org-ref
+  :ensure t)
+#+end_src
+
+** TODO pdf-tools
+#+begin_src emacs-lisp
+(use-package pdf-tools
+  :ensure t)
+#+end_src
+
+** TODO instant preview of latex fragments
+   #+begin_src emacs-lisp :tangle no
+     ;; (org-inside-LaTeX-fragment-p)
+     (require 'xwidget)
+     (defvar katex-url "file:///PATH/TO/katex.html?")
+     (defvar katex-buffer nil)
+     (defvar katex-xw nil)
+     (setq katex-buffer (get-buffer-create "*xwidget webkit: Katex *"))
+
+     (defun org-katex-latex-fragment-maybe (&optional arg)
+       "TODO"
+       (if (org-inside-LaTeX-fragment-p)
+           (call-interactively #'org-katex-latex-fragment)))
+
+     (add-hook 'post-self-insert-hook #'org-katex-latex-fragment-maybe)
+     (add-hook! 'evil-insert-state-exit-hook (posframe-hide katex-buffer))
+
+     (defun org-katex-latex-fragment (&optional arg)
+       "TODO"
+       (interactive "P")
+       (let (beg end)
+         (let ((datum (org-element-context)))
+           (when (memq (org-element-type datum)
+                       '(latex-environment latex-fragment))
+             (setq beg (org-element-property :begin datum))
+             (setq end (org-element-property :end datum)))
+           (org-format-katex beg end))))
+
+     (defun org-format-katex (beg end)
+       "TODO"
+       (save-excursion
+         (goto-char beg)
+         (let* ((context (org-element-context))
+                (type (org-element-type context)))
+           (when (memq type '(latex-environment latex-fragment))
+             (let ((value (org-element-property :value context))
+                   (beg (org-element-property :begin context))
+                   (end (save-excursion
+                          (goto-char (org-element-property :end context))
+                          (skip-chars-backward " \r\t\n")
+                          (point))))
+               (goto-char end)
+               ;; (concat katex-url (url-hexify-string value))
+               (if (eq type 'latex-fragment)
+                   (setq value (substring value 2 -2)))
+               (if (eq type 'latex-environment)
+                   (progn
+                     (setq value (replace-regexp-in-string "begin{equation}\\|begin{align}\\|begin{align\\*}" "begin{aligned}" value))
+                     (setq value (replace-regexp-in-string "end{equation}\\|end{align}\\|end{align\\*}" "end{aligned}" value))))
+               (posframe-show
+                katex-buffer
+                :position (point)
+                :width 40
+                :height 10
+                :min-width 40
+                :min-height 10)
+               ;; (if (string-match ""))
+               (with-current-buffer katex-buffer
+                 (let ((url (concat katex-url (url-hexify-string value))))
+                   (if katex-xw
+                       (xwidget-webkit-goto-uri katex-xw url)
+                     (insert url)
+                     (put-text-property 1 (+ 1 (length url)) 'invisible t)
+                     (setq katex-xw (xwidget-insert 1 'webkit "katex" 1 1))
+                     (xwidget-put katex-xw 'callback 'xwidget-webkit-callback)
+                     (setq cursor-type nil)
+                     (xwidget-webkit-goto-uri katex-xw url)))))))))
+   #+end_src
+** TODO Blogging
+Zamansky uses [[https://getnikola.com/blog/index.html][Nikola]] to produce the blog posts, but he don't show how to setup it.
+I'm thinking about starting to blog my work, so maybe I should look at it.
+There is also Hugo.
+* Programming
+** Python
+*** Jedi
+   #+begin_src emacs-lisp
+     (use-package jedi
+       :ensure t
+       :init
+       (add-hook 'python-mode-hook 'jedi:setup)
+       (add-hook 'python-mode-hook 'jedi:ac-setup))
+   #+end_src
+
+*** Elpy
+   #+begin_src emacs-lisp
+     (use-package elpy
+     :ensure t
+     :config 
+     (elpy-enable))
+   #+end_src
+
+** Julia
+#+begin_src emacs-lisp
+(use-package julia-mode
+  :ensure t)
+
+(use-package julia-repl
+  :ensure t
+  :config
+  (add-hook 'julia-mode-hook 'julia-repl-mode))
+#+end_src
+
+** Web Stuff
+*** Web mode
+#+begin_src emacs-lisp
+  (use-package web-mode
+      :ensure t
+      :config
+           (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+           (setq web-mode-engines-alist
+                 '(("django"    . "\\.html\\'")))
+           (setq web-mode-ac-sources-alist
+                 '(("css" . (ac-source-css-property))
+                   ("html" . (ac-source-words-in-buffer ac-source-abbrev))))
+
+  (setq web-mode-enable-auto-closing t)
+  (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
+#+end_src
+
+*** Emmet
+#+begin_src emacs-lisp
+(use-package emmet-mode
+  :ensure t
+  :config
+  (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+  (add-hook 'web-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+  (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
+)
+#+end_src
+
+** Nix
+#+begin_src emacs-lisp
+(use-package nix-mode
+  :defer t)
+#+end_src
+
+** ML
+#+begin_src emacs-lisp
+(use-package sml-mode
+  :ensure t)
+#+end_src
+
+* Minor conveniences
+<2018-03-28 qua> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
+Emacs is at it's best when it just does things for you, shows you the way, guides you so to speak.
+This can be best achieved using a number of small extensions. While on their own they might not be particularly
+impressive. Together they create a nice environment for you to work in.
+
+** Visiting the configuration
+Quickly edit =~/.emacs.d/config.org=
+#+begin_src emacs-lisp
+(defun config-visit ()
+  (interactive)
+  (find-file "~/.emacs.d/config.org"))
+(define-key f-map (kbd "v") 'config-visit)
+
+#+end_src
+
+** Reloading the configuration
+   
+Simply pressing =Control-c r= will reload this file, very handy.
+You can also manually invoke =config-reload=.
+#+begin_src emacs-lisp
+(defun config-reload ()
+  "Reloads ~/.emacs.d/config.org at runtime"
+  (interactive)
+  (org-babel-load-file (expand-file-name "~/.emacs.d/config.org")))
+(define-key f-map (kbd "r") 'config-reload)
+#+end_src
+
+* Extras
+** Elfeed
+*** Elfeed, elfeed-org and elfeed-goodies
+#+begin_src emacs-lisp 
+(use-package elfeed
+  :ensure t
+  :bind (("C-c e" . elfeed)
+         :map elfeed-search-mode-map
+	      ("q" . bjm/elfeed-save-db-and-bury)
+	      ("Q" . bjm/elfeed-save-db-and-bury)
+	      ("m" . elfeed-toggle-star)
+	      ("M" . elfeed-toggle-star)
+              ("j" . mz/make-and-run-elfeed-hydra)
+              ("J" . mz/make-and-run-elfeed-hydra)
+;	      ("j" . mz/hydra-elfeed/body)
+;	      ("J" . mz/hydra-elfeed/body))
+              ))
+
+(setq elfeed-db-directory "~/Dropbox/shared/elfeeddb")
+
+
+(defun elfeed-mark-all-as-read ()
+      (interactive)
+      (mark-whole-buffer)
+      (elfeed-search-untag-all-unread))
+
+      ;;functions to support syncing .elfeed between machines
+;;makes sure elfeed reads index from disk before launching
+(defun bjm/elfeed-load-db-and-open ()
+  "Wrapper to load the elfeed db from disk before opening"
+  (interactive)
+  (elfeed-db-load)
+  (elfeed)
+  (elfeed-search-update--force))
+
+;;write to disk when quiting
+(defun bjm/elfeed-save-db-and-bury ()
+  "Wrapper to save the elfeed db to disk before burying buffer"
+  (interactive)
+  (elfeed-db-save)
+  (quit-window))
+
+;; (defalias 'elfeed-toggle-star
+;;   (elfeed-expose #'elfeed-search-toggle-all 'star))
+
+(use-package elfeed
+  :ensure t
+  :bind (:map elfeed-search-mode-map
+	      ("q" . bjm/elfeed-save-db-and-bury)
+	      ("Q" . bjm/elfeed-save-db-and-bury)
+	      ("m" . elfeed-toggle-star)
+	      ("M" . elfeed-toggle-star)
+	      )
+  )
+
+(use-package elfeed-goodies
+  :ensure t
+  :config
+  (elfeed-goodies/setup))
+
+(use-package elfeed-org
+  :ensure t
+  :config
+  (elfeed-org)
+  (setq rmh-elfeed-org-files (list "~/Dropbox/shared/elfeed.org")))
+#+end_src
+
+*** Elfeed hydra
+#+begin_src emacs-lisp :
+;; (defhydra mz/hydra-elfeed ()
+;;    "filte - take 1"
+;;    ("c" (elfeed-search-set-filter "@6-months-ago +cs") "cs")
+;;    ("e" (elfeed-search-set-filter "@6-months-ago +emacs") "emacs")
+;;    ("d" (elfeed-search-set-filter "@6-months-ago +education") "education")
+;;    ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
+;;    ("M" elfeed-toggle-star "Mark")
+;;    ("A" (elfeed-search-set-filter "@6-months-ago") "All")
+;;    ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
+;;    ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
+;;    ("q" nil "quit" :color blue)
+;;    )
+
+
+(defun z/hasCap (s) ""
+       (let ((case-fold-search nil))
+       (string-match-p "[[:upper:]]" s)
+       ))
+
+(defun z/get-hydra-option-key (s)
+  "returns single upper case letter (converted to lower) or first"
+  (interactive)
+  (let ( (loc (z/hasCap s)))
+    (if loc
+	(downcase (substring s loc (+ loc 1)))
+      (substring s 0 1)
+    )))
+
+(defun mz/make-elfeed-cats (tags)
+  "Returns a list of lists. Each one is line for the hydra configuratio in the form
+     (c function hint)"
+  (interactive)
+  (mapcar (lambda (tag)
+	    (let* (
+		   (tagstring (symbol-name tag))
+		   (c (z/get-hydra-option-key tagstring))
+		   )
+	      (list c (append '(elfeed-search-set-filter) (list (format "@6-months-ago +%s" tagstring) ))tagstring  )))
+	  tags))
+
+(defmacro mz/make-elfeed-hydra ()
+  `(defhydra mz/hydra-elfeed ()
+     "filter"
+     ,@(mz/make-elfeed-cats (elfeed-db-get-all-tags))
+     ("*" (elfeed-search-set-filter "@6-months-ago +star") "Starred")
+     ("M" elfeed-toggle-star "Mark")
+     ("A" (elfeed-search-set-filter "@6-months-ago") "All")
+     ("T" (elfeed-search-set-filter "@1-day-ago") "Today")
+     ("Q" bjm/elfeed-save-db-and-bury "Quit Elfeed" :color blue)
+     ("q" nil "quit" :color blue)
+     ))
+
+(defun mz/make-and-run-elfeed-hydra ()
+  ""
+  (interactive)
+  (mz/make-elfeed-hydra)
+  (mz/hydra-elfeed/body))
+#+end_src
+
+** Browser Editing
+#+begin_src emacs-lisp :tangle no
+(use-package atomic-chrome
+  :ensure t
+  :config
+  (atomic-chrome-start-server)
+#+end_src
+
+** TODO Elbank
+** Media
+Why bother with an external media manager when emacs is a thing.
+EMMS is huge, incredibly powerful and luckily well documented.
+All I need it for is to play music and video, that's it.
+I also need it to display metadata on the modeline correctly, which it does with mpd automatically.
+
+*** EMMS with mpd
+There is many backends, many players and codecs for EMMS, we use mpd now.
+
+**** Basic setup for mpd
+The non XF86 keys are made to be somewhat logical to follow and easy to remember.
+At the bottom part of the configuration, you will notice how XF86 keys are used
+by default, so unless you keyboard is broken it should work out of the box.
+Obviously you might have to adjust /server-name/ and /server-port/ to fit your configuration.
+#+begin_src emacs-lisp
+  (use-package emms
+    :ensure t
+    :config
+      (require 'emms-setup)
+      (require 'emms-player-mpd)
+      (emms-all) ; don't change this to values you see on stackoverflow questions if you expect emms to work
+      (setq emms-seek-seconds 5)
+      (setq emms-player-list '(emms-player-mpd))
+      (setq emms-info-functions '(emms-info-mpd))
+      (setq emms-player-mpd-server-name "localhost")
+      (setq emms-player-mpd-server-port "6601")
+    :bind
+      ("s-m p" . emms)
+      ("s-m b" . emms-smart-browse)
+      ("s-m r" . emms-player-mpd-update-all-reset-cache)
+      ("<XF86AudioPrev>" . emms-previous)
+      ("<XF86AudioNext>" . emms-next)
+      ("<XF86AudioPlay>" . emms-pause)
+      ("<XF86AudioStop>" . emms-stop))
+#+end_src
+
+**** MPC Setup
+***** Setting the default port
+We use non-default settings for the socket, to use the built in =mpc= functionality we need to set up a variable.
+Adjust according to your setup.
+#+begin_src emacs-lisp
+  (setq mpc-host "localhost:6601")
+#+end_src
+
+**** Some more fun stuff
+***** Starting the daemon from within emacs
+If you have an absolutely massive music library, it might be a good idea to get rid of =mpc-update=
+and only invoke it manually when needed.
+#+begin_src emacs-lisp
+  (defun mpd/start-music-daemon ()
+    "Start MPD, connects to it and syncs the metadata cache."
+    (interactive)
+    (shell-command "mpd")
+    (mpd/update-database)
+    (emms-player-mpd-connect)
+    (emms-cache-set-from-mpd-all)
+    (message "MPD Started!"))
+  (global-set-key (kbd "s-m c") 'mpd/start-music-daemon)
+#+end_src
+
+***** Killing the daemon from within emacs
+#+begin_src emacs-lisp
+  (defun mpd/kill-music-daemon ()
+    "Stops playback and kill the music daemon."
+    (interactive)
+    (emms-stop)
+    (call-process "killall" nil nil nil "mpd")
+    (message "MPD Killed!"))
+  (global-set-key (kbd "s-m k") 'mpd/kill-music-daemon)
+#+end_src
+***** Updating the database easily.
+#+begin_src emacs-lisp
+  (defun mpd/update-database ()
+    "Updates the MPD database synchronously."
+    (interactive)
+    (call-process "mpc" nil nil nil "update")
+    (message "MPD Database Updated!"))
+  (global-set-key (kbd "s-m u") 'mpd/update-database)
+#+end_src
+** TODO Torrent

@@ -1,4 +1,5 @@
 ;; I've copied a lot from https://github.com/novoid/dot-emacs/blob/master/init.el
+;; and from https://bitbucket.org/holgerschurig/emacsconf/src/1c62677690d32f904d8c357097e0d54eb4b26ed3/init.el?at=master&fileviewer=file-view-default
 
 (defvar startup-init-el-start-time (current-time) "Time when init.el was started")
 
