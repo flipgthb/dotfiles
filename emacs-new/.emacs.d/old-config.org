@@ -1,5 +1,7 @@
-#+title: EMACS Configuration
+# -*- mode: org; coding: utf-8; -*-
+#+title: EMACS Configuration 
 #+author: Felippe Alves
+#+todo: DISABLED | ACTIVE
 #+startup: overview
 
 * Personal Keymap
@@ -21,20 +23,19 @@ Also, I'm gonna try to use key chords with ",," as an chord for "C-."
 
 * User Interface
 ** Emacs Internals
-*** Dash
+**** Dash
 #+begin_src emacs-lisp
   (use-package dash
     :ensure t)
 #+end_src
 
-*** f
+**** f
 #+begin_src emacs-lisp
 (use-package f
   :ensure t)
 #+end_src
-
 ** Genearal UI elements
-*** Looks
+*** DISABLED Looks
 **** Remove lame startup screen
 We use an actual replacement for it, keep reading or head directly to =dashboard=.
 #+begin_src emacs-lisp
@@ -167,22 +168,6 @@ Show column number in mode line and set the number of characters before line wra
 (setq redisplay-dont-pause t)
 #+end_src
 
-** Dashboard
-This is your new startup screen, together with projectile it works in unison and
-provides you with a quick look into your latest projects and files.
-Change the welcome message to whatever string you want and
-change the numbers to suit your liking, I find 5 to be enough.
-#+begin_src emacs-lisp
-  (use-package dashboard
-    :ensure t
-    :config
-      (dashboard-setup-startup-hook)
-      (setq dashboard-startup-banner "~/.emacs.d/img/dashLogo.png")
-      (setq dashboard-items '((recents  . 5)
-                              (projects . 5)))
-      (setq dashboard-banner-logo-title ""))
-#+end_src
-
 ** Key bindings discovery and other discoverability related stuff
 *** which-key
 #+begin_src emacs-lisp
@@ -204,14 +189,14 @@ change the numbers to suit your liking, I find 5 to be enough.
          ("C-h C" . helpful-command)))
 #+end_src
 
-*** TODO Suggest
+*** DISABLED TODO Suggest
 *** try
     #+begin_src emacs-lisp
       (use-package try
       :ensure t)
     #+end_src
-*** TODO cheat-sh
-*** TODO cheatsheet
+*** DISABLED TODO cheat-sh
+*** DISABLED TODO cheatsheet
 *** tldr
 #+begin_src emacs-lisp
 (use-package tldr
@@ -222,6 +207,9 @@ change the numbers to suit your liking, I find 5 to be enough.
 #+begin_src emacs-lisp
 (use-package hydra 
   :ensure t)
+
+  (define-prefix-command 'f-map)
+(global-set-key (kbd "C-.") 'f-map)
 
 ;; Hydra for modes that toggle on and off
 (define-key f-map 
@@ -270,26 +258,7 @@ change the numbers to suit your liking, I find 5 to be enough.
    ("l" (or )rg-capture-goto-last-stored "Last Capture")))
 #+end_src
 
-** Projectile
-#+begin_src emacs-lisp
-;; projectile
-(use-package projectile
-  :ensure t
-  :config
-  (projectile-global-mode)
-(setq projectile-completion-system 'ivy))
-
-(use-package counsel-projectile
-  :ensure t
-  :config
-  (counsel-projectile-mode))
-#+end_src
-
-*** Let projectile call make
-#+begin_src emacs-lisp :tangle no
-  (global-set-key (kbd "<f6>") 'projectile-compile-project)
-#+end_src
-
+** DISABLED objed
 ** Navigation
 *** Ivy/Counsel/Swiper - Search and completion framework (or emacs elements navigation)
     #+begin_src emacs-lisp
@@ -491,6 +460,26 @@ I'm not changing much, just disabling the mouse and adding buttons.
   ;;   :bind ("s-t" . sunrise))
 #+end_src
 
+** Projectile
+#+begin_src emacs-lisp
+;; projectile
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-global-mode)
+(setq projectile-completion-system 'ivy))
+
+(use-package counsel-projectile
+  :ensure t
+  :config
+  (counsel-projectile-mode))
+#+end_src
+
+*** Let projectile call make
+#+begin_src emacs-lisp :tangle no
+  (global-set-key (kbd "<f6>") 'projectile-compile-project)
+#+end_src
+
 ** Appearance
 *** Fonts
 #+begin_src emacs-lisp
@@ -572,24 +561,30 @@ Font to use fancy symbols in buffers and modeline
 #+end_src
 
 #+begin_src emacs-lisp
-(use-package doom-themes
+  (use-package doom-themes
+      :defer t)
+  ;; (load-theme 'doom-one t)
+
+  (use-package doneburn-theme
     :defer t)
-;; (load-theme 'doom-one t)
 
-(use-package doneburn-theme
-  :defer t)
+  (use-package zenburn-theme
+    :defer t)
+  ;; (load-theme 'doneburn t)
 
-(use-package zenburn-theme
-  :defer t)
-;; (load-theme 'doneburn t)
+  (use-package nova-theme
+    :defer t)
+  ;; (load-theme 'nova t)
 
-(use-package nova-theme
-  :defer t)
-;; (load-theme 'nova t)
+  (use-package lab-themes
+    :defer t)
+  ;; (lab-themes-load-style 'dark)
 
-(use-package lab-themes
-  :ensure t)
-(lab-themes-load-style 'dark)
+  (use-package base16-theme
+    :ensure t
+    :config
+    (load-theme 'base16-ocean t))
+
 #+end_src
 
 **** Some customization
@@ -2607,169 +2602,6 @@ especially lisp.
     :init
       (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 #+end_src
-** Diminishing modes
-Your modeline is sacred, and if you have a lot of modes enabled, as you will if you use this config,
-you might end up with a lot of clutter there, the package =diminish= disables modes on the mode line but keeps
-them running, it just prevents them from showing up and taking up space.
-
-*THIS WILL BE REMOVED SOON AS USE-PACKAGE HAS THE FUNCTIONALITY BUILT IN*
-
-Edit this list as you see fit!
-#+begin_src emacs-lisp
-  (use-package diminish
-    :ensure t
-    :init
-    (diminish 'which-key-mode)
-    (diminish 'linum-relative-mode)
-    (diminish 'hungry-delete-mode)
-    (diminish 'visual-line-mode)
-    (diminish 'subword-mode)
-    (diminish 'beacon-mode)
-    (diminish 'irony-mode)
-    (diminish 'page-break-lines-mode)
-    (diminish 'auto-revert-mode)
-    (diminish 'rainbow-delimiters-mode)
-    (diminish 'rainbow-mode))
-#+end_src
-
-** The terminal
-<2018-03-29 qui> Addapted from UncleDave
-I have used urxvt for years, and I miss it sometimes, but ansi-term is enough for most of my tasks.
-
-*** Default shell should be fish
-I don't know why this is a thing, but asking me what shell to launch every single
-time I open a terminal makes me want to slap babies, this gets rid of it.
-This goes without saying but you can replace bash with your shell of choice.
-#+begin_src emacs-lisp
-  (defvar my-term-shell "/usr/bin/fish")
-  (defadvice ansi-term (before force-bash)
-    (interactive (list my-term-shell)))
-  (ad-activate 'ansi-term)
-#+end_src
-
-*** Easy to remember keybinding
-In loving memory of bspwm, Super + Enter opens a new terminal, old habits die hard.
-#+begin_src emacs-lisp
-(global-set-key (kbd "<s-return>") 'ansi-term)
-#+end_src
-
-*** TODO fish-completion
-
-** Toggle linum mode
-#+begin_src emacs-lisp
-     (setq linum-format " %3d ")      ;; linum format to keep line numbers 2 spaces from border and text
-     (global-linum-mode 0)            ;; don't display lateral line numbers
-     (global-set-key
-      (kbd "C-c n") 'global-linum-mode) ;; toggle lateral line numbers
-   #+end_src
-
-** mode-line-bell
-#+begin_src emacs-lisp :tangle no
-  (use-package mode-line-bell
-    :ensure t
-    :config (mode-line-bell-mode))
-#+end_src
-
-** shell and eshell
-#+begin_src emacs-lisp
-(use-package better-shell
-    :ensure t
-    :bind (("C-'" . better-shell-shell)
-	   ("C-c C-;" . better-shell-remote-open)))
-#+end_src
-
-** Treemacs
-I didn't like it so much. Maybe neotree is better...
-#+begin_src emacs-lisp :tangle no
-(use-package treemacs
-  :ensure t
-  :defer t
-  :config
-  (progn
-    ;; (use-package treemacs-evil
-    ;;   :ensure t
-    ;;   :demand t)
-    (setq treemacs-change-root-without-asking nil
-          treemacs-collapse-dirs              (if (executable-find "python") 3 0)
-          treemacs-file-event-delay           5000
-          treemacs-follow-after-init          t
-          treemacs-goto-tag-strategy          'refetch-index
-          treemacs-indentation                2
-          treemacs-indentation-string         " "
-          treemacs-is-never-other-window      nil
-          treemacs-never-persist              nil
-          treemacs-no-png-images              nil
-          treemacs-recenter-after-file-follow nil
-          treemacs-recenter-after-tag-follow  nil
-          treemacs-show-hidden-files          t
-          treemacs-silent-filewatch           nil
-          treemacs-silent-refresh             nil
-          treemacs-sorting                    'alphabetic-desc
-          treemacs-tag-follow-cleanup         t
-          treemacs-tag-follow-delay           1.5
-          treemacs-winum-number               10
-          treemacs-width                      35)
-
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (pcase (cons (not (null (executable-find "git")))
-                 (not (null (executable-find "python3"))))
-      (`(t . t)
-       (treemacs-git-mode 'extended))
-      (`(t . _)
-       (treemacs-git-mode 'simple))))
-  :bind
-  (:map global-map
-        ([f8]         . treemacs-toggle)
-        ;; ("M-0"        . treemacs-select-window)
-        ;; ("C-c 1"      . treemacs-delete-other-windows)
-        ;; ("M-m ft"     . treemacs-toggle)
-        ;; ("M-m fT"     . treemacs)
-        ;; ("M-m fB"     . treemacs-bookmark)
-        ;; ("M-m f C-t"  . treemacs-find-file)
-        ;; ("M-m f M-t"  . treemacs-find-tag)
-        )
-)
-
-(use-package treemacs-projectile
-  :defer t
-  :ensure t
-  :config
-  (setq treemacs-header-function #'treemacs-projectile-create-header)
-  ;; :bind (:map global-map
-  ;;             ("M-m fP" . treemacs-projectile)
-  ;;             ("M-m fp" . treemacs-projectile-toggle))
-  )
-#+end_src
-
-** Prodigy
-#+begin_src emacs-lisp :tangle no
-(use-package prodigy
-  :ensure t
-  :config
-  (prodigy-define-service
-   :name "nikola"
-   :command "nikola"
-   :args '("auto")
-   :cwd (expand-file-name "~/Dropbox/placeholdeblogname")
-   :tags '(blog nikola)
-   :stop-signal 'sigint
-   :kill-process-buffer-on-stop t)
-   )
-#+end_src
-
-** Load External Files
-#+begin_src emacs-lisp
-  (defun load-if-exists (f)
-    "Load a file only when it exists and is readable,"
-    (if (file-readable-p (expand-file-name f))
-        (load-file f)))
-
-  (-map 'load-if-exists '("~/Dropbox/shared/mu4e-config.el"
-                          "~/Dropbox/shared/tempstuff.el"
-                          "~/Dropbox/shared/not-for-github.el"))
-#+end_src
-
 * Window Manager
 <2018-03-29 qui> Copied shamelessly from [[https://github.com/daedreth/UncleDavesEmacs/blob/master/config.org][UncleDave]]
 Everything regarding the WM or DE-like functionality is bundled here, remove the entire section if you do not wish to use =exwm=.
@@ -3828,7 +3660,7 @@ You can also manually invoke =config-reload=.
   (atomic-chrome-start-server)
 #+end_src
 
-** TODO Elbank
+** DISABLED Elbank
 ** Media
 Why bother with an external media manager when emacs is a thing.
 EMMS is huge, incredibly powerful and luckily well documented.
@@ -3908,4 +3740,4 @@ and only invoke it manually when needed.
     (message "MPD Database Updated!"))
   (global-set-key (kbd "s-m u") 'mpd/update-database)
 #+end_src
-** TODO Torrent
+** DISABLED Torrent
