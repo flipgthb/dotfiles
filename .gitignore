@@ -16,3 +16,7 @@ emacs/.emacs.d/#*#
 # fish stuff
 fish/.config/fish/functions/
 fish/.config/fish/functions/**
+
+# mpd stuff
+mpd/.config/mpd/
+!mpd/.config/mpd/mpd.conf
