@@ -1,1 +1,0 @@
-/home/felippe/.config/fisherman/metro/fish_prompt.fish
