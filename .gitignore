@@ -20,3 +20,6 @@ fish/.config/fish/functions/**
 # mpd stuff
 mpd/.config/mpd/
 !mpd/.config/mpd/mpd.conf
+
+# ncmpcpp stuff
+ncmpcpp/.ncmpcpp/error.log
