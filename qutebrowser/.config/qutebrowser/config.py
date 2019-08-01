@@ -635,7 +635,7 @@ c.editor.command = ['emacs', '-Q', '{file}'] #['gvim', '-f', '{file}', '-c', 'no
 
 ## Characters used for hint strings.
 ## Type: UniqueCharString
-# c.hints.chars = 'asdfghjkl'
+c.hints.chars = 'asdfghjklqwertyuiopzxcvbnm'
 
 ## Dictionary file to be used by the word hints.
 ## Type: File
@@ -646,7 +646,7 @@ c.editor.command = ['emacs', '-Q', '{file}'] #['gvim', '-f', '{file}', '-c', 'no
 ## Valid values:
 ##   - javascript: Better but slower
 ##   - python: Slightly worse but faster
-# c.hints.find_implementation = 'python'
+c.hints.find_implementation = 'javascript'
 
 ## Hide unmatched hints in rapid mode.
 ## Type: Bool
@@ -675,7 +675,7 @@ c.editor.command = ['emacs', '-Q', '{file}'] #['gvim', '-f', '{file}', '-c', 'no
 ## Scatter hint key chains (like Vimium) or not (like dwb). Ignored for
 ## number hints.
 ## Type: Bool
-# c.hints.scatter = True
+c.hints.scatter = False
 
 ## CSS selectors used to determine which elements on a page should have
 ## hints.
@@ -684,7 +684,7 @@ c.editor.command = ['emacs', '-Q', '{file}'] #['gvim', '-f', '{file}', '-c', 'no
 
 ## Make characters in hint strings uppercase.
 ## Type: Bool
-# c.hints.uppercase = False
+c.hints.uppercase = False
 
 ## Maximum time (in minutes) between two history items for them to be
 ## considered being from the same browsing session. Items with less time
@@ -761,11 +761,11 @@ c.editor.command = ['emacs', '-Q', '{file}'] #['gvim', '-f', '{file}', '-c', 'no
 ## Time (in milliseconds) from pressing a key to seeing the keyhint
 ## dialog.
 ## Type: Int
-# c.keyhint.delay = 500
+c.keyhint.delay = 100
 
 ## Rounding radius (in pixels) for the edges of the keyhint dialog.
 ## Type: Int
-# c.keyhint.radius = 6
+c.keyhint.radius = 1
 
 ## Duration (in milliseconds) to show messages in the statusbar for. Set
 ## to 0 to never clear messages.
@@ -797,11 +797,11 @@ c.editor.command = ['emacs', '-Q', '{file}'] #['gvim', '-f', '{file}', '-c', 'no
 
 ## Show a filebrowser in upload/download prompts.
 ## Type: Bool
-# c.prompt.filebrowser = True
+c.prompt.filebrowser = False
 
 ## Rounding radius (in pixels) for the edges of prompts.
 ## Type: Int
-# c.prompt.radius = 8
+c.prompt.radius = 2
 
 ## Additional arguments to pass to Qt, without leading `--`. With
 ## QtWebEngine, some Chromium arguments (see
@@ -888,7 +888,7 @@ c.editor.command = ['emacs', '-Q', '{file}'] #['gvim', '-f', '{file}', '-c', 'no
 
 ## Load a restored tab as soon as it takes focus.
 ## Type: Bool
-# c.session.lazy_restore = False
+c.session.lazy_restore = True
 
 ## Languages to use for spell checking. You can check for available
 ## languages and install dictionaries using scripts/dictcli.py. Run the
@@ -1527,8 +1527,8 @@ config.bind(';v', 'hint links spawn mpv --ytdl --ytdl-format best {hint-url}')
 config.bind(';h', 'hint links hover')
 config.bind(';p', 'hint images download')
 config.bind(',<Space>', 'fake-key <Escape>')
-config.bind(',i', 'hint images download')
 config.bind('F', 'hint links tab-bg')
+config.bind('cc', 'download-open')
 
 # base16-qutebrowser (https://github.com/theova/base16-qutebrowser)
 # Base16 qutebrowser template by theova
