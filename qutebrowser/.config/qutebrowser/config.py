@@ -646,7 +646,7 @@ c.hints.chars = 'asdfghjklqwertyuiopzxcvbnm'
 ## Valid values:
 ##   - javascript: Better but slower
 ##   - python: Slightly worse but faster
-c.hints.find_implementation = 'javascript'
+# c.hints.find_implementation = 'python'
 
 ## Hide unmatched hints in rapid mode.
 ## Type: Bool
@@ -684,7 +684,7 @@ c.hints.scatter = False
 
 ## Make characters in hint strings uppercase.
 ## Type: Bool
-c.hints.uppercase = False
+c.hints.uppercase = True
 
 ## Maximum time (in minutes) between two history items for them to be
 ## considered being from the same browsing session. Items with less time
